@@ -1,4 +1,4 @@
-;;; FILE: "system-dictionary.sch"
+;;; FILE: "method-dictionary.sch"
 ;;; IMPLEMENTS: message lookup
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 10 May 2016
