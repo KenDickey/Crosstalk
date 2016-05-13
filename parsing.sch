@@ -21,7 +21,7 @@
 (define binaryCharacters "!%&*+,/<=>?@\~|-")
 (define commentCharacter #\")
 (define returnOperatorChar #\^)
-(define assignmentString ":=")  ;; NB: fooo:= parses as #(foo :=) NOT #(foo: =)
+(define assignmentString ":=")  ;; NB: 'foo:=' parses as #(foo :=) NOT #(foo: =)
 
 
 ;;;			--- E O F ---			;;;
