@@ -69,7 +69,11 @@
 
 ;; methodDict lookupSelector: aSymbol
 (define (lookupSelector: methodDict symbol)
-  (hashtable-ref methodDict symbol nil)) ;; smalltalk nil
+  (hashtable-ref methodDict
+                 symbol
+                 (lambda (self . ignored-args)
+                   (doesNotUnderstand: self symbol)))
+)
 
 ;; methodDict addSelector: selector withMethod: compiledMethod
 (define (addSelector:withMethod: methodDict symbol methodClosure)
@@ -127,8 +131,9 @@
 (define st-array-behavior      (make-method-dictionary))
 (define st-bytevector-behavior (make-method-dictionary))
 (define st-block-behavior      (make-method-dictionary))
+(define st-object-behavior     (make-method-dictionary))
 
-(define st-object-tag (cons 'object '())) ;; not eq? to anything else
+(define %%st-object-tag%% (cons 'object '())) ;; not eq? to anything else
 
 (define allocate-classID
   (let ( (counter 0) )
@@ -140,50 +145,66 @@
 (define smalltalk-dictionary (make-eq-hashtable))
 
 (define st-object
-  (vector st-object-tag (make-method-dictionary)))
+  (vector %%st-object-tag%% st-object-behavior))
 
+(define st-obj-tag-index 0)
 (define st-obj-behavior-index 1) ;; 2nd slot in a st-object
+
+(define (st-obj-tag obj)      (vector-ref obj st-obj-tag-index))
+(define (st-obj-behavior obj) (vector-ref obj st-obj-behavior-index))
 
 (define (st-object? thing)
   (and (vector? thing)
        (>= 2 (vector-length thing))
-       (eq? st-object-tag (vector-ref thing 0))))
+       (eq? %%st-object-tag%% (st-obj-tag thing))))
 
 ;;; @@FIXME: convert to tag mask + index into vector of behaviors
-(define (behavior: thing)
+(define (behavior thing)
   (case thing  
     ;; immediates
-    ((st-true)        st-true-behavior)
-    ((st-false)       st-false-behavior)
-    ((st-nil)         st-nil-behavior)
-    ((integer? thing) st-integer-behavior)
-    ((number?  thing)
-     (case thing
-       ((real?     thing) st-real-behavior)
-       ((rational? thing) st-rational-behavior)
-       ((complex?  thing) st-compex-behavior)
-       ;; FIXME:: Scaled Decimal
-       (else st-nil))
-     )
-    ((st-object? thing) (vector-ref thing st-obj-behavior-index))
-    ((character? thing) st-character-behavior)
-    ((string? thing)    st-string-behavior)
-    ((procedure? thing) st-block-behavior)
-    ;; @@FIXME port -> FileStream
-    ;; @@FIXME ...
-    (else (error "#behavior can't deal with other Scheme types yet"
+    ((#t)   st-true-behavior)
+    ((#f)   st-false-behavior)
+    ((())   st-nil-behavior)
+    (else
+     (cond
+      ((integer? thing) st-integer-behavior)
+      ((number?  thing)
+       (cond
+        ((real?     thing) st-real-behavior)
+        ((rational? thing) st-rational-behavior)
+        ((complex?  thing) st-compex-behavior)
+        ;; FIXME:: Scaled Decimal
+        (else st-nil))
+       )
+      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
+      ((char? thing) st-character-behavior)
+      ((string? thing)    st-string-behavior)
+      ((procedure? thing) st-block-behavior)
+      ;; @@FIXME port -> FileStream
+      ;; @@FIXME ...
+      (else (error "#behavior can't deal with other Scheme types yet"
                  thing)) ;; st-nil
-    )
-)
+    ))
+) )
 
 ;; Message lookup
 
 (define (lookup:for: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
-    (if (null? mDict)
+    (if (nil? mDict)
         (doesNotUnderstand: self selectorSym)
         (lookupSelector: mDict selectorSym)
 ) ) )
+
+;; @@FIXME: make continuable
+(define (doesNotUnderstand: self selector)
+  (error (string-append
+               "#"
+               (symbol->string selector)
+                " not understood by ")
+         self)
+ )
+  
 
 ;; All methods in Smalltalk have an exact number of arguments
 ;; The 'receiver' of the message is #self,
@@ -199,5 +220,18 @@
   ((lookup:for: self selectorSym) self arg2 arg3 arg4))
 (define (invokeN selectorSym self . args) (apply method (cons self args)))
 
+;; TEST
+(addSelector:withMethod:
+ 	st-object-behavior
+        'doesNotUnderstand:
+        doesNotUnderstand:)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'class
+        (lambda (self) 'object))
+
+; (invoke1 'class st-object)
+; (invoke1 'ugly  st-object)
 
 ;;;			--- E O F ---			;;;
