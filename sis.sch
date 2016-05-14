@@ -12,8 +12,8 @@
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
 (define files
-  '( "object.sch"
-     "boolean.sch"
+  '( "st-object.sch"
+     "st-boolean.sch"
      )
  )
 
