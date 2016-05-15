@@ -67,8 +67,8 @@
 (define (method-dictionary-size methodDict)
   (hashtable-size methodDict))
 
-;; methodDict lookupSelector: aSymbol
-(define (lookupSelector: methodDict symbol)
+;; methodDict lookup: aSymbol
+(define (lookup: methodDict symbol)
   (hashtable-ref methodDict
                  symbol
                  (lambda (self . ignored-args)
@@ -116,7 +116,7 @@
 (define st-true  #t)
 (define st-false #f)
 
-(define nil? null?)
+(define st-nil? null?)
 
 (define st-nil-behavior        (make-method-dictionary))
 (define st-true-behavior       (make-method-dictionary))
@@ -128,6 +128,7 @@
 ;; @@FIXME: Scaled Decimal
 (define st-character-behavior  (make-method-dictionary))
 (define st-string-behavior     (make-method-dictionary))
+(define st-symbol-behavior     (make-method-dictionary))
 (define st-array-behavior      (make-method-dictionary))
 (define st-bytevector-behavior (make-method-dictionary))
 (define st-block-behavior      (make-method-dictionary))
@@ -179,6 +180,7 @@
       ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ((char? thing) st-character-behavior)
       ((string? thing)    st-string-behavior)
+      ((symbol? thing)    st-symbol-behavior)
       ((procedure? thing) st-block-behavior)
       ;; @@FIXME port -> FileStream
       ;; @@FIXME ...
@@ -189,11 +191,11 @@
 
 ;; Message lookup
 
-(define (lookup:for: self selectorSym) ;; Polymorphic
+(define (lookupSelector: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
-    (if (nil? mDict)
+    (if (st-nil? mDict)
         (doesNotUnderstand: self selectorSym)
-        (lookupSelector: mDict selectorSym)
+        (lookup: mDict selectorSym)
 ) ) )
 
 ;; @@FIXME: make continuable
@@ -210,17 +212,44 @@
 ;; The 'receiver' of the message is #self,
 ;;   so all messages have at least one argument
 ;; The most common usages have the fewest arguments
-(define (invoke1 selectorSym self)
-  ((lookup:for: self selectorSym) self))
-(define (invoke2 selectorSym self arg2)
-  ((lookup:for: self selectorSym) self arg2))
-(define (invoke3 selectorSym self arg2 arg3)
-  ((lookup:for: self selectorSym) self arg2 arg3))
-(define (invoke4 selectorSym self arg2 arg3 arg4)
-  ((lookup:for: self selectorSym) self arg2 arg3 arg4))
-(define (invokeN selectorSym self . args) (apply method (cons self args)))
+(define (perform: self selectorSym)
+  ((lookupSelector: self selectorSym) self))
+(define (perform:with: self selectorSym arg)
+  ((lookupSelector: self selectorSym) self arg))
+(define (perform:with:with: self selectorSym arg1 arg2)
+  ((lookupSelector: self selectorSym) self arg1 arg2))
+(define (perform:with:with:with: self selectorSym arg1 arg2 arg3)
+  ((lookupSelector: self selectorSym) self arg1 arg2 arg3))
+(define (perform:withArguments: self selectorSym argsArray)
+  ;; @@FIXME: Checl argsArry is a Smalltalk Array object..
+  (apply (lookupSelector: self selectorSym)
+         (cons self (cddr (vector->list argsArray)))))
 
-;; TEST
+(addSelector:withMethod:
+ 	st-object-behavior
+        'perform:
+        perform:)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'perform:with:
+        perform:with:)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'perform:with:with:
+        perform:with:with:)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'perform:with:with:with:
+        perform:with:with:with:)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'perform:withArguments:
+        perform:withArguments:)
+
 (addSelector:withMethod:
  	st-object-behavior
         'doesNotUnderstand:
@@ -231,7 +260,25 @@
         'class
         (lambda (self) 'object))
 
-; (invoke1 'class st-object)
-; (invoke1 'ugly  st-object)
+(addSelector:withMethod:
+ 	st-object-behavior
+        '==
+        (lambda (self other) (eq? self other)))
+
+;; TEST
+(addSelector:withMethod:
+ 	st-object-behavior
+        'with:with:with:with:with
+        (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
+
+; (perform: st-object 'class)
+; (perform: st-object 'ugly)
+; (perform:with: st-object '== #f)
+; (perform:with: st-object '== (vector '(object) st-nil 3))
+; (perform:with: st-object '== st-object)
+; (perform:with: st-object 'bogus: 37)
+; (perform:withArguments: st-object 'with:with:with:with:with (vector %%st-object-tag%% st-nil #t #f '() 1 #\c))
+; (perform:with:with: st-object 'perform:with: '== st-object)
+
 
 ;;;			--- E O F ---			;;;
