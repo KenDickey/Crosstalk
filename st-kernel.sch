@@ -194,7 +194,7 @@
        )
     (vector %%st-object-tag%%
             st-bytevector-behavior
-            (make-bytevector size initVal)))
+            (make-bytevector numBytes initVal)))
 )
 
 ;; done at class creation
@@ -217,8 +217,26 @@
        ;; @@FIXME: index range checkl newVal check
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (bvec (vector-ref self 2)) )
-         (bytevector-set! bvec (- index 1) newVal))))
+         (bytevector-set! bvec (- index 1) newVal)
+         self)))
 )
+
+;; Done once
+(add-bytevector-accessors st-bytevector-behavior)
+
+;;; TEST
+;;
+;; (define t-obj (make-st-bytevector 4 5))
+;; (perform:with:with: t-obj 'at:put: 1 1)
+;; (perform:with:with: t-obj 'at:put: 2 2)
+;; (perform:with:with: t-obj 'at:put: 4 4)
+;; (perform:with:with: t-obj 'at:put: 0 #f) ;; err
+;; (perform:with:with: t-obj 'at:put: 5 #f) ;; err
+;; (perform:with: t-obj 'at: 2)
+;; (perform:with: t-obj 'at: 0) ;; err
+;; (perform:with: t-obj 'at: 5)  ;; err
+;; t-obj
+
 
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
@@ -269,7 +287,8 @@
            behavior
            setter-name
            (lambda (self newVal)
-             (vector-set! self index newVal)))
+             (vector-set! self index newVal)
+             self))
           
           (loop (+ index 1) (cdr slot-names))))
   )
