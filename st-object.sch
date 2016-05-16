@@ -6,10 +6,7 @@
 ;; (require 'st-kernel)
 
 ;;; Classes ProtoObject Object
-
-
-(define st-object
-  (vector %%st-object-tag%% st-object-behavior))
+;;@@ FIXME: ProtoObject NYI
 
 ;; @@FIXME: make continuable -- use Message object
 (define (doesNotUnderstand: self selector)
@@ -40,50 +37,123 @@
 
 (addSelector:withMethod:
  	st-object-behavior
-        'perform:
+        'perform:    ;; ANSI
         perform:)
 
 (addSelector:withMethod:
  	st-object-behavior
-        'perform:with:
+        'perform:with:	 ;; ANSI
         perform:with:)
 
 (addSelector:withMethod:
  	st-object-behavior
-        'perform:with:with:
+        'perform:with:with:  ;; ANSI
         perform:with:with:)
 
 (addSelector:withMethod:
  	st-object-behavior
-        'perform:with:with:with:
+        'perform:with:with:with:  ;; ANSI
         perform:with:with:with:)
 
 (addSelector:withMethod:
  	st-object-behavior
-        'perform:withArguments:
+        'perform:withArguments:   ;; ANSI
         perform:withArguments:)
 
 (addSelector:withMethod:
  	st-object-behavior
-        'doesNotUnderstand:
+        'doesNotUnderstand:    ;; ANSI
         doesNotUnderstand:)
 
-(addSelector:withMethod:
- 	st-object-behavior
-        'class
-        (lambda (self) 'object))
 
 (addSelector:withMethod:
  	st-object-behavior
-        '==
+        'respondsTo:    ;; ANSI
+        (lambda (self selector)
+          (includesSelector: (behavior self) selector)))
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        '==    ;; ANSI
         (lambda (self other) (eq? self other)))
 
-;; TEST
 (addSelector:withMethod:
  	st-object-behavior
-        'with:with:with:with:with
-        (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
+        '~~    ;; ANSI
+        (lambda (self other) (not (eq? self other))))
 
+(addSelector:withMethod:
+ 	st-object-behavior
+        '=   ;; ANSI
+        (lambda (self other) (eqv? self other)))
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        '~=   ;; ANSI
+        (lambda (self other) (not (eqv? self other))))
+
+;; @@ copy   -- ANSI
+;; @@ doesNotUnderstand:  -- ANSI
+;; @@ error:  -- ANSI
+;; @@ hash -- ANSI
+;; @@ identityHash -- ANSI
+;; @@ printOn: -- ANSI
+
+;; (addSelector:withMethod:  ;;  @@FIXME: bogus
+;;  	st-object-behavior
+;;         'printString   ;; ANSI
+;;         ;; String streamContents: [:s | self printOn: s]
+;;         (lambda (self)
+;;           (string-append "a"
+;;                          (perform (perform: self 'class) 'name)))
+;; )
+
+(addSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'isKindOf:
+        (lambda (self someClass)
+          (let ( (my-class (perform: self 'class)) )
+            (if (eq? my-class someClass)
+                #t
+                (let loop ( (super-class (perform: someClass 'superClass)) )
+                  (cond
+                   ((null? super-class) #f)
+                   ((eq? my-class super-class) #t)
+                   (else (loop (perform: super-class 'superClass))))
+        ) ) ) )
+)
+
+(addSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'isMemberOf:
+        (lambda (self someClass)
+          (eq? (perform: self 'class) someClass))
+)
+
+(addSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'notNil
+        (lambda (self)
+          (not (st-nil? self)))
+)
+
+(addSelector:withMethod:
+ 	st-object-behavior
+        'yourself    ;; ANSI
+        (lambda (self) self)
+)
+
+
+
+;; TEST
+;; (addSelector:withMethod:
+;;  	st-object-behavior
+;;         'with:with:with:with:with
+;;         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
+;
+;(define st-object
+;  (vector %%st-object-tag%% st-object-behavior))
+;
 ; (perform: st-object 'class)
 ; (perform: st-object 'ugly)
 ; (perform:with: st-object '== #f)
