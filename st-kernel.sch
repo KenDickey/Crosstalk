@@ -232,18 +232,21 @@
         )
     (vector-set! st-obj 0 %%st-object-tag%%)
     (vector-set! st-obj 1 behavior)
-    (if (zero? num-indexed-slots)
-        st-obj
-        (let* ( (vec-len (vector-length st-obj))
-                (start-index (- vec-len num-indexed-slots))
-              )
-          (let loop ( (index start-index) )
-            (if (>= index vec-len)
-                st-obj
-                (begin
-                  (vector-set! st-obj index 0)
-                  (loop (+ 1 index)))))))
-) )
+    st-obj)
+)
+;; TEST -- zeros in indexed slota
+;;     (if (zero? num-indexed-slots)
+;;         st-obj
+;;         (let* ( (vec-len (vector-length st-obj))
+;;                 (start-index (- vec-len num-indexed-slots))
+;;               )
+;;           (let loop ( (index start-index) )
+;;             (if (>= index vec-len)
+;;                 st-obj
+;;                 (begin
+;;                   (vector-set! st-obj index 0)
+;;                   (loop (+ 1 index)))))))
+;; ) )
   
 ;; done at class creation
 (define (add-getters&setters behavior slot-names-list)
@@ -273,29 +276,32 @@
 )
 
 (define (add-array-accessors behavior start-index)
+  (let ( (pre-start (- start-index 1)) )
 
-  (addSelector:withMethod:
+    (addSelector:withMethod:
      behavior
      'at:
      (lambda (self user-index)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< 0 vec-index (vector-length self))
+         (if (< pre-start vec-index (vector-length self))
              (vector-ref self vec-index)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
    )
 
-  (addSelector:withMethod:
+    (addSelector:withMethod:
      behavior
      'at:put:
      (lambda (self user-index newVal)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< 0 vec-index (vector-length self))
-             (vector-set! self vec-index newVal)
+         (if (< pre-start vec-index (vector-length self))
+             (begin
+               (vector-set! self vec-index newVal)
+               self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
-  )
-)
+     )
+) )
 
 
 ;;; TEST
@@ -309,13 +315,16 @@
 
 ;; (perform:with:with: t-obj 'at:put: 1 1)
 ;; (perform:with:with: t-obj 'at:put: 2 2)
-;; (perform:with:with: t-obj 'at:put: 3 3)
-;; (perform:with:with: t-obj 'at:put: 100 #f) ;; err
+;; (perform:with:with: t-obj 'at:put: 4 4)
+;; (perform:with:with: t-obj 'at:put: 0 #f) ;; err
+;; (perform:with:with: t-obj 'at:put: 5 #f) ;; err
 ;; (perform:with: t-obj 'bar: "BarBar")
 ;; (perform:with: t-obj 'foo: "theFoo")
 ;; (perform:with: t-obj 'baz: "mobyBaz")
 ;; (perform: t-obj 'foo)
-;; (perform:with: t-obj 'at: 2) 
+;; (perform:with: t-obj 'at: 2)
+;; (perform:with: t-obj 'at: 0) ;; err
+;; (perform:with: t-obj 'at: 5)  ;; err
 ;; t-obj
 
 
