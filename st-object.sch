@@ -10,6 +10,10 @@
 
 ;; @@FIXME: make continuable -- use Message object
 (define (doesNotUnderstand: self selector)
+
+;; NOTE: (make-message-send self selector rest-args)
+;; @@FIXME: Conditions
+
   (error (string-append
                "#"
                (symbol->string selector)
@@ -31,7 +35,7 @@
 (define (perform:with:with:with: self selectorSym arg1 arg2 arg3)
   ((lookupSelector: self selectorSym) self arg1 arg2 arg3))
 (define (perform:withArguments: self selectorSym argsArray)
-  ;; @@FIXME: Checl argsArry is a Smalltalk Array object..
+  ;; @@FIXME: Check argsArry is a Smalltalk Array object..
   (apply (lookupSelector: self selectorSym)
          (cons self (cddr (vector->list argsArray)))))
 

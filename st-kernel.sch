@@ -30,8 +30,18 @@
 (define (lookup: methodDict symbol)
   (hashtable-ref methodDict
                  symbol
-                 (lambda (self . ignored-args) ;; @@FIXME: Message object
-                   (doesNotUnderstand: self symbol)))
+                 (lambda (self . rest-args)
+                   (send-failed
+                    (make-messageSend self symbol rest-args)))
+) )
+
+(define (send-failed messageSend)
+  ;; @@@@@FIXME: invoke debugger
+  (error (string-append
+          "Failed message send: #"
+          (symbol->string (perform: messageSend 'selector))
+          " to")
+        messageSend)
 )
 
 ;; methodDict addSelector: selector withMethod: compiledMethod
@@ -345,6 +355,92 @@
 ;; (perform:with: t-obj 'at: 0) ;; err
 ;; (perform:with: t-obj 'at: 5)  ;; err
 ;; t-obj
+
+;; For Error Reporting (#doesNotUnderstand:)
+(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
+
+(add-getters&setters st-messageSend-behavior
+                     '(receiver selector arguments))
+
+(addSelector:withMethod: 
+ 	st-messageSend-behavior
+        'value    ;; retry original message send
+        (lambda (self)  
+          (let ( (receiver  (perform: self 'receiver))
+                 (selector  (perform: self 'selector))
+                 (arguments (perform: self 'arguments))
+               )
+          (if (zero? (vector-length arguments))
+              (perform: receiver selector)
+              (perform:withArguments: receiver selector arguments))))
+)
+
+(addSelector:withMethod: 
+ 	st-messageSend-behavior
+        'valueWithArguments:  ;; retry w dirrerent args
+        (lambda (self newArgsArray)  
+          (let ( (receiver  (perform: self 'receiver))
+                 (selector  (perform: self 'selector))
+               )
+          (if (zero? (vector-length arguments))
+              (perform: receiver selector)
+              (perform:withArguments:
+                  receiver
+                  selector
+                  newArgsArray))))
+)
+
+
+;; (define t-obj (make-st-object test-behavior 7 4)) ;; 4 indexed
+
+(define (make-messageSend receiver selector args-list)
+  ;; args list was captured by a .rest
+  (let* ( (argArray (ensure-st-array args-list))
+          (messageSend (make-st-object st-messageSend-behavior 3 0))
+        )
+    (perform:with: messageSend 'receiver:  receiver)
+    (perform:with: messageSend 'selector:  selector)
+    (perform:with: messageSend 'arguments: argArray)
+    messageSend)
+)
+
+
+;; Need to make st Arrays
+(add-array-accessors st-array-behavior 2)
+
+(addSelector:withMethod: 
+ 	st-array-behavior
+        'size
+        (lambda (self)  
+          (- (vector-length self) 2))
+)
+
+(define (list->st-array someList)
+  (list->vector
+   (cons %%st-object-tag%%
+         (cons st-array-behavior
+               someList)))
+)
+
+(define (ensure-st-array args)
+  ;; args are a list captured by a .rest
+  ;; Flatten & vectorise into st-array
+  ;; Last element may be a Scheme vector,
+  ;;  if so, add as a list at end..
+  (let* ( (rev-args (reverse args))
+          (reversed-args
+           (cond
+            ((null? rev-args) '())
+            ((vector? (car rev-args))
+             (append ;; spread
+              (reverse (vector->list (car rev-args)))
+              (cdr rev-args))
+             )
+            (else rev-args)))
+         )
+    (list->st-array (reverse reversed-args))
+) )
+
 
 
 ;;;			--- E O F ---			;;;
