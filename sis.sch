@@ -11,14 +11,13 @@
 ;   https://en.wikipedia.org/wiki/Smalltalk
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
-(define st-root-directory-prefix
-  "/home/kend/SiS/")
+(define st-root-directory-prefix "/home/kend/SiS/")
 
 (define st-bootstrap-files
   '( "st-kernel"
      "st-object"
      "st-boolean"
-     )
+    )
  )
 
 (define (source-files)
@@ -33,13 +32,13 @@
        st-bootstrap-files)
 )
 
-(define (compile-st-files)
+(define (compile-bootstrap)
   (for-each (lambda (fn) (compile-file fn)) (source-files)))
 
-(define (source-bootstrap)
+(define (load-source)
   (for-each load (source-files)))
 
-(define (compiled-bootstrap)
+(define (load-compiled)
   (for-each load (compiled-files)))
 
 
