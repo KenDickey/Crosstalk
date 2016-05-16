@@ -220,18 +220,34 @@
          (bytevector-set! bvec (- index 1) newVal))))
 )
 
-;;; (vector:  tag |  behavior | optional-indexed-slots.. | optional-named-slots.. )
+;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define (make-st-object num-indexed+named-slots behavior)
-  (let ( (st-obj (make-vector num-indexed+named-slots st-nil)) )
+(define (make-st-object  behavior
+                         num-indexed+named-slots
+                         num-indexed-slots)
+  (let* ( (num-header-slots 2)
+          (st-obj (make-vector
+                   (+ num-header-slots num-indexed+named-slots)
+                   st-nil))
+        )
     (vector-set! st-obj 0 %%st-object-tag%%)
     (vector-set! st-obj 1 behavior)
-    st-obj)
-)
+    (if (zero? num-indexed-slots)
+        st-obj
+        (let* ( (vec-len (vector-length st-obj))
+                (start-index (- vec-len num-indexed-slots))
+              )
+          (let loop ( (index start-index) )
+            (if (>= index vec-len)
+                st-obj
+                (begin
+                  (vector-set! st-obj index 0)
+                  (loop (+ 1 index)))))))
+) )
   
 ;; done at class creation
-(define (add-getters&setters behavior first-named-slot-index slot-names-list)
-  (let loop ( (index first-named-slot-index) (slot-names slot-names-list) )
+(define (add-getters&setters behavior slot-names-list)
+  (let loop ( (index 2) (slot-names slot-names-list) )
     (if (null? slot-names)
         'done
         (let* ( (getter-name (car slot-names))
@@ -248,13 +264,59 @@
           
           (addSelector:withMethod:
            behavior
-           getter-name
+           setter-name
            (lambda (self newVal)
              (vector-set! self index newVal)))
           
           (loop (+ index 1) (cdr slot-names))))
   )
 )
+
+(define (add-array-accessors behavior start-index)
+
+  (addSelector:withMethod:
+     behavior
+     'at:
+     (lambda (self user-index)
+       ;; NB: ST 1-based, Scheme 0-based
+       (let ( (vec-index (+ start-index user-index -1)) )
+         (if (< 0 vec-index (vector-length self))
+             (vector-ref self vec-index)
+             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+   )
+
+  (addSelector:withMethod:
+     behavior
+     'at:put:
+     (lambda (self user-index newVal)
+       ;; NB: ST 1-based, Scheme 0-based
+       (let ( (vec-index (+ start-index user-index -1)) )
+         (if (< 0 vec-index (vector-length self))
+             (vector-set! self vec-index newVal)
+             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+  )
+)
+
+
+;;; TEST
+;; (define test-behavior (make-mDict-placeholder 'Test))
+
+;; (add-getters&setters test-behavior '(foo bar baz))
+
+;; (add-array-accessors test-behavior 5)
+
+;; (define t-obj (make-st-object test-behavior 7 4)) ;; 4 indexed
+
+;; (perform:with:with: t-obj 'at:put: 1 1)
+;; (perform:with:with: t-obj 'at:put: 2 2)
+;; (perform:with:with: t-obj 'at:put: 3 3)
+;; (perform:with:with: t-obj 'at:put: 100 #f) ;; err
+;; (perform:with: t-obj 'bar: "BarBar")
+;; (perform:with: t-obj 'foo: "theFoo")
+;; (perform:with: t-obj 'baz: "mobyBaz")
+;; (perform: t-obj 'foo)
+;; (perform:with: t-obj 'at: 2) 
+;; t-obj
 
 
 ;;;			--- E O F ---			;;;
