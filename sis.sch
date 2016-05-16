@@ -14,9 +14,10 @@
 (define st-root-directory-prefix "/home/kend/SiS/")
 
 (define st-bootstrap-files
-  '( "st-kernel"
-     "st-object"
-     "st-boolean"
+  '( "st-kernel"     ;; message mechanics
+     "st-object"     ;; Object behavior
+     "st-class"      ;; Object Class MetaClass ClassDescription Behavior
+     "st-boolean"    ;; Boolean True False
     )
  )
 
@@ -31,6 +32,9 @@
          (string-append st-root-directory-prefix file-name ".fasl"))
        st-bootstrap-files)
 )
+
+(define (remove-compiled)
+  (for-each delete-file (compiled-files)))
 
 (define (compile-bootstrap)
   (for-each (lambda (fn) (compile-file fn)) (source-files)))

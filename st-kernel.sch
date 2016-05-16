@@ -37,12 +37,26 @@
 
 (define (send-failed messageSend)
   ;; @@@@@FIXME: invoke debugger
+  (let* ( (receiver (perform: messageSend 'receiver))
+          (selector (perform: messageSend 'selector))
+          (perhaps-name
+           (if (perform:with: receiver 'respondsTo: 'name)
+               (let ( (n (perform: receiver 'name)) )
+                 (cond
+                  ((string? n) n)
+                  ((null? n) "")
+                  ((boolean? n) "")
+                  (else
+                   (symbol->string n))))
+               ""))
+         )
   (error (string-append
           "Failed message send: #"
-          (symbol->string (perform: messageSend 'selector))
-          " to")
+          (symbol->string selector)
+          " to "
+          perhaps-name)
         messageSend)
-)
+) )
 
 ;; methodDict addSelector: selector withMethod: compiledMethod
 (define (addSelector:withMethod: methodDict symbol methodClosure)
