@@ -135,8 +135,6 @@
       counter)
 ) )
 
-(define smalltalk-dictionary (make-eq-hashtable))
-
 ;;; See file 'st-object.sch'
 ;; (define st-object
 ;;  (vector %%st-object-tag%% st-object-behavior))
@@ -144,6 +142,8 @@
 (define st-obj-tag-index 0)
 (define st-obj-behavior-index 1) ;; 2nd slot in a st-object
 
+;;; @@FIXME: Use typetag-set! and free one slot per object (adds up!)
+;; Present simplification is useful for bootstrap debug.
 (define %%st-object-tag%% (cons 'st-object '())) ;; not eq? to anything else
 
 (define (st-obj-tag obj)      (vector-ref obj st-obj-tag-index))
@@ -189,7 +189,7 @@
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
     (if (st-nil? mDict)
-        (doesNotUnderstand: self selectorSym)
+        (doesNotUnderstand: self selectorSym) ;; Brokem Prototype
         (lookup: mDict selectorSym)
 ) ) )
 
