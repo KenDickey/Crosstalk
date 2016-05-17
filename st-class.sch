@@ -13,7 +13,8 @@
 ;; The Smalltalk Global Environment
 (define smalltalk-dictionary (make-eq-hashtable))
 
-(define st-Object-behavior st-object-behavior)
+(define st-Object-behavior
+  (clone-method-dictionary st-object-behavior))
 (add-getters&setters st-Object-behavior
                      '(superclass methodDict format
                        instanceVariables organization

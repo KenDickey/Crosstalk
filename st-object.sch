@@ -148,6 +148,10 @@
 )
 
 
+(addSelector:withMethod:
+ 	st-object-behavior
+        'initialize
+        (lambda (self) self))
 
 ;; TEST
 ;; (addSelector:withMethod:
