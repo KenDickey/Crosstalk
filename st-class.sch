@@ -75,11 +75,11 @@
 (perform:with: Class-Class            'name: 'Class)
 (perform:with: MetaClass-Class        'name: 'MetaClass)
 
-(perform:with: Object-Class           'superClass: st-nil)
-(perform:with: Behavior-Class         'superClass: Object-Class)
-(perform:with: ClassDescription-Class 'superClass: Behavior-Class)
-(perform:with: Class-Class            'superClass: ClassDescription-Class)
-(perform:with: MetaClass-Class        'superClass: Class-Class)
+(perform:with: Object-Class           'superclass: st-nil)
+(perform:with: Behavior-Class         'superclass: Object-Class)
+(perform:with: ClassDescription-Class 'superclass: Behavior-Class)
+(perform:with: Class-Class            'superclass: ClassDescription-Class)
+(perform:with: MetaClass-Class        'superclass: Class-Class)
 
 (perform:with: Object-Class           'methodDict: st-Object-behavior)
 (perform:with: Behavior-Class         'methodDict: st-Behavior-behavior)
