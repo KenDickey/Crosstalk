@@ -128,6 +128,39 @@
 (define st-object-behavior     (make-mDict-placeholder 'Object))
 
 (addSelector:withMethod: 
+ 	st-nil-behavior
+        'printString
+        (lambda (self) "nil"))
+
+(addSelector:withMethod: 
+ 	st-true-behavior
+        'printString
+        (lambda (self) "true"))
+
+(addSelector:withMethod: 
+ 	st-false-behavior
+        'printString
+        (lambda (self) "false"))
+
+(addSelector:withMethod: 
+ 	st-string-behavior
+        'printString
+        (lambda (self)
+          (string-append "'" self "'")))
+
+(addSelector:withMethod: 
+ 	st-character-behavior
+        'printString
+        (lambda (self)
+          (string-append "$" (make-string 1 self))))
+
+(addSelector:withMethod: 
+ 	st-symbol-behavior
+        'printString
+        (lambda (self) ;;@@FIXME: elide #\'..' when all lower case..
+          (string-append "#'" (symbol->string self) "'")))
+
+(addSelector:withMethod: 
  	st-block-behavior
         'selector
         (lambda (self) (procedure-name self)))
@@ -212,9 +245,10 @@
 ;; immediates, vector-like, bytevector-like
 
 (define (make-st-bytevector numBytes initialValue)
-  (let ( (initVal (if (and (integer? initialValue) (<= 0 initialValue 255))
+  (let ( (initVal (if (and (integer? initialValue)
+                           (<= 0 initialValue 255))
                       initialValue
-                      0))
+                      0)) ;; error?
        )
     (vector %%st-object-tag%%
             st-bytevector-behavior
@@ -247,6 +281,13 @@
 
 ;; Done once
 (add-bytevector-accessors st-bytevector-behavior)
+
+(addSelector:withMethod:
+     st-bytevector-behavior
+     'size
+     (lambda (self)
+       (bytevector-length (vector-ref self 2))))
+
 
 ;;; TEST
 ;;

@@ -13,36 +13,6 @@
 ;; The Smalltalk Global Environment
 (define smalltalk-dictionary (make-eq-hashtable))
 
-(define st-Behavior-behavior (make-mDict-placeholder 'Behavior))
-(add-getters&setters st-Behavior-behavior
-                     '(superclass methodDict format
-                       instanceVariables organization
-                       subclasses name)) ;; NB: Pools Depricated !!
-(define Behavior-Class
-  (make-st-object  st-Behavior-behavior
-                   7
-                   0))
-
-(define st-ClassDescription-behavior (make-mDict-placeholder 'ClassDescription))
-(add-getters&setters st-ClassDescription-behavior
-                     '(superclass methodDict format
-                       instanceVariables organization
-                       subclasses name))
-(define ClassDescription-Class
-  (make-st-object st-ClassDescription-behavior
-                  7
-                  0))
-
-(define st-Class-behavior (make-mDict-placeholder 'Class))
-(add-getters&setters st-Class-behavior
-                     '(superclass methodDict format
-                       instanceVariables organization
-                       subclasses name)) ;; NB: Pools Depricated !!
-(define Class-Class
-  (make-st-object st-Class-behavior
-                  7
-                  0))
-
 (define st-Object-behavior st-object-behavior)
 (add-getters&setters st-Object-behavior
                      '(superclass methodDict format
@@ -53,7 +23,41 @@
                   7
                   0))
 
-(define st-MetaClass-behavior (make-mDict-placeholder 'MetaClass))
+(define st-Behavior-behavior  ;; start with object methods
+  (clone-method-dictionary st-Object-behavior))
+(add-getters&setters st-Behavior-behavior
+                     '(superclass methodDict format
+                       instanceVariables organization
+                       subclasses name)) ;; NB: Pools Depricated !!
+(define Behavior-Class
+  (make-st-object  st-Behavior-behavior
+                   7
+                   0))
+
+(define st-ClassDescription-behavior
+  (clone-method-dictionary st-Behavior-behavior))
+(add-getters&setters st-ClassDescription-behavior
+                     '(superclass methodDict format
+                       instanceVariables organization
+                       subclasses name))
+(define ClassDescription-Class
+  (make-st-object st-ClassDescription-behavior
+                  7
+                  0))
+
+(define st-Class-behavior
+  (clone-method-dictionary st-ClassDescription-behavior))
+(add-getters&setters st-Class-behavior
+                     '(superclass methodDict format
+                       instanceVariables organization
+                       subclasses name)) ;; NB: Pools Depricated !!
+(define Class-Class
+  (make-st-object st-Class-behavior
+                  7
+                  0))
+
+(define st-MetaClass-behavior
+  (clone-method-dictionary st-Behavior-behavior))
 (add-getters&setters st-MetaClass-behavior
                      '(superclass methodDict format
                        instanceVariables organization
