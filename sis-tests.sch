@@ -21,7 +21,7 @@
 (for-each load (test-files))
 
 (break-on-test-error? #f)
-(verbose-test-output? #t)
+(verbose-test-output? #f)
 
 ;; (run-all-tests)
 
