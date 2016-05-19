@@ -30,7 +30,7 @@
   "anObject Class -> 'Object")
 
 (ensure-exception-raised 'st-object
-   (lambda (expect-doesNotUNderstand) #f)
+   (make-error-string-predicate  "Failed message send: #glerph to ")
    (perform: %%test-object 'glerph)
    "obj glerph -> doesNotUnderstand")
 
@@ -50,12 +50,12 @@
   "anObject == anObject")
 
 (ensure-exception-raised 'st-object
-   (lambda (expect-doesNotUNderstand) #f)
+   (make-error-string-predicate  "Failed message send: #bogus: to ")
    (perform:with: %%test-object 'bogus: 666)
    "obj bogus: 666 -> doesNotUnderstand")
 
 (add-equal-test 'st-object
-  '(%%st-object-tag%% st-nil #t #f '() 1 #\c)
+  '(#t #f () 1 #\c)
   (perform:withArguments: %%test-object 'with:with:with:with:with (vector %%st-object-tag%% st-nil #t #f '() 1 #\c))
   "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c")
   

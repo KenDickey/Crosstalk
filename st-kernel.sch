@@ -16,7 +16,9 @@
 
 ;; NB: larceny -r7r6 ...
 
-(import (primitives procedure-name procedure-name-set!))
+(import
+ (rnrs bytevectors (6))
+ (primitives procedure-name procedure-name-set!))
 
 ;;; Method Dictionarys
 
