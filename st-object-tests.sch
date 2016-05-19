@@ -7,13 +7,14 @@
 
 (define %%test-object #f)
 
-(define (setup-st-objet)
+(define (setup-st-object)
   (addSelector:withMethod:
  	st-object-behavior
         'with:with:with:with:with
         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
 
-  (set! %%test-object (vector %%st-object-tag%% st-object-behavior))
+  (set! %%test-object
+        (make-st-object st-object-behavior 0 0))
 )
 
 (define (cleanup-st-object)
@@ -21,6 +22,7 @@
   (set! %%test-object #f)
 )
 
+(add-test-suite 'st-object setup-st-object cleanup-st-object)
 
 (add-eq-test 'st-object
   'Object
@@ -28,7 +30,7 @@
   "anObject Class -> 'Object")
 
 (ensure-exception-raised 'st-object
-   'expect-doesNotUNderstand
+   (lambda (expect-doesNotUNderstand) #f)
    (perform: %%test-object 'glerph)
    "obj glerph -> doesNotUnderstand")
 
@@ -43,19 +45,19 @@
   "anObject == anOtherObject")
 
 (add-eq-test 'st-object
-  #r
+  #t
   (perform:with: %%test-object '== %%test-object)
   "anObject == anObject")
 
 (ensure-exception-raised 'st-object
-   'expect-doesNotUNderstand
+   (lambda (expect-doesNotUNderstand) #f)
    (perform:with: %%test-object 'bogus: 666)
    "obj bogus: 666 -> doesNotUnderstand")
 
 (add-equal-test 'st-object
   '(%%st-object-tag%% st-nil #t #f '() 1 #\c)
   (perform:withArguments: %%test-object 'with:with:with:with:with (vector %%st-object-tag%% st-nil #t #f '() 1 #\c))
-  "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c"
+  "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c")
   
 
 ;;;			--- E O F ---			;;;

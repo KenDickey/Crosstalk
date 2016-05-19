@@ -10,7 +10,7 @@
 (define indexed+named-slots-obj #f)
 (define aByteVector #f)
 
-(define (setup)
+(define (setup-st-kernel)
   (set! test-behavior (make-mDict-placeholder 'Test))
   (add-getters&setters test-behavior '(foo bar baz))
   (add-array-accessors test-behavior 5)
@@ -20,14 +20,14 @@
 )
 
 
-(define (cleanup)
+(define (cleanup-st-kernel)
   (set! test-behavior #f)
   (set! indexed+named-slots-obj #f)
   (set! aByteVector #f)
 )
 
 
-(add-test-suite 'st-kernel setup cleanup)
+(add-test-suite 'st-kernel setup-st-kernel cleanup-st-kernel)
 
 (add-eq-test 'st-kernel 
   indexed+named-slots-obj
@@ -45,12 +45,12 @@
   "obj at: 4 put: 44")
 
 (ensure-exception-raised 'st-kernel
-   'expect-index-out-of-range
+   (lambda (expect-index-out-of-range) #f)
    (perform:with:with: indexed+named-slots-obj 'at:put: 0 #f)
    "at:put: with index < 1")
 
 (ensure-exception-raised 'st-kernel
-   'expect-index-out-of-range
+   (lambda (expect-index-out-of-range) #f)
    (perform:with:with: indexed+named-slots-obj 'at:put: 5 #f)
    "at:put: with index (5) > max (4)")
 
@@ -110,9 +110,9 @@
   "obj baz -> $Z")
 
 (ensure-exception-raised 'st-kernel
-   'expect-doesNotUNderstand"
+   (lambda (expect-doesNotUNderstand) #f)
    (perform: indexed+named-slots-obj 'glerph)
-   "obj glerph -> doesNotUnderstand"
+   "obj glerph -> doesNotUnderstand")
 
 
 (add-eq-test 'st-kernel 
@@ -141,12 +141,12 @@
   "bVec at: 3 --> 33")
 
 (ensure-exception-raised 'st-kernel
-   'expect-index-out-of-range
+   (lambda (expect-index-out-of-range) #f)
    (perform:with:with: aByteVector 'at:put: 5 #f)
    "at:put: with index (0) < min (1)")
 
 (ensure-exception-raised 'st-kernel
-   'expect-index-out-of-range
+   (lambda (expect-index-out-of-range) #f)
    (perform:with: aByteVector 'at: 5)
    "at:put: with index (5) > max (4)")
 

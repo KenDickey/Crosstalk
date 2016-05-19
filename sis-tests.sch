@@ -23,9 +23,10 @@
 (break-on-test-error? #f)
 (verbose-test-output? #t)
 
-(run-all-tests)
+;; (run-all-tests)
 
 (newline)
+(display "Don't forget to (run-all-tests)")
 (newline)
 
 
