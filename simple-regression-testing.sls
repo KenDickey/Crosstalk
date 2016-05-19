@@ -33,11 +33,13 @@
           add-test-suite remove-test-suite remove-all-test-suites
           add-test add-eq-test add-equal-test ensure-exception-raised
           default-setup-thunk default-teardown-thunk
+          make-error-string-predicate 
           )
   (import (rnrs)
           (rnrs records syntactic (6))
           (rnrs exceptions (6))
           (rnrs hashtables (6))
+          (srfi :39) ; parameters
           (srfi :48) ; format
           )
   
@@ -87,14 +89,6 @@
 ;;
 ;;==============================================================;
 
-(define (make-parameter value)
-  (case-lambda
-    [() value]
-    [(new-val)
-     (set! value new-val)
-     new-val]
-))
-    
 
 (define verbose-test-output? (make-parameter #t))
 (define break-on-test-error? (make-parameter #t))
@@ -179,15 +173,17 @@
            proc table))
   (let-values
       ( ((keyvec valvec) (hashtable-entries table)) )
-    (let ( (max-index (- (vector-length valvec) 1)) )
-      (when (> max-index -1) ; work to do..
-        (let loop ( (index 0) )
-          ;; (proc key val)
-          (proc (vector-ref keyvec index)
-                (vector-ref valvec index))
-          (when (< index max-index)
-            (loop (+ 1 index))))
-) ) ) )
+    (vector-for-each proc keyvec valvec)))
+
+;;     (let ( (max-index (- (vector-length valvec) 1)) )
+;;       (when (> max-index -1) ; work to do..
+;;         (let loop ( (index 0) )
+;;           ;; (proc key val)
+;;           (proc (vector-ref keyvec index)
+;;                 (vector-ref valvec index))
+;;           (when (< index max-index)
+;;             (loop (+ 1 index))))
+;; ) ) ) )
 
 ;==============================================================;
 
@@ -234,6 +230,7 @@
   (display (format "~%TOTAL PASSED:     ~d"     (test-counter-num-passed   counter)))
   (display (format "~%TOTAL FAILED:     ~d"     (test-counter-num-failed   counter)))
   (display (format "~%TOTAL EXCEPTIONS: ~d~%~%" (test-counter-num-excepted counter)))
+  (newline)
 )
 
 ;;;======================================================================
@@ -469,6 +466,12 @@
     (test-container-add-test test-container suite-name test-case)))
 
 
-)
+
+(define (make-error-string-predicate str)
+  (lambda (errObj)
+     (and (message-condition? errObj)
+          (string=? str (condition-message errObj)))))
+
+) ; end-library
 
 ;===========================E=O=F==============================;
