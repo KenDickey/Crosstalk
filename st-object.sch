@@ -103,14 +103,14 @@
 ;; @@ identityHash -- ANSI
 ;; @@ printOn: -- ANSI
 
-;; (addSelector:withMethod:  ;;  @@FIXME: bogus
-;;  	st-object-behavior
-;;         'printString   ;; ANSI
-;;         ;; String streamContents: [:s | self printOn: s]
-;;         (lambda (self)
-;;           (string-append "a"
-;;                          (perform (perform: self 'class) 'name)))
-;; )
+(addSelector:withMethod:  ;;  @@FIXME: bogus
+ 	st-object-behavior
+        'printString   ;; ANSI
+        ;; String streamContents: [:s | self printOn: s]
+        (lambda (self)
+          (string-append "an "
+                         (perform: (perform: self 'class) 'name)))
+)
 
 (addSelector:withMethod: ;; ANSI
  	st-object-behavior

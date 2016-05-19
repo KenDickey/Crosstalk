@@ -289,20 +289,6 @@
        (bytevector-length (vector-ref self 2))))
 
 
-;;; TEST
-;;
-;; (define t-obj (make-st-bytevector 4 5))
-;; (perform:with:with: t-obj 'at:put: 1 1)
-;; (perform:with:with: t-obj 'at:put: 2 2)
-;; (perform:with:with: t-obj 'at:put: 4 4)
-;; (perform:with:with: t-obj 'at:put: 0 #f) ;; err
-;; (perform:with:with: t-obj 'at:put: 5 #f) ;; err
-;; (perform:with: t-obj 'at: 2)
-;; (perform:with: t-obj 'at: 0) ;; err
-;; (perform:with: t-obj 'at: 5)  ;; err
-;; t-obj
-
-
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
 (define (make-st-object  behavior
@@ -387,30 +373,6 @@
      )
 ) )
 
-
-;;; TEST
-;; (define test-behavior (make-mDict-placeholder 'Test))
-
-;; (add-getters&setters test-behavior '(foo bar baz))
-
-;; (add-array-accessors test-behavior 5)
-
-;; (define t-obj (make-st-object test-behavior 7 4)) ;; 4 indexed
-
-;; (perform:with:with: t-obj 'at:put: 1 1)
-;; (perform:with:with: t-obj 'at:put: 2 2)
-;; (perform:with:with: t-obj 'at:put: 4 4)
-;; (perform:with:with: t-obj 'at:put: 0 #f) ;; err
-;; (perform:with:with: t-obj 'at:put: 5 #f) ;; err
-;; (perform:with: t-obj 'bar: "BarBar")
-;; (perform:with: t-obj 'foo: "theFoo")
-;; (perform:with: t-obj 'baz: "mobyBaz")
-;; (perform: t-obj 'foo)
-;; (perform:with: t-obj 'at: 2)
-;; (perform:with: t-obj 'at: 0) ;; err
-;; (perform:with: t-obj 'at: 5)  ;; err
-;; t-obj
-
 ;; For Error Reporting (#doesNotUnderstand:)
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
@@ -445,8 +407,6 @@
                   newArgsArray))))
 )
 
-
-;; (define t-obj (make-st-object test-behavior 7 4)) ;; 4 indexed
 
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
@@ -496,6 +456,6 @@
     (list->st-array (reverse reversed-args))
 ) )
 
-
+;; (provide 'st-kernel)
 
 ;;;			--- E O F ---			;;;
