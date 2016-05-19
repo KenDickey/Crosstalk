@@ -14,7 +14,9 @@
 ;	with a binding of 'class->(lambda (self) <class>)
 ;	to get the class
 
+;; NB: larceny -r7r6 ...
 
+(import (primitives procedure-name procedure-name-set!))
 
 ;;; Method Dictionarys
 
