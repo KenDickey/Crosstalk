@@ -1,10 +1,10 @@
 #!r6rs
 ;;; FILE: "simple-regression-testing.sls"
 ;;; IMPLEMENTS: Simple [minded] Regression Test System
-;;; LANGUAGE: Ikarus Scheme
+;;; LANGUAGE: (Larceny -r7r6) Scheme
 ;;; AUTHOR: Ken Dickey
 
-;;;COPYRIGHT (c) 2005, 2008 by Kenneth A Dickey. All rights reserved.
+;;;COPYRIGHT (c) 2005, 2008, 2016 by Kenneth A Dickey. All rights reserved.
 ;;;
 ;;;Permission is hereby granted, free of charge, to any person
 ;;;obtaining a copy of this software and associated documentation
