@@ -153,23 +153,6 @@
         'initialize
         (lambda (self) self))
 
-;; TEST
-;; (addSelector:withMethod:
-;;  	st-object-behavior
-;;         'with:with:with:with:with
-;;         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
-;
-;(define st-object
-;  (vector %%st-object-tag%% st-object-behavior))
-;
-; (perform: st-object 'class)
-; (perform: st-object 'ugly)
-; (perform:with: st-object '== #f)
-; (perform:with: st-object '== (vector '(object) st-nil 3))
-; (perform:with: st-object '== st-object)
-; (perform:with: st-object 'bogus: 37)
-; (perform:withArguments: st-object 'with:with:with:with:with (vector %%st-object-tag%% st-nil #t #f '() 1 #\c))
-; (perform:with:with: st-object 'perform:with: '== st-object)
 
 
 ;;;			--- E O F ---			;;;
