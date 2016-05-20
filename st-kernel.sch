@@ -17,7 +17,6 @@
 ;; NB: larceny -r7r6 ...
 
 (import
- (rnrs bytevectors (6))
  (primitives procedure-name procedure-name-set!))
 
 ;;; Method Dictionarys
@@ -35,31 +34,30 @@
   (hashtable-ref methodDict
                  symbol
                  (lambda (self . rest-args)
-                   (send-failed
-                    (make-messageSend self symbol rest-args)))
-) )
+                   (send-failed self symbol rest-args)))
+                   ;; (make-messageSend self symbol rest-args)))
+)
 
-(define (send-failed messageSend)
+(define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
-  (let* ( (receiver (perform: messageSend 'receiver))
-          (selector (perform: messageSend 'selector))
-          (perhaps-name
-           (if (perform:with: receiver 'respondsTo: 'name)
-               (let ( (n (perform: receiver 'name)) )
-                 (cond
-                  ((string? n) n)
-                  ((null? n) "")
-                  ((boolean? n) "")
-                  (else
-                   (symbol->string n))))
-               ""))
+  (let* ( (messageSend (make-messageSend receiver selector rest-args))
+          (perhaps-name "")
+           ;; (if (perform:with: receiver 'respondsTo: 'name)
+           ;;     (let ( (n (perform: receiver 'name)) )
+           ;;       (cond
+           ;;        ((string? n) n)
+           ;;        ((null? n) "")
+           ;;        ((boolean? n) "")
+           ;;        (else
+           ;;         (symbol->string n))))
+           ;;     ""))
          )
   (error (string-append
           "Failed message send: #"
           (symbol->string selector)
-          " to "
-          perhaps-name)
-        messageSend)
+          " to ")
+         receiver
+         rest-args)
 ) )
 
 ;; methodDict addSelector: selector withMethod: compiledMethod
@@ -248,6 +246,11 @@
 
 ;; immediates, vector-like, bytevector-like
 
+;;; R7RS
+
+(define bytevector-ref  bytevector-u8-ref)
+(define bytevector-set! bytevector-u8-set!)
+
 (define (make-st-bytevector numBytes initialValue)
   (let ( (initVal (if (and (integer? initialValue)
                            (<= 0 initialValue 255))
@@ -268,9 +271,13 @@
      (lambda (self index)
        ;; @@FIXME: index range check
        ;; NB: ST 1-based, Scheme 0-based
-       (let ( (bvec (vector-ref self 2)) )
-         (bytevector-ref bvec (- index 1))))
-   )
+       (let* ( (bvec (vector-ref self 2))
+               (bvec-len (bytevector-length bvec))
+             )
+         (if (< 0 index (+ 1 bvec-len))
+             (bytevector-ref bvec (- index 1))
+             (error "Index out of range" index self))
+   ) ) )
 
   (addSelector:withMethod:
      behavior
@@ -278,10 +285,16 @@
      (lambda (self index newVal)
        ;; @@FIXME: index range checkl newVal check
        ;; NB: ST 1-based, Scheme 0-based
-       (let ( (bvec (vector-ref self 2)) )
-         (bytevector-set! bvec (- index 1) newVal)
-         self)))
-)
+       (let* ( (bvec (vector-ref self 2))
+               (bvec-len (bytevector-length bvec))
+             )
+         (if (< 0 index (+ 1 bvec-len))
+             (begin
+               (bytevector-set! bvec (- index 1) newVal)
+               self)
+             (error "Index out of range" index self newVal))
+       ) )
+) )
 
 ;; Done once
 (add-bytevector-accessors st-bytevector-behavior)

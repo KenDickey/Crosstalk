@@ -107,17 +107,17 @@
 (ensure-exception-raised 'st-kernel
    (make-error-string-predicate "Index out of range")
    (perform:with:with: aByteVector 'at:put: 0 0)
-   "at:put: with index (0) < min (1)")
+   "bVec at:put: with index (0) < min (1)")
 
 (ensure-exception-raised 'st-kernel
    (make-error-string-predicate "Index out of range")
    (perform:with: aByteVector 'at: 0)
-   "at: with index (0) < min (1)")
+   "bVec at: with index (0) < min (1)")
 
 (ensure-exception-raised 'st-kernel
    (make-error-string-predicate "Index out of range")
-   (perform: aByteVector 'at: 5)
-   "at: with index (5) > max (4)")
+   (perform:with: aByteVector 'at: 5)
+   "bVec at: with index (5) > max (4)")
 
 
 
