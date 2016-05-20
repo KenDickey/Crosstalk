@@ -60,7 +60,7 @@
   "obj at: 1")
 
 (add-equal-test 'st-kernel 
-  st-nil
+  '()
   (perform:with: indexed+named-slots-obj 'at: 3)
   "obj at: 3 --> default is nil")
 

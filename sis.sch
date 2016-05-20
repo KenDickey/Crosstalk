@@ -11,6 +11,12 @@
 ;   https://en.wikipedia.org/wiki/Smalltalk
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
+;; larceny -r7r6
+
+(import
+    (scheme load)
+    (primitives compile-file procedure-name procedure-name-set!))
+
 (define st-root-directory-prefix "/home/kend/SiS/")
 
 (define st-bootstrap-files

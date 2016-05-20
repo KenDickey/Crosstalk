@@ -41,7 +41,7 @@
 
 (add-eq-test 'st-object
   #f
-  (perform:with: %%test-object '== (vector '(object) st-nil 3))
+  (perform:with: %%test-object '== (vector '(object) '() 3))
   "anObject == anOtherObject")
 
 (add-eq-test 'st-object
@@ -56,7 +56,7 @@
 
 (add-equal-test 'st-object
   '(#t #f () 1 #\c)
-  (perform:withArguments: %%test-object 'with:with:with:with:with (vector %%st-object-tag%% st-nil #t #f '() 1 #\c))
+  (perform:withArguments: %%test-object 'with:with:with:with:with (vector %%st-object-tag%% '() #t #f '() 1 #\c))
   "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c")
   
 
