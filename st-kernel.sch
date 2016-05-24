@@ -16,8 +16,7 @@
 
 ;; NB: larceny -r7r6 ...
 
-(import
- (primitives procedure-name procedure-name-set!))
+;; (import (primitives procedure-name procedure-name-set!))
 
 ;;; Method Dictionarys
 
@@ -269,7 +268,6 @@
      behavior
      'at:
      (lambda (self index)
-       ;; @@FIXME: index range check
        ;; NB: ST 1-based, Scheme 0-based
        (let* ( (bvec (vector-ref self 2))
                (bvec-len (bytevector-length bvec))
@@ -283,7 +281,7 @@
      behavior
      'at:put:
      (lambda (self index newVal)
-       ;; @@FIXME: index range checkl newVal check
+       ;; @@FIXME: newVal type check (byte)
        ;; NB: ST 1-based, Scheme 0-based
        (let* ( (bvec (vector-ref self 2))
                (bvec-len (bytevector-length bvec))

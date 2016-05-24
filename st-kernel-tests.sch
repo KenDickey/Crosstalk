@@ -95,7 +95,7 @@
   "bVec at: 1 --> 11")
 
 (add-equal-test 'st-kernel 
-  5 ;; initial-value is unchanges
+  5 ;; initial-value is unchanged
   (perform:with: aByteVector 'at: 2)
   "bVec at: 2 --> 5")
 
