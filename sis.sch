@@ -11,11 +11,11 @@
 ;   https://en.wikipedia.org/wiki/Smalltalk
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
-;; larceny -r7r6
+;; larceny -r7rs, then (import (scheme load)) (load "sis.sch")
 
 (import
-    (scheme load)
-    (primitives compile-file procedure-name procedure-name-set!))
+    (rnrs hashtables (6))
+    (primitives load compile-file procedure-name procedure-name-set!))
 
 (define st-root-directory-prefix "/home/kend/SiS/")
 
@@ -45,10 +45,10 @@
 (define (compile-bootstrap)
   (for-each (lambda (fn) (compile-file fn)) (source-files)))
 
-(define (load-source)
+(define (load-source-bootstrap)
   (for-each load (source-files)))
 
-(define (load-compiled)
+(define (load-compiled-bootstrap)
   (for-each load (compiled-files)))
 
 

@@ -7,27 +7,40 @@
 
 ;; Nota Bene: larceny -r7r6 ...
 
-(import (rnrs)
+(import 
+        (primitives load compile-file procedure-name procedure-name-set!)
         (kend simple-regression-testing))
 
-(define (test-files)
+(break-on-test-error? #false)
+(verbose-test-output? #false)
+
+(define (source-test-files)
   (map (lambda (file-name)
          (string-append st-root-directory-prefix file-name "-tests.sch"))
        st-bootstrap-files)
 )
 
-(remove-all-test-suites) ;; start afresh
+(define (run-source-tests)
+  (remove-all-test-suites) ;; start afresh
+  (for-each load (source-test-files))
+  (run-all-tests)
+)
 
-(for-each load (test-files))
+;; (define (compile-tests)
+;;   (for-each compile-file (source-test-files)))
 
-(break-on-test-error? #f)
-(verbose-test-output? #f)
+;; (define (compiled-test-files)
+;;   (map (lambda (file-name)
+;;          (string-append st-root-directory-prefix file-name "-tests.fasl"))
+;;        st-bootstrap-files)
+;; )
+  
+;; (define (run-compiled-tests)
+;;   (remove-all-test-suites) ;; start afresh
+;;   (for-each load (compiled-test-files))
+;;   (run-all-tests)
+;; )
 
-;; (run-all-tests)
-
-(newline)
-(display "Don't forget to (run-all-tests)")
-(newline)
 
 
 
