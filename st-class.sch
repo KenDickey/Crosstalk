@@ -74,6 +74,7 @@
 (hashtable-set! smalltalk-dictionary 'ClassDescription ClassDescription-Class)
 (hashtable-set! smalltalk-dictionary 'Class            Class-Class)
 (hashtable-set! smalltalk-dictionary 'MetaClass        MetaClass-Class)
+
 (perform:with: Object-Class           'name: 'Object)
 (perform:with: Behavior-Class         'name: 'Behavior)
 (perform:with: ClassDescription-Class 'name: 'ClassDescription)
