@@ -99,8 +99,8 @@
 ;;; Basic Objects
 
 (define st-nil  '())
-(define st-true  #t)
-(define st-false #f)
+(define st-true  #true)
+(define st-false #false)
 
 (define st-nil? null?)
 
@@ -206,9 +206,9 @@
 (define (behavior thing)
   (case thing  
     ;; immediates
-    ((#t)   st-true-behavior)
-    ((#f)   st-false-behavior)
-    ((())   st-nil-behavior)
+    ((#true)  st-true-behavior)
+    ((#false)  st-false-behavior)
+    (('())     st-nil-behavior)
     (else
      (cond
       ((integer? thing) st-integer-behavior)
