@@ -202,13 +202,14 @@
        (< 1 (vector-length thing))
        (eq? %%st-object-tag%% (st-obj-tag thing))))
 
-;;; @@FIXME: convert to tag mask + index into vector of behaviors
+;;; @@FIXME: convert to NATIVE TAG mask + index into vector of behaviors
+(define num-header-slots 2) ;; tag + behavior; @@remove tag@@
 (define (behavior thing)
   (case thing  
     ;; immediates
     ((#true)  st-true-behavior)
-    ((#false)  st-false-behavior)
-    (('())     st-nil-behavior)
+    ((#false) st-false-behavior)
+    (('())    st-nil-behavior)
     (else
      (cond
       ((integer? thing) st-integer-behavior)
@@ -221,7 +222,7 @@
         (else st-nil))
        )
       ((st-object? thing) (vector-ref thing st-obj-behavior-index))
-      ((char? thing)      st-character-behavior)
+      ((char?   thing)    st-character-behavior)
       ((string? thing)    st-string-behavior)
       ((symbol? thing)    st-symbol-behavior)
       ((procedure? thing) st-block-behavior)
@@ -261,7 +262,7 @@
             (make-bytevector numBytes initVal)))
 )
 
-;; done at class creation
+;; Done ONCE at class creation
 (define (add-bytevector-accessors behavior)
 
   (addSelector:withMethod:
@@ -299,22 +300,25 @@
 
 (addSelector:withMethod:
      st-bytevector-behavior
-     'size
+     'size 
+     (lambda (self)
+       (bytevector-length (vector-ref self 2))))
+
+(addSelector:withMethod:
+     st-bytevector-behavior
+     'basicSize
      (lambda (self)
        (bytevector-length (vector-ref self 2))))
 
 
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define (make-st-object  behavior
-                         num-indexed+named-slots
-                         num-indexed-slots)
-  (let* ( (num-header-slots 2)
-          (st-obj (make-vector
+(define (make-st-object behavior num-indexed+named-slots)
+  (let ( (st-obj (make-vector
                    (+ num-header-slots num-indexed+named-slots)
                    st-nil))
-        )
-    (vector-set! st-obj 0 %%st-object-tag%%)
+       )
+    (vector-set! st-obj 0 %%st-object-tag%%)  ;; @@Change when switch to native tags@@
     (vector-set! st-obj 1 behavior)
     st-obj)
 )
@@ -333,8 +337,8 @@
 ;; ) )
   
 ;; done at class creation
-(define (add-getters&setters behavior slot-names-list)
-  (let loop ( (index 2) (slot-names slot-names-list) )
+(define (add-getters&setters behavior start-index slot-names-list)
+  (let loop ( (index start-index) (slot-names slot-names-list) )
     (if (null? slot-names)
         'done
         (let* ( (getter-name (car slot-names))
@@ -392,6 +396,7 @@
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
 (add-getters&setters st-messageSend-behavior
+                     num-header-slots ;; first slot as index skips header
                      '(receiver selector arguments))
 
 (addSelector:withMethod: 
@@ -426,7 +431,7 @@
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
   (let* ( (argArray (ensure-st-array args-list))
-          (messageSend (make-st-object st-messageSend-behavior 3 0))
+          (messageSend (make-st-object st-messageSend-behavior 3))
         )
     (perform:with: messageSend 'receiver:  receiver)
     (perform:with: messageSend 'selector:  selector)

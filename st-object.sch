@@ -118,11 +118,11 @@
         (lambda (self someClass)
           (let ( (my-class (perform: self 'class)) )
             (if (eq? my-class someClass)
-                #t
+                #true
                 (let loop ( (super-class (perform: someClass 'superClass)) )
                   (cond
-                   ((null? super-class) #f)
-                   ((eq? my-class super-class) #t)
+                   ((null? super-class) #false)
+                   ((eq? my-class super-class) #true)
                    (else (loop (perform: super-class 'superClass))))
         ) ) ) )
 )

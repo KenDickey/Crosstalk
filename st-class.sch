@@ -16,58 +16,53 @@
 (define st-Object-behavior
   (clone-method-dictionary st-object-behavior))
 (add-getters&setters st-Object-behavior
+                     num-header-slots
                      '(superclass methodDict format
                        instanceVariables organization
                        subclasses name)) ;; NB: Pools Depricated !!
 (define Object-Class
-  (make-st-object st-Object-behavior
-                  7
-                  0))
+  (make-st-object st-Object-behavior 7))
 
 (define st-Behavior-behavior  ;; start with object methods
   (clone-method-dictionary st-Object-behavior))
 (add-getters&setters st-Behavior-behavior
+                     num-header-slots
                      '(superclass methodDict format
                        instanceVariables organization
                        subclasses name)) ;; NB: Pools Depricated !!
 (define Behavior-Class
-  (make-st-object  st-Behavior-behavior
-                   7
-                   0))
+  (make-st-object  st-Behavior-behavior 7))
 
 (define st-ClassDescription-behavior
   (clone-method-dictionary st-Behavior-behavior))
 (add-getters&setters st-ClassDescription-behavior
+                     num-header-slots
                      '(superclass methodDict format
                        instanceVariables organization
                        subclasses name))
 (define ClassDescription-Class
-  (make-st-object st-ClassDescription-behavior
-                  7
-                  0))
+  (make-st-object st-ClassDescription-behavior 7))
 
 (define st-Class-behavior
   (clone-method-dictionary st-ClassDescription-behavior))
 (add-getters&setters st-Class-behavior
+                     num-header-slots
                      '(superclass methodDict format
                        instanceVariables organization
                        subclasses name)) ;; NB: Pools Depricated !!
 (define Class-Class
-  (make-st-object st-Class-behavior
-                  7
-                  0))
+  (make-st-object st-Class-behavior 7))
 
 (define st-MetaClass-behavior
   (clone-method-dictionary st-Behavior-behavior))
 (add-getters&setters st-MetaClass-behavior
+                     num-header-slots
                      '(superclass methodDict format
                        instanceVariables organization
                        subclasses name
                        thisClass))
 (define MetaClass-Class
-  (make-st-object st-MetaClass-behavior
-                  8
-                  0))
+  (make-st-object st-MetaClass-behavior 8))
 
 (hashtable-set! smalltalk-dictionary 'Object           Object-Class)
 (hashtable-set! smalltalk-dictionary 'Behavior         Behavior-Class)

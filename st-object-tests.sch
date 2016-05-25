@@ -14,7 +14,7 @@
         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
 
   (set! %%test-object
-        (make-st-object st-object-behavior 0 0))
+        (make-st-object st-object-behavior 0))
 )
 
 (define (cleanup-st-object)
@@ -45,7 +45,7 @@
   "anObject == anOtherObject")
 
 (add-eq-test 'st-object
-  #t
+  #true
   (perform:with: %%test-object '== %%test-object)
   "anObject == anObject")
 

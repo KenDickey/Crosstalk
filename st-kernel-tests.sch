@@ -11,11 +11,17 @@
 (define aByteVector             #f)
 
 (define (setup-st-kernel)
+  (let* ( (slot-names        '(foo bar baz))
+          (num-named-slots   (length slot-names))
+          (num-indexed-slots 4)
+          (array-start-index (+ num-header-slots num-named-slots))
+        )
   (set! test-behavior (make-mDict-placeholder 'Test))
-  (add-getters&setters test-behavior '(foo bar baz))
-  (add-array-accessors test-behavior 5)
+  (add-getters&setters test-behavior num-header-slots '(foo bar baz))
+  (add-array-accessors test-behavior array-start-index) ;; (5)
   (set! indexed+named-slots-obj
-        (make-st-object test-behavior 7 4)) ;; 4 indexed
+        (make-st-object test-behavior
+                        (+ num-named-slots num-indexed-slots)))
   ;; setters return self -- set up state here
   (perform:with:with: indexed+named-slots-obj 'at:put: 1 11)
   (perform:with:with: indexed+named-slots-obj 'at:put: 2 22)
@@ -27,7 +33,7 @@
   (set! aByteVector (make-st-bytevector 4 5))
   (perform:with:with: aByteVector 'at:put: 1 11)
   (perform:with:with: aByteVector 'at:put: 3 33)  
-)
+) )
 
 
 (define (cleanup-st-kernel)
