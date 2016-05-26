@@ -39,59 +39,59 @@
   (apply (lookupSelector: self selectorSym)
          (cons self (cddr (vector->list argsArray)))))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'perform:    ;; ANSI
         perform:)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'perform:with:	 ;; ANSI
         perform:with:)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'perform:with:with:  ;; ANSI
         perform:with:with:)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'perform:with:with:with:  ;; ANSI
         perform:with:with:with:)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'perform:withArguments:   ;; ANSI
         perform:withArguments:)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'doesNotUnderstand:    ;; ANSI
         doesNotUnderstand:)
 
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'respondsTo:    ;; ANSI
         (lambda (self selector)
           (includesSelector: (behavior self) selector)))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         '==    ;; ANSI
         (lambda (self other) (eq? self other)))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         '~~    ;; ANSI
         (lambda (self other) (not (eq? self other))))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         '=   ;; ANSI
         (lambda (self other) (eqv? self other)))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         '~=   ;; ANSI
         (lambda (self other) (not (eqv? self other))))
@@ -103,7 +103,7 @@
 ;; @@ identityHash -- ANSI
 ;; @@ printOn: -- ANSI
 
-(addSelector:withMethod:  ;;  @@FIXME: bogus
+(primAddSelector:withMethod:  ;;  @@FIXME: bogus
  	st-object-behavior
         'printString   ;; ANSI
         ;; String streamContents: [:s | self printOn: s]
@@ -112,7 +112,7 @@
                          (perform: (perform: self 'class) 'name)))
 )
 
-(addSelector:withMethod: ;; ANSI
+(primAddSelector:withMethod: ;; ANSI
  	st-object-behavior
         'isKindOf:
         (lambda (self someClass)
@@ -127,28 +127,34 @@
         ) ) ) )
 )
 
-(addSelector:withMethod: ;; ANSI
+(primAddSelector:withMethod: ;; ANSI
  	st-object-behavior
         'isMemberOf:
         (lambda (self someClass)
           (eq? (perform: self 'class) someClass))
 )
 
-(addSelector:withMethod: ;; ANSI
+(primAddSelector:withMethod: ;; ANSI
  	st-object-behavior
         'notNil
         (lambda (self)
           (not (st-nil? self)))
 )
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:  ;; base case
+ 	st-object-behavior
+        'basicSize
+        (lambda (self) 0)
+)
+
+(primAddSelector:withMethod:
  	st-object-behavior
         'yourself    ;; ANSI
         (lambda (self) self)
 )
 
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
  	st-object-behavior
         'initialize
         (lambda (self) self))

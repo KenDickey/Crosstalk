@@ -59,40 +59,40 @@
          rest-args)
 ) )
 
-;; methodDict addSelector: selector withMethod: compiledMethod
-(define (addSelector:withMethod: methodDict symbol methodClosure)
+;; methodDict primAddSelector: selector withMethod: compiledMethod
+(define (primAddSelector:withMethod: methodDict symbol methodClosure)
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
   (procedure-name-set! methodClosure symbol)
   (hashtable-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
-(define (selectors methodDict)
+(define (primSelectors methodDict)
   (hashtable-keys methodDict))
 
-(define (includesSelector: methodDict symbol)
+(define (primIncludesSelector: methodDict symbol)
   (hashtable-contains? methodDict symbol))
 
-(define (selectorsDo: methodDict closure)
+(define (primSelectorsDo: methodDict closure)
   (for-each closure (hashtable-keys methodDict)))
 
-(define (selectorsAndMethodsDo: methodDict closure)
+(define (primSelectorsAndMethodsDo: methodDict closure)
   (vector-for-each closure (hashtable-entries methodDict)))
 
-(define (selectorsAndMethodsDo: methodDict closure)
+(define (primSelectorsAndMethodsDo: methodDict closure)
   (let-values ( ((selectors methods) (hashtable-entries methodDict)) )
     (vector-for-each closure selectors methods)))
 
-(define (methodsDo: methodDict closure)
+(define (primMethodsDo: methodDict closure)
   (let-values ( ((ignored-selectors methods) (hashtable-entries methodDict)) )
     (vector-for-each closure methods))) 
 
 (define (clone-method-dictionary mDict)
   (let ( (clone (make-eq-hashtable (hashtable-size mDict))) )
-    (selectorsAndMethodsDo:
+    (primSelectorsAndMethodsDo:
      	mDict
         (lambda (selector method)
-          (addSelector:withMethod: mDict selector method)))
+          (primAddSelector:withMethod: clone selector method)))
     clone)
 )
 
@@ -106,7 +106,7 @@
 
 (define (make-mDict-placeholder classNameSym)
   (let ( (mDict (make-method-dictionary)) )
-    (addSelector:withMethod: mDict
+    (primAddSelector:withMethod: mDict
                              'class
                              (lambda (self) classNameSym))
     mDict
@@ -128,50 +128,50 @@
 (define st-block-behavior      (make-mDict-placeholder 'Block))
 (define st-object-behavior     (make-mDict-placeholder 'Object))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-nil-behavior
         'printString
         (lambda (self) "nil"))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-true-behavior
         'printString
         (lambda (self) "true"))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-false-behavior
         'printString
         (lambda (self) "false"))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-string-behavior
         'printString
         (lambda (self)
           (string-append "'" self "'")))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-character-behavior
         'printString
         (lambda (self)
           (string-append "$" (make-string 1 self))))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-symbol-behavior
         'printString
         (lambda (self) ;;@@FIXME: elide #\'..' when all lower case..
           (string-append "#'" (symbol->string self) "'")))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-block-behavior
         'selector
         (lambda (self) (procedure-name self)))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-block-behavior
         'argumentCount
         (lambda (self) (procedure-arity self)))
 
-(addSelector:withMethod:  ;; alias
+(primAddSelector:withMethod:  ;; alias
  	st-block-behavior
         'numArgs
         (lambda (self) (procedure-arity self)))
@@ -265,7 +265,7 @@
 ;; Done ONCE at class creation
 (define (add-bytevector-accessors behavior)
 
-  (addSelector:withMethod:
+  (primAddSelector:withMethod:
      behavior
      'at:
      (lambda (self index)
@@ -278,7 +278,7 @@
              (error "Index out of range" index self))
    ) ) )
 
-  (addSelector:withMethod:
+  (primAddSelector:withMethod:
      behavior
      'at:put:
      (lambda (self index newVal)
@@ -298,13 +298,13 @@
 ;; Done once
 (add-bytevector-accessors st-bytevector-behavior)
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
      st-bytevector-behavior
      'size 
      (lambda (self)
        (bytevector-length (vector-ref self 2))))
 
-(addSelector:withMethod:
+(primAddSelector:withMethod:
      st-bytevector-behavior
      'basicSize
      (lambda (self)
@@ -336,7 +336,8 @@
 ;;                   (loop (+ 1 index)))))))
 ;; ) )
   
-;; done at class creation
+;; Done at class creation
+;; NB: start-index includes num-header-slots, which is the minimum index
 (define (add-getters&setters behavior start-index slot-names-list)
   (let loop ( (index start-index) (slot-names slot-names-list) )
     (if (null? slot-names)
@@ -347,13 +348,13 @@
                   (string-append
                    (symbol->string getter-name) ":")))
                 )
-          (addSelector:withMethod:
+          (primAddSelector:withMethod:
            behavior
            getter-name
            (lambda (self)
              (vector-ref self index)))
           
-          (addSelector:withMethod:
+          (primAddSelector:withMethod:
            behavior
            setter-name
            (lambda (self newVal)
@@ -367,7 +368,7 @@
 (define (add-array-accessors behavior start-index)
   (let ( (pre-start (- start-index 1)) )
 
-    (addSelector:withMethod:
+    (primAddSelector:withMethod:
      behavior
      'at:
      (lambda (self user-index)
@@ -378,7 +379,7 @@
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
    )
 
-    (addSelector:withMethod:
+    (primAddSelector:withMethod:
      behavior
      'at:put:
      (lambda (self user-index newVal)
@@ -390,6 +391,12 @@
                self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
      )
+    (primAddSelector:withMethod:
+     behavior
+     'basicSize
+     (lambda (self)
+       (- (vector-length self) start-index))
+     )
 ) )
 
 ;; For Error Reporting (#doesNotUnderstand:)
@@ -399,7 +406,7 @@
                      num-header-slots ;; first slot as index skips header
                      '(receiver selector arguments))
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-messageSend-behavior
         'value    ;; retry original message send
         (lambda (self)  
@@ -412,7 +419,7 @@
               (perform:withArguments: receiver selector arguments))))
 )
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-messageSend-behavior
         'valueWithArguments:  ;; retry w dirrerent args
         (lambda (self newArgsArray)  
@@ -430,7 +437,7 @@
 
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
-  (let* ( (argArray (ensure-st-array args-list))
+  (let* ( (argArray    (ensure-st-array args-list))
           (messageSend (make-st-object st-messageSend-behavior 3))
         )
     (perform:with: messageSend 'receiver:  receiver)
@@ -443,7 +450,7 @@
 ;; Need to make st Arrays
 (add-array-accessors st-array-behavior 2)
 
-(addSelector:withMethod: 
+(primAddSelector:withMethod: 
  	st-array-behavior
         'size
         (lambda (self)  

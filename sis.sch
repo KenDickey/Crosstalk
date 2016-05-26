@@ -15,7 +15,7 @@
 
 (import
     (rnrs hashtables (6))
-    (primitives load compile-file procedure-name procedure-name-set!))
+    (primitives load compile-file procedure-name procedure-name-set! ratnum?))
 
 (define st-root-directory-prefix "/home/kend/SiS/")
 
