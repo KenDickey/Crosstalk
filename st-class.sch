@@ -18,9 +18,9 @@
     instanceVariables organization
     subclasses name
     ;; NB: pools are depricated !!
-    commment
+    comment
     myMethodNames)
-)  ;; @@??@@ classComment ??
+)
 
 (define num-basic-class-ivars (length basic-class-instance-variable-names))
 
@@ -76,6 +76,12 @@
 (perform:with: Class-Class            'name: 'Class)
 (perform:with: MetaClass-Class        'name: 'MetaClass)
 
+;; (perform:with: Object-Class           'class: Class-Class)
+;; (perform:with: Behavior-Class         'class: Class-Class)
+;; (perform:with: ClassDescription-Class 'class: Class-Class)
+;; (perform:with: Class-Class            'class: Class-Class)
+;; (perform:with: MetaClass-Class        'class: Class-Class)
+
 (perform:with: Object-Class           'superclass: st-nil)
 (perform:with: Object-Class           'subclasses: (list Behavior-Class))
 (perform:with: Behavior-Class         'superclass: Object-Class)
@@ -94,7 +100,7 @@
 
 (perform:with: Behavior-Class         'instanceVariables: '(superclass methodDict format))
 (perform:with: ClassDescription-Class 'instanceVariables: '(instanceVariables organization))
-(perform:with: Class-Class            'instanceVariables: '(subclasses name))
+(perform:with: Class-Class            'instanceVariables: '(subclasses name comment myMethodNames))
 (perform:with: MetaClass-Class        'instanceVariables: '(thisClass))
 
 (define (allInstVarNames self)
@@ -103,7 +109,7 @@
        )
     (if (null? super)
         (list-copy ivarNames)
-        (list-append (perform: super 'allInstVarNames) (list-copy ivarNames)))
+        (append (perform: super 'allInstVarNames) (list-copy ivarNames)))
 ) )
 
 (define (add-method-name-to-myMethods self selector)
@@ -129,6 +135,20 @@
 
 ;; Am I self-referential, or what??
 (addSelector:withMethod: Object-Class 'addSelector:withMethod: addSelector:withMethod:)
+
+(addSelector:withMethod: Object-Class 'allInstVarNames allInstVarNames)
+
+(define (print-obj st-obj)
+  (let ( (ivarNames (perform: (perform: st-obj 'class) 'allInstVarNames)) )
+    (for-each
+     (lambda (ivarName)
+        (newline)
+        (display ivarName)
+        (display " -> ")
+        (write (perform: st-obj name)))
+     ivarNames)
+    (newline)
+) )
 
 ;; (define (make-st-class name ivars behavior class superClass)
 ;;   @@@
