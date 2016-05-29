@@ -28,14 +28,17 @@
 (define (method-dictionary-size methodDict)
   (hashtable-size methodDict))
 
-;; methodDict lookup: aSymbol
-(define (lookup: methodDict symbol)
+;; methodDict primLookup: aSymbol
+(define (primLookup: methodDict symbol)
   (hashtable-ref methodDict
                  symbol
                  (lambda (self . rest-args)
                    (send-failed self symbol rest-args)))
                    ;; (make-messageSend self symbol rest-args)))
 )
+
+(define (primSet:toValue: methodDict key value)
+  (hashtable-set! methodDict key value))
 
 (define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
@@ -239,7 +242,7 @@
   (let ( (mDict (behavior self)) )
     (if (st-nil? mDict)
         (doesNotUnderstand: self selectorSym) ;; Brokem Prototype
-        (lookup: mDict selectorSym)
+        (primLookup: mDict selectorSym)
 ) ) )
 
 ;;; Objects
@@ -482,6 +485,10 @@
          )
     (list->st-array (reverse reversed-args))
 ) )
+
+(define (primSetClass: obj class)
+  (primSet:toValue: (behavior obj) 'class (lambda (self) class)))
+
 
 ;; (provide 'st-kernel)
 

@@ -15,7 +15,29 @@
 
 (import
     (rnrs hashtables (6))
-    (primitives load compile-file procedure-name procedure-name-set! ratnum?))
+    (rnrs sorting (6))
+    (rnrs io simple (6))
+    (primitives
+       load compile-file
+       procedure-name procedure-name-set!
+       ratnum?
+       char-upper-case?)
+)
+
+;; Helpers
+
+(define (every? proc? list)
+  (if (null? list)
+      #t
+      (and (proc? (car list))
+           (every? proc? (cdr list)))))
+
+(define (any? proc? list)
+  (if (null? list)
+      #f
+      (or (proc? (car list))
+          (any? proc? (cdr list)))))
+
 
 (define st-root-directory-prefix "/home/kend/SiS/")
 
