@@ -26,14 +26,19 @@
 ;; The 'receiver' of the message is #self,
 ;;   so all messages have at least one argument
 ;; The most common usages have the fewest arguments
+
 (define (perform: self selectorSym)
   ((lookupSelector: self selectorSym) self))
+
 (define (perform:with: self selectorSym arg)
   ((lookupSelector: self selectorSym) self arg))
+
 (define (perform:with:with: self selectorSym arg1 arg2)
   ((lookupSelector: self selectorSym) self arg1 arg2))
+
 (define (perform:with:with:with: self selectorSym arg1 arg2 arg3)
   ((lookupSelector: self selectorSym) self arg1 arg2 arg3))
+
 (define (perform:withArguments: self selectorSym argsArray)
   ;; @@FIXME: Check argsArry is a Smalltalk Array object..
   (apply (lookupSelector: self selectorSym)

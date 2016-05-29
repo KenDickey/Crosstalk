@@ -190,14 +190,14 @@
 ;; (define st-object
 ;;  (vector %%st-object-tag%% st-object-behavior))
 
-(define st-obj-tag-index 0)
+(define st-obj-tag-index      0)
 (define st-obj-behavior-index 1) ;; 2nd slot in a st-object
 
 ;;; @@FIXME: Use typetag-set! and free one slot per object (adds up!)
 ;; Present simplification is useful for bootstrap debug.
 (define %%st-object-tag%% (cons 'st-object '())) ;; not eq? to anything else
 
-(define (st-obj-tag obj)      (vector-ref obj st-obj-tag-index))
+(define (st-obj-tag      obj) (vector-ref obj st-obj-tag-index))
 (define (st-obj-behavior obj) (vector-ref obj st-obj-behavior-index))
 
 (define (st-object? thing)
@@ -224,11 +224,14 @@
         ;; FIXME:: Scaled Decimal
         (else st-nil))
        )
-      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
-      ((char?   thing)    st-character-behavior)
-      ((string? thing)    st-string-behavior)
-      ((symbol? thing)    st-symbol-behavior)
-      ((procedure? thing) st-block-behavior)
+      ((st-object? thing)
+       (vector-ref thing st-obj-behavior-index)
+       )
+      ((char?   thing)     st-character-behavior)
+      ((string? thing)     st-string-behavior)
+      ((symbol? thing)     st-symbol-behavior)
+      ((procedure? thing)  st-block-behavior)
+      ((bytevector? thing) st-bytevector-behavior)
       ;; @@FIXME port -> FileStream
       ;; @@FIXME ...
       (else (error "#behavior can't deal with other Scheme types yet"
@@ -260,58 +263,38 @@
                       initialValue
                       0)) ;; error?
        )
-    (vector %%st-object-tag%%
-            st-bytevector-behavior
-            (make-bytevector numBytes initVal)))
-)
+    (make-bytevector numBytes initVal)
+) )
 
-;; Done ONCE at class creation
-(define (add-bytevector-accessors behavior)
 
-  (primAddSelector:withMethod:
-     behavior
+(primAddSelector:withMethod:
+     st-bytevector-behavior
      'at:
      (lambda (self index)
        ;; NB: ST 1-based, Scheme 0-based
-       (let* ( (bvec (vector-ref self 2))
-               (bvec-len (bytevector-length bvec))
-             )
-         (if (< 0 index (+ 1 bvec-len))
-             (bytevector-ref bvec (- index 1))
-             (error "Index out of range" index self))
-   ) ) )
-
-  (primAddSelector:withMethod:
-     behavior
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-u8-ref self (- index 1))
+           (error "Index out of range" self index))))
+     
+(primAddSelector:withMethod:
+     st-bytevector-behavior
      'at:put:
      (lambda (self index newVal)
-       ;; @@FIXME: newVal type check (byte)
-       ;; NB: ST 1-based, Scheme 0-based
-       (let* ( (bvec (vector-ref self 2))
-               (bvec-len (bytevector-length bvec))
-             )
-         (if (< 0 index (+ 1 bvec-len))
-             (begin
-               (bytevector-set! bvec (- index 1) newVal)
-               self)
-             (error "Index out of range" index self newVal))
-       ) )
-) )
-
-;; Done once
-(add-bytevector-accessors st-bytevector-behavior)
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-u8-set! self (- index 1) newVal)
+           (error "Index out of range" self index))))
 
 (primAddSelector:withMethod:
      st-bytevector-behavior
      'size 
      (lambda (self)
-       (bytevector-length (vector-ref self 2))))
+       (bytevector-length self)))
 
 (primAddSelector:withMethod:
      st-bytevector-behavior
      'basicSize
      (lambda (self)
-       (bytevector-length (vector-ref self 2))))
+       (bytevector-length self)))
 
 
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
@@ -406,7 +389,8 @@
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
 (add-getters&setters st-messageSend-behavior
-                     num-header-slots ;; first slot as index skips header
+		;; first slot as index skips header
+                     num-header-slots 
                      '(receiver selector arguments))
 
 (primAddSelector:withMethod: 
@@ -441,13 +425,18 @@
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
   (let* ( (argArray    (ensure-st-array args-list))
-          (messageSend (make-st-object st-messageSend-behavior 3))
+;;          (messageSend (make-st-object st-messageSend-behavior 3))
         )
-    (perform:with: messageSend 'receiver:  receiver)
-    (perform:with: messageSend 'selector:  selector)
-    (perform:with: messageSend 'arguments: argArray)
-    messageSend)
-)
+    ;; (perform:with: messageSend 'receiver:  receiver)
+    ;; (perform:with: messageSend 'selector:  selector)
+    ;; (perform:with: messageSend 'arguments: argArray)
+    ;; messageSend)
+    (vector %%st-object-tag%%
+            st-messageSend-behavior
+            receiver
+            selector
+            argArray)
+) )
 
 
 ;; Need to make st Arrays
@@ -486,8 +475,112 @@
     (list->st-array (reverse reversed-args))
 ) )
 
+
 (define (primSetClass: obj class)
   (primSet:toValue: (behavior obj) 'class (lambda (self) class)))
+
+
+;;;======================================================
+;; What do we have here?
+
+(define (selectors st-obj)
+  (list-sort
+   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
+   (vector->list (primSelectors (behavior st-obj)))))
+
+(define (display-selectors st-obj)
+  (display (selectors st-obj)))
+  
+(define (display-ivars st-obj)
+  (if (st-object? st-obj)
+      (let ( (ivarNames (perform: (perform: st-obj 'class) 'allInstVarNames)) )
+        (display "an instance of ")
+        (display (perform: (perform: st-obj 'class) 'name))
+        (for-each
+         (lambda (ivarName)
+           (newline)
+           (display ivarName)
+           (display " -> ")
+           (display-obj (perform: st-obj ivarName)))
+         ivarNames)
+        (newline))
+      (write st-obj))
+)
+
+(define (display-obj st-obj-or-list)
+  (cond
+   ((st-object? st-obj-or-list)
+    (display "instance of #'")
+    (display
+     (perform:
+      (perform: st-obj-or-list 'class)
+      'name))
+    (display "'."))
+   ((and (list? st-obj-or-list)
+         (every? st-object? st-obj-or-list))
+    (display "(")
+    (for-each display-obj st-obj-or-list)
+    (display ")"))
+   (else (write st-obj-or-list))
+) )
+
+(define (describe obj)
+  (cond
+   ((null? obj) (display 'nil)
+    )
+   ((list? obj)
+    (display "a list of length ")
+    (display (length obj)))
+   ((st-object? obj)
+    (if (perform:with: obj 'respondsTo: 'name)
+        (begin
+          (display #\")
+          (display (perform: obj 'name))
+          (display #\")
+          (display " is ")))
+    (display "an instance of class #'")
+    (display (perform: (perform: obj 'class) 'name))
+    (display "'")
+    )
+   ((vector? obj)
+    (display "a vector of length ")
+    (display (vector-length obj))
+    )
+   ((bytevector? obj)
+    (display "a bytevector of length ")
+    (display (bytevector-length obj))
+    )
+   ((number? obj)
+    (display "a number with value: ")
+    (display obj)
+    )
+   ((eq? obj #true)  (display "true")
+    )
+   ((eq? obj #false) (display "false")
+    )
+   ((string? obj)
+    (display "a string of length ")
+    (display (string-length obj))
+    )
+   ((char? obj)
+    (display "$") (display obj)
+    (display " is a character")
+    )
+   ((port? obj)
+    (if (binary-port? obj)
+        (display "binary ")
+        (display "text "))
+    (if (input-port? obj)
+        (display "input Stream")
+        (display "output Stream"))
+    )  
+   ;; @@FIXME: ...
+   (else (write obj)) ;; procedures..
+   )
+  (newline)
+ )
+
+;;;======================================================
 
 
 ;; (provide 'st-kernel)
