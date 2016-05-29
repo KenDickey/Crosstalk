@@ -74,7 +74,7 @@
  	st-object-behavior
         'respondsTo:    ;; ANSI
         (lambda (self selector)
-          (includesSelector: (behavior self) selector)))
+          (primIncludesSelector: (behavior self) selector)))
 
 (primAddSelector:withMethod:
  	st-object-behavior
