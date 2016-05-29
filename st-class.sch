@@ -133,13 +133,18 @@
 (addSelector:withMethod: Object    'allInstVarNames allInstVarNames)
 (addSelector:withMethod: MetaClass 'allInstVarNames allInstVarNames)
 
+;;;======================================================
+;; What do we have here?
+
+(define (selectors st-obj)
+  (list-sort
+   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
+   (vector->list (primSelectors (behavior st-obj)))))
+
 (define (display-selectors st-obj)
-  (display
-   (list-sort
-    (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
-    (vector->list (primSelectors (behavior st-obj))))))
+  (display (selectors st-obj)))
   
-(define (describe st-obj)
+(define (display-ivars st-obj)
   (if (st-object? st-obj)
       (let ( (ivarNames (perform: (perform: st-obj 'class) 'allInstVarNames)) )
         (display "an instance of ")
@@ -172,6 +177,63 @@
    (else (write st-obj-or-list))
 ) )
 
+(define (describe obj)
+  (cond
+   ((null? obj) (display 'nil)
+    )
+   ((list? obj)
+    (display "a list of length ")
+    (display (length obj)))
+   ((st-object? obj)
+    (if (perform:with: obj 'respondsTo: 'name)
+        (begin
+          (display #\")
+          (display (perform: obj 'name))
+          (display #\")
+          (display " is ")))
+    (display "an instance of class #'")
+    (display (perform: (perform: obj 'class) 'name))
+    (display "'")
+    )
+   ((vector? obj)
+    (display "a vector of length ")
+    (display (vector-length obj))
+    )
+   ((bytevector? obj)
+    (display "a bytevector of length ")
+    (display (bytevector-length obj))
+    )
+   ((number? obj)
+    (display "a number with value: ")
+    (display obj)
+    )
+   ((eq? obj #true)  (display "true")
+    )
+   ((eq? obj #false) (display "false")
+    )
+   ((string? obj)
+    (display "a string of length ")
+    (display (string-length obj))
+    )
+   ((char? obj)
+    (display "$") (display obj)
+    (display " is a character")
+    )
+   ((port? obj)
+    (if (binary-port? obj)
+        (display "binary ")
+        (display "text "))
+    (if (input-port? obj)
+        (display "input Stream")
+        (display "output Stream"))
+    )  
+   ;; @@FIXME: ...
+   (else (write obj)) ;; procedures..
+   )
+  (newline)
+ )
+
+;;;======================================================
 
 ;; Make a new instance of me..
 (define (basicNew: self num-indexed-vars) ;; self is a class
