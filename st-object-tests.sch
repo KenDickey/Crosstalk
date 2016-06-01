@@ -8,7 +8,7 @@
 (define %%test-object #f)
 
 (define (setup-st-object)
-  (addSelector:withMethod:
+  (primAddSelector:withMethod:
  	st-object-behavior
         'with:with:with:with:with
         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
