@@ -113,7 +113,7 @@
         'printString   ;; ANSI
         ;; String streamContents: [:s | self printOn: s]
         (lambda (self)
-          (string-append "an "
+          (string-append "instance of "
                          (perform: (perform: self 'class) 'name)))
 )
 

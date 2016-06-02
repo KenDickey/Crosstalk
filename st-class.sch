@@ -277,8 +277,7 @@
 
 ;; MetaClass class class == MetaClass
 
-(primSetClass: (perform: (perform: MetaClass 'class) 'class)
-               MetaClass)
+;(primSetClass: (perform: MetaClass 'class) MetaClass)
 
 
 

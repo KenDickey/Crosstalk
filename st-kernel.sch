@@ -4,29 +4,23 @@
 ;;; DATE: 12 May 2016
 
 
-;;; Representations
+;;; We will start with object behaviors -- not the objects themselves.
+;;; A behavior is just a (method) dictionary / hashtable
 
-; Use Scheme immediates & numbers
-;	byte-tag + mask -> index into table of classes
+;; NB: larceny -r7rs ...
 
-; Use tagged Vector as ST Object (named & indexed slots)
-;   1st slot in Vector contains a mDict (method dictionary)
-;	with a binding of 'class->(lambda (self) <class>)
-;	to get the class
+;; All (import ...) done in "sis.sch"
 
-;; NB: larceny -r7r6 ...
-
-;; (import (primitives procedure-name procedure-name-set!))
 
 ;;; Method Dictionarys
 
 ;; Syntactic sugar tastes sweeter ;^)
 
-(define (make-method-dictionary)
-  (make-eq-hashtable))
+(define make-method-dictionary make-eq-hashtable)
 
-(define (method-dictionary-size methodDict)
-  (hashtable-size methodDict))
+(define method-dictionary? hashtable?)
+
+(define method-dictionary-size hashtable-size)
 
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)
@@ -37,50 +31,33 @@
                    ;; (make-messageSend self symbol rest-args)))
 )
 
-(define (primSet:toValue: methodDict key value)
-  (hashtable-set! methodDict key value))
+(define primSet:toValue: hashtable-set!)
 
 (define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
-  (let* ( (messageSend (make-messageSend receiver selector rest-args))
-          (perhaps-name "")
-           ;; (if (perform:with: receiver 'respondsTo: 'name)
-           ;;     (let ( (n (perform: receiver 'name)) )
-           ;;       (cond
-           ;;        ((string? n) n)
-           ;;        ((null? n) "")
-           ;;        ((boolean? n) "")
-           ;;        (else
-           ;;         (symbol->string n))))
-           ;;     ""))
-         )
-  (error (string-append
-          "Failed message send: #"
-          (symbol->string selector)
-          " to ")
-         receiver
-         rest-args)
+  (let ( (messageSend (make-messageSend receiver selector rest-args)) )
+    (error (string-append
+            "Failed message send: #"
+            (symbol->string selector)
+            " to ")
+           receiver
+           rest-args)
 ) )
 
 ;; methodDict primAddSelector: selector withMethod: compiledMethod
 (define (primAddSelector:withMethod: methodDict symbol methodClosure)
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
-  (procedure-name-set! methodClosure symbol)
+  (procedure-name-set! methodClosure symbol) 
   (hashtable-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
-(define (primSelectors methodDict)
-  (hashtable-keys methodDict))
+(define primSelectors hashtable-keys)
 
-(define (primIncludesSelector: methodDict symbol)
-  (hashtable-contains? methodDict symbol))
+(define primIncludesSelector: hashtable-contains?)
 
 (define (primSelectorsDo: methodDict closure)
   (for-each closure (hashtable-keys methodDict)))
-
-(define (primSelectorsAndMethodsDo: methodDict closure)
-  (vector-for-each closure (hashtable-entries methodDict)))
 
 (define (primSelectorsAndMethodsDo: methodDict closure)
   (let-values ( ((selectors methods) (hashtable-entries methodDict)) )
@@ -128,7 +105,7 @@
 (define st-symbol-behavior     (make-mDict-placeholder 'Symbol))
 (define st-array-behavior      (make-mDict-placeholder 'Array))
 (define st-bytevector-behavior (make-mDict-placeholder 'Bytevector))
-(define st-block-behavior      (make-mDict-placeholder 'Block))
+(define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior     (make-mDict-placeholder 'Object))
 
 (primAddSelector:withMethod: 
@@ -165,17 +142,17 @@
           (string-append "#'" (symbol->string self) "'")))
 
 (primAddSelector:withMethod: 
- 	st-block-behavior
+ 	st-blockClosure-behavior
         'selector
         (lambda (self) (procedure-name self)))
 
 (primAddSelector:withMethod: 
- 	st-block-behavior
+ 	st-blockClosure-behavior
         'argumentCount
         (lambda (self) (procedure-arity self)))
 
 (primAddSelector:withMethod:  ;; alias
- 	st-block-behavior
+ 	st-blockClosure-behavior
         'numArgs
         (lambda (self) (procedure-arity self)))
 
@@ -185,6 +162,16 @@
       (set! counter (+ counter 1))
       counter)
 ) )
+
+;;; Smalltalk Object Representation
+
+; Use Scheme immediates, bytevectors, & numbers
+;	byte-tag + mask -> index into table of classes
+
+; Use tagged Vector as ST Object (named & indexed slots)
+;   1st slot in Vector contains a mDict (method dictionary)
+;	with a binding of 'class->(lambda (self) <class>)
+;	to get the class
 
 ;;; See file 'st-object.sch'
 ;; (define st-object
@@ -205,8 +192,10 @@
        (< 1 (vector-length thing))
        (eq? %%st-object-tag%% (st-obj-tag thing))))
 
-;;; @@FIXME: convert to NATIVE TAG mask + index into vector of behaviors
+;;; @@FIXME: convert to NATIVE TAG mask + index
+;;;       ..into vector of behaviors :FIXME@@
 (define num-header-slots 2) ;; tag + behavior; @@remove tag@@
+
 (define (behavior thing)
   (case thing  
     ;; immediates
@@ -224,13 +213,16 @@
         ;; FIXME:: Scaled Decimal
         (else st-nil))
        )
-      ((st-object? thing)
-       (vector-ref thing st-obj-behavior-index)
+      ((vector? thing)
+       (if (and (< 1 (vector-length thing))
+                (eq? %%st-object-tag%% (st-obj-tag thing)))
+           (vector-ref thing st-obj-behavior-index)
+           st-array-behavior) ;; Scheme vector
        )
       ((char?   thing)     st-character-behavior)
       ((string? thing)     st-string-behavior)
       ((symbol? thing)     st-symbol-behavior)
-      ((procedure? thing)  st-block-behavior)
+      ((procedure? thing)  st-blockClosure-behavior)
       ((bytevector? thing) st-bytevector-behavior)
       ;; @@FIXME port -> FileStream
       ;; @@FIXME ...
@@ -244,7 +236,7 @@
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
     (if (st-nil? mDict)
-        (doesNotUnderstand: self selectorSym) ;; Brokem Prototype
+        (doesNotUnderstand: self selectorSym) ;; Broken Prototype
         (primLookup: mDict selectorSym)
 ) ) )
 
@@ -440,21 +432,16 @@
 
 
 ;; Need to make st Arrays
-(add-array-accessors st-array-behavior 2)
+(add-array-accessors st-array-behavior 0)
 
 (primAddSelector:withMethod: 
  	st-array-behavior
         'size
         (lambda (self)  
-          (- (vector-length self) 2))
+          (vector-length self))
 )
 
-(define (list->st-array someList)
-  (list->vector
-   (cons %%st-object-tag%%
-         (cons st-array-behavior
-               someList)))
-)
+(define list->st-array list->vector)
 
 (define (ensure-st-array args)
   ;; args are a list captured by a .rest
@@ -543,7 +530,7 @@
     (display "'")
     )
    ((vector? obj)
-    (display "a vector of length ")
+    (display "an array of length ")
     (display (vector-length obj))
     )
    ((bytevector? obj)
