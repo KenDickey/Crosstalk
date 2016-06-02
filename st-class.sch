@@ -10,6 +10,30 @@
 ;;  and bootstrap reflection via Classes, which are the management
 ;;  structure for object behaviors.
 
+;; Basically, each class has a superclass (except Object) and
+;;   each Class's class is a metaClass which is an instance of MetaClass.
+;; An instance's shape (instance valiables) and behavior (instance methods)
+;;   is defined in its class
+;; A class's shape (class variables) and behavior (class methods)
+;;   is defined in the instance class's metaClass 
+
+;; We have behaviors, instances, classes, and metaClasses
+;; Classes are instances of metaCLasses
+;; metaClasses are instances of class MetaClass
+
+;; We tie these together here by making instances and then setting
+;;  up the proper references via instance variabkes and behaviors.
+
+;; Boolean superclass -> Object
+;; Object  superclass -> nil  (ground case)
+;; Boolean class -> 'Boolean class' (its unnamed metaClass)
+;; Boolean class class -> MetaClass
+;; MetaClass class -> 'MetaClass class' (its metaClass)
+;; MetaClass class class -> MetaClass (wraps around)
+;; Boolean class superclass -> 'Object class' (Object's metaClass)
+;; Boolean class superclass class -> Class
+
+
 ;; The Smalltalk Global Environment
 (define smalltalk-dictionary (make-eq-hashtable))
 
@@ -24,12 +48,18 @@
 
 (define num-basic-class-ivars (length basic-class-instance-variable-names))
 
+;; Object
+;;   Behavior
+;;      Class Descrption
+;;         Class
+;;         MetaClass
+
 (define st-Object-behavior
   (clone-method-dictionary st-object-behavior))
 (add-getters&setters st-Object-behavior
                      num-header-slots
                      basic-class-instance-variable-names)
-(define Object
+(define Object ;; class Object
   (make-st-object st-Object-behavior
                   num-basic-class-ivars))
 
@@ -60,9 +90,12 @@
 (define MetaClass
   (make-st-object st-MetaClass-behavior
                   (+ 2 num-header-slots num-basic-class-ivars)))
-(perform:with: Object
+(perform:with: MetaClass
                'myMethodNames:
                '(thisClass thisClass:))
+
+
+;; Register all Classes by name in the Smalltalk Dictionary
 
 (hashtable-set! smalltalk-dictionary 'Object           Object)
 (hashtable-set! smalltalk-dictionary 'Behavior         Behavior)
@@ -70,12 +103,14 @@
 (hashtable-set! smalltalk-dictionary 'Class            Class)
 (hashtable-set! smalltalk-dictionary 'MetaClass        MetaClass)
 
+;; Class names
 (perform:with: Object           'name: "Object")
 (perform:with: Behavior         'name: "Behavior")
 (perform:with: ClassDescription 'name: "ClassDescription")
 (perform:with: Class            'name: "Class")
 (perform:with: MetaClass        'name: "MetaClass")
 
+;; Superclasses & Subclasses
 (perform:with: Object           'superclass: st-nil)
 (perform:with: Object           'subclasses: (list Behavior))
 (perform:with: Behavior         'superclass: Object)
@@ -83,19 +118,22 @@
 (perform:with: ClassDescription 'superclass: Behavior)
 (perform:with: ClassDescription 'subclasses: (list Class))
 (perform:with: Class            'superclass: ClassDescription)
-(perform:with: Class            'subclasses: (list Object Behavior ClassDescription))
 (perform:with: MetaClass        'superclass: ClassDescription)
 
+;; behaviors are method dictionaries
 (perform:with: Object           'methodDict: st-Object-behavior)
 (perform:with: Behavior         'methodDict: st-Behavior-behavior)
 (perform:with: ClassDescription 'methodDict: st-ClassDescription-behavior)
 (perform:with: Class            'methodDict: st-Class-behavior)
 (perform:with: MetaClass        'methodDict: st-MetaClass-behavior)
 
+;; Each class inherits iVars and adds any of its own
 (perform:with: Behavior         'instanceVariables: '(superclass methodDict format))
 (perform:with: ClassDescription 'instanceVariables: '(instanceVariables organization))
 (perform:with: Class            'instanceVariables: '(subclasses name category comment myMethodNames))
 (perform:with: MetaClass        'instanceVariables: '(thisClass))
+
+;; More structure mechanics
 
 (define (allInstVarNames self)
   (let ( (ivarNames (perform: self 'instanceVariables))
@@ -112,19 +150,19 @@
     self
 ) )
 
-;; NB: self is a Class
-(define (addSelector:withMethod: self selector method)
-  (let* ( (mDict      (perform: self 'methodDict))
-          (subclasses (perform: self 'subclasses))
+
+(define (addSelector:withMethod: aClass selector method)
+  (let* ( (mDict      (perform: aClass 'methodDict))
+          (subclasses (perform: aClass 'subclasses))
         )
     (primAddSelector:withMethod: mDict selector method)
-    (add-method-name-to-myMethods self selector)
+    (add-method-name-to-myMethods aClass selector)
     (for-each
      (lambda (subClass)  ;; if not overriden, copy down
        (unless (memq selector (perform: subClass 'myMethodNames))
          (addSelector:withMethod: subClass selector method)))
      subclasses))
-  self
+  aClass
 )
 
 ;; Am I self-referential, or what??
@@ -134,10 +172,10 @@
 (addSelector:withMethod: MetaClass 'allInstVarNames allInstVarNames)
 
 
-;; Make a new instance of me..
-(define (basicNew: self num-indexed-vars) ;; self is a class
-  (let ( (num-named-vars (length (perform: self 'allInstVarNames))) )
-    (make-st-object (perform: self 'methodDict)
+;; Make a new instance of some class
+(define (basicNew: aClass num-indexed-vars)
+  (let ( (num-named-vars (length (perform: aClass 'allInstVarNames))) )
+    (make-st-object (perform: aClass 'methodDict)
                     (+ num-named-vars num-indexed-vars))
 ) )
 
@@ -150,7 +188,7 @@
 (addSelector:withMethod: Behavior 'new
                          (lambda (self) (perform: (basicNew: self 0) 'initialize)))
 
-(addSelector:withMethod: MetaClass 'new
+(addSelector:withMethod: MetaClass 'new  ;; OVERRIDE
                          (lambda (self)
                            (if (eq? self (perform: (perform: self 'thisClass) 'class))
                                (error: "A Metaclass should only have one instance!" self)
@@ -193,7 +231,6 @@
     (primSetClass: theMeta  MetaClass)
 ;;  (perform:with: theMeta 'thisClass: orphanClass)
     (primSetClass: orphanClass theMeta)
-    (hashtable-set! smalltalk-dictionary metaName theMeta)
     (perform: theMeta 'initialize)
     theMeta
 ) )
@@ -269,11 +306,14 @@
 
 ;; OK, now for the meta-class hierarchy..
 
-(addMetaClass:classVars: Object    '())
+(addMetaClass:classVars: Object    basic-class-instance-variable-names)
 (addMetaClass:classVars: Behavior  basic-class-instance-variable-names)
 (addMetaClass:classVars: ClassDescription basic-class-instance-variable-names)
 (addMetaClass:classVars: Class     basic-class-instance-variable-names)
 (addMetaClass:classVars: MetaClass (append basic-class-instance-variable-names '(thisClass)))
+
+(perform:with: Class 'subclasses: (list (perform: Object 'class)))
+(perform:with: (perform: Object 'class) 'superclass: Class)
 
 ;; MetaClass class class == MetaClass
 
