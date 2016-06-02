@@ -19,7 +19,9 @@
     (rnrs io simple (6))
     (primitives
        load compile-file
-       procedure-name procedure-name-set!
+       procedure-name
+       procedure-name-set!
+       procedure-arity
        ratnum?
        char-upper-case?)
 )

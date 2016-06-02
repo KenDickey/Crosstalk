@@ -201,7 +201,7 @@
     ;; immediates
     ((#true)  st-true-behavior)
     ((#false) st-false-behavior)
-    (('())    st-nil-behavior)
+    ((())    st-nil-behavior)
     (else
      (cond
       ((integer? thing) st-integer-behavior)
@@ -431,15 +431,38 @@
 ) )
 
 
-;; Need to make st Arrays
+;;  ST Arrays are Scheme vectors..
 (add-array-accessors st-array-behavior 0)
 
-(primAddSelector:withMethod: 
- 	st-array-behavior
-        'size
-        (lambda (self)  
-          (vector-length self))
-)
+;; (primAddSelector:withMethod:
+;;      st-array-behavior
+;;      'at:
+;;      (lambda (self index)
+;;        ;; NB: ST 1-based, Scheme 0-based
+;;        (if (<= 1 index (vector-length self))
+;;            (vector-ref self (- index 1))
+;;            (error "Index out of range" self index))))
+     
+;; (primAddSelector:withMethod:
+;;      st-array-behavior
+;;      'at:put:
+;;      (lambda (self index newVal)
+;;        (if (<= 1 index (vector-length self))
+;;            (vector-set! self (- index 1) newVal)
+;;            (error "Index out of range" self index))))
+
+;; (primAddSelector:withMethod:
+;;      st-array-behavior
+;;      'basicSize
+;;      (lambda (self)
+;;        (vector-length self)))
+
+(primAddSelector:withMethod:
+     st-array-behavior
+     'size 
+     (lambda (self)
+       (vector-length self)))
+
 
 (define list->st-array list->vector)
 
@@ -480,7 +503,9 @@
   
 (define (display-ivars st-obj)
   (if (st-object? st-obj)
-      (let ( (ivarNames (perform: (perform: st-obj 'class) 'allInstVarNames)) )
+      (let ( (ivarNames (perform: (perform: st-obj 'class)
+                                  'allInstVarNames))
+           )
         (display "an instance of ")
         (display (perform: (perform: st-obj 'class) 'name))
         (for-each

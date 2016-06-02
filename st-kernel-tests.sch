@@ -9,6 +9,7 @@
 (define test-behavior           #f)
 (define indexed+named-slots-obj #f)
 (define aByteVector             #f)
+(define anArray                 #f)
 
 (define (setup-st-kernel)
   (let* ( (slot-names        '(foo bar baz))
@@ -32,7 +33,9 @@
 
   (set! aByteVector (make-st-bytevector 4 5))
   (perform:with:with: aByteVector 'at:put: 1 11)
-  (perform:with:with: aByteVector 'at:put: 3 33)  
+  (perform:with:with: aByteVector 'at:put: 3 33)
+  (set! anArray (vector 1 2 3 4 5))
+  (perform:with:with: anArray 'at:put: 5 "five")
 ) )
 
 
@@ -40,10 +43,41 @@
   (set! test-behavior #f)
   (set! indexed+named-slots-obj #f)
   (set! aByteVector #f)
+  (set! anArray #f)
 )
 
 
 (add-test-suite 'st-kernel setup-st-kernel cleanup-st-kernel)
+
+(add-equal-test 'st-kernel 
+  "true"
+  (perform: #true 'printString)
+  "true")
+
+(add-equal-test 'st-kernel 
+  "nil"
+  (perform: '() 'printString)
+  "nil")
+
+(add-equal-test 'st-kernel 
+  "$C"
+  (perform: #\C 'printString)
+  "$c")
+
+(add-equal-test 'st-kernel 
+  "#'Foo'"
+  (perform: 'Foo 'printString)
+  "#'Foo'")
+
+(add-equal-test 'st-kernel 
+  2
+  (perform: (lambda (a b) (+ a b)) 'argumentCount)
+  "2 arg closure")
+
+(add-equal-test 'st-kernel 
+  'at:put:
+  (perform: (primLookup: st-array-behavior 'at:put:) 'selector)
+  "at:put: method selector")
 
 (ensure-exception-raised 'st-kernel
    (make-error-string-predicate "Index out of range")
@@ -124,6 +158,42 @@
    (make-error-string-predicate "Index out of range")
    (perform:with: aByteVector 'at: 5)
    "bVec at: with index (5) > max (4)")
+
+
+(add-equal-test 'st-kernel 
+  1
+  (perform:with: anArray 'at: 1)
+  "array at: 1 --> 1")
+
+(add-equal-test 'st-kernel 
+  "five" ;; initial-value is unchanged
+  (perform:with: anArray 'at: 5)
+  "array at: 5 --> 'five'")
+
+(add-equal-test 'st-kernel 
+  4
+  (perform:with: anArray 'at: 4)
+  "array at: 4 --> 4")
+
+(add-equal-test 'st-kernel 
+  5
+  (perform: anArray 'size)
+  "array size -> 5")
+
+(ensure-exception-raised 'st-kernel
+   (make-error-string-predicate "Index out of range")
+   (perform:with:with: anArray 'at:put: 0 0)
+   "array at:put: with index (0) < min (1)")
+
+(ensure-exception-raised 'st-kernel
+   (make-error-string-predicate "Index out of range")
+   (perform:with: anArray 'at: 0)
+   "array at: with index (0) < min (1)")
+
+(ensure-exception-raised 'st-kernel
+   (make-error-string-predicate "Index out of range")
+   (perform:with: anArray 'at: 6)
+   "array at: with index (6) > max (5)")
 
 
 
