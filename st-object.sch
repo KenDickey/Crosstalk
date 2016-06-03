@@ -108,13 +108,21 @@
 ;; @@ identityHash -- ANSI
 ;; @@ printOn: -- ANSI
 
-(primAddSelector:withMethod:  ;;  @@FIXME: bogus
+(primAddSelector:withMethod:
  	st-object-behavior
         'printString   ;; ANSI
-        ;; String streamContents: [:s | self printOn: s]
-        (lambda (self)
-          (string-append "instance of "
-                         (perform: (perform: self 'class) 'name)))
+        printString)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'printOn: 
+        (lambda (self outport)
+          (if (perform:with self 'respondsTo: 'name)
+              (display (perform: self 'name) outport)
+              (begin
+                (display "<instance of ")
+                (display (perform: (perform: self 'class) 'name) outport)
+                (display ">"))))
 )
 
 (primAddSelector:withMethod: ;; ANSI

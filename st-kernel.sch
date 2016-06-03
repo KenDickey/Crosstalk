@@ -108,6 +108,12 @@
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior     (make-mDict-placeholder 'Object))
 
+(define (printString obj) ;; polymorphic
+;; String streamContents: [:s | self printOn: s]
+  (let ( (outport (open-output-string)) )
+    (perform:with: obj 'printOn: outport)
+    (get-output-string outport)))
+
 (primAddSelector:withMethod: 
  	st-nil-behavior
         'printString
@@ -124,22 +130,63 @@
         (lambda (self) "false"))
 
 (primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'printOn:
+        (lambda (self port)
+          (display "nil" port)))
+
+(primAddSelector:withMethod: 
+ 	st-true-behavior
+        'printOn:
+        (lambda (self port)
+          (display "true" port)))
+
+(primAddSelector:withMethod: 
+ 	st-false-behavior
+        'printOn:
+        (lambda (self port)
+          (display "false" port)))
+
+(primAddSelector:withMethod: 
  	st-string-behavior
         'printString
-        (lambda (self)
-          (string-append "'" self "'")))
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-string-behavior
+        'printOn:
+        (lambda (self port)
+          (display "'" port)
+          (display self port)
+          (display "'" port))
+)
 
 (primAddSelector:withMethod: 
  	st-character-behavior
         'printString
-        (lambda (self)
-          (string-append "$" (make-string 1 self))))
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-character-behavior
+        'printOn:
+        (lambda (self port)
+          (display "$" port)
+          (display self port))
+)
 
 (primAddSelector:withMethod: 
  	st-symbol-behavior
         'printString
-        (lambda (self) ;;@@FIXME: elide #\'..' when all lower case..
-          (string-append "#'" (symbol->string self) "'")))
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-symbol-behavior
+        'printOn:
+        (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
+          (display "#'" port)
+          (display (symbol->string self) port)
+          (display "'" port))
+)
 
 (primAddSelector:withMethod: 
  	st-blockClosure-behavior
@@ -156,12 +203,13 @@
         'numArgs
         (lambda (self) (procedure-arity self)))
 
-(define allocate-classID
-  (let ( (counter 0) )
-    (lambda ()
-      (set! counter (+ counter 1))
-      counter)
-) )
+;; (define allocate-classID
+;;   (let ( (counter 0) )
+;;     (lambda ()
+;;       (set! counter (+ counter 1))
+;;       counter)
+;; ) )
+
 
 ;;; Smalltalk Object Representation
 
