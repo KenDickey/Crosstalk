@@ -285,7 +285,7 @@
 ) )
 
 (addSelector:withMethod:
-    Class
+    Object
     'subclass:instanceVariableNames:classVariableNames:category:
      subclass:instanceVariableNames:classVariableNames:category:)
 
@@ -335,6 +335,6 @@
 ;; > (describe (superclass (class MetaClass)))
 ;; "ClassDescription class" is an instance of class #'MetaClass class'
 
-
+;; (provide 'st-class)
 
 ;;;			--- E O F ---			;;;
