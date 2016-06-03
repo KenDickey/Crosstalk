@@ -188,28 +188,6 @@
 (addSelector:withMethod: Behavior 'new
                          (lambda (self) (perform: (basicNew: self 0) 'initialize)))
 
-(addSelector:withMethod: MetaClass 'new  ;; OVERRIDE
-                         (lambda (self)
-                           (if (eq? self (perform: (perform: self 'thisClass) 'class))
-                               (error: "A Metaclass should only have one instance!" self)
-                               (let ( (newMeta (perform: self 'basicNew)) )
-                                 (perform:with: self 'thisClass: newMeta)
-                                 (newMeta initialize)
-                                 newMeta)
-                         ) )
-)
-
-(addSelector:withMethod: MetaClass 'new:
-                         (lambda (self size)
-                           (if (eq? self (perform: (perform: self 'thisClass) 'class))
-                               (error: "A Metaclass should only have one instance!" self)
-                               (let ( (newMeta (perform:with: self 'basicNew: size)) )
-                                 (perform:with: self 'thisClass: newMeta)
-                                 (newMeta initialize)
-                                 newMeta)
-                         ) )
-)
-
 (addSelector:withMethod: Class 'addSubclass:
                          (lambda (self subclass)
                            (perform:with: self 'subclasses:
@@ -229,27 +207,27 @@
     (perform:with: theMeta 'instanceVariables: classVarNames)
     (perform:with: theMeta 'name: metaName)
     (primSetClass: theMeta  MetaClass)
-;;  (perform:with: theMeta 'thisClass: orphanClass)
+    (perform:with: theMeta 'thisClass: orphanClass)
     (primSetClass: orphanClass theMeta)
     (perform: theMeta 'initialize)
     theMeta
 ) )
 
 
-;; Ask a metaClass to create its class
-(define (classFromMeta:name:ivars:superclass:category:
-         metaClass name ivar-names superclass category)
-  (let* ( (theClass (perform:with: metaClass 'basicNew: (length ivar-names))) )
-    (perform:with: theClass 'name:       name)
-    (perform:with: theClass 'instanceVariables: ivar-names)
-    (primSetClass: theClass metaClass)
-    (perform:with: theClass 'superclass: superclass)
-    (perform:with: theClass 'category:   category)
-;;  (perform:with: theClass 'thisClass:  theClass) -- done by #basicNew:
-    (hashtable-set! smalltalk-dictionary name theClass)
-    (perform: theClass 'initialize)
-    theClass
-) )
+;; ;; Ask a metaClass to create its class
+;; (define (classFromMeta:name:ivars:superclass:category:
+;;          metaClass name ivar-names superclass category)
+;;   (let* ( (theClass (perform:with: metaClass 'basicNew: (length ivar-names))) )
+;;     (perform:with: theClass 'name:       name)
+;;     (perform:with: theClass 'instanceVariables: ivar-names)
+;;     (primSetClass: theClass metaClass)
+;;     (perform:with: theClass 'superclass: superclass)
+;;     (perform:with: theClass 'category:   category)
+;;     (perform:with: theClass 'thisClass:  theClass) -- done by #basicNew:
+;;     (hashtable-set! smalltalk-dictionary name theClass)
+;;     (perform: theClass 'initialize)
+;;     theClass
+;; ) )
 
 
 ;; <Class> subclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat
@@ -281,7 +259,7 @@
     (perform:with: metaClass 'instanceVariables: classvars-list)
     (perform:with: metaClass 'name:      metaName)
     (primSetClass: metaClass MetaClass)
-;;  (perform:with: metaClass 'thisClass: subClass) -- done in #basicNew:
+    (perform:with: metaClass 'thisClass: subClass) ;; done in #basicNew:
     (perform:with: metaClass 'superclass: (perform: self 'class))
     (perform: metaClass 'initialize)
 
@@ -316,8 +294,32 @@
 (perform:with: (perform: Object 'class) 'superclass: Class)
 
 ;; MetaClass class class == MetaClass
+;; Ouch!
 
-;(primSetClass: (perform: MetaClass 'class) MetaClass)
+(define (class obj) (perform: obj 'class))
+
+(let* ( (metaclassClass (class MetaClass))
+        (cloneDict
+         (clone-method-dictionary
+          (st-obj-behavior metaclassClass)))
+      )
+  ;; MetaClass and (class MetaClass) have same behavior
+  ;; Change this
+  (vector-set! metaclassClass 1 cloneDict)
+  ;; Now we can set the 'class method
+  (primAddSelector:withMethod: cloneDict
+                               'class
+                               (lambda (self) MetaClass))
+)
+
+;; Now we have the desired circular relationship
+
+;; > (describe (class MetaClass))
+;; "MetaClass class" is an instance of class #'MetaClass'
+
+;; > (describe MetaClass)
+;; "MetaClass" is an instance of class #'MetaClass class'
+
 
 
 

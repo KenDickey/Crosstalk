@@ -234,6 +234,8 @@
 
 (define (st-obj-tag      obj) (vector-ref obj st-obj-tag-index))
 (define (st-obj-behavior obj) (vector-ref obj st-obj-behavior-index))
+(define (st-obj-behavior-set! obj newBehavior)
+  (vector-set! obj st-obj-behavior-index nedwBehavior))
 
 (define (st-object? thing)
   (and (vector? thing)
