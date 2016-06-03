@@ -116,8 +116,9 @@
 (perform:with: Behavior         'superclass: Object)
 (perform:with: Behavior         'subclasses: (list ClassDescription))
 (perform:with: ClassDescription 'superclass: Behavior)
-(perform:with: ClassDescription 'subclasses: (list Class))
+(perform:with: ClassDescription 'subclasses: (list Class MetaClass))
 (perform:with: Class            'superclass: ClassDescription)
+;;(perform:with: Class            'subclasses (list ...))
 (perform:with: MetaClass        'superclass: ClassDescription)
 
 ;; behaviors are method dictionaries
@@ -188,7 +189,7 @@
 (addSelector:withMethod: Behavior 'new
                          (lambda (self) (perform: (basicNew: self 0) 'initialize)))
 
-(addSelector:withMethod: Class 'addSubclass:
+(addSelector:withMethod: Object 'addSubclass:
                          (lambda (self subclass)
                            (perform:with: self 'subclasses:
                                           (cons subclass
@@ -204,11 +205,17 @@
           (theMeta
               (basicNew: MetaClass (length allClassVarNames)))
         )
-    (perform:with: theMeta 'instanceVariables: classVarNames)
+;;    (perform:with: theMeta 'instanceVariables: '())
     (perform:with: theMeta 'name: metaName)
     (primSetClass: theMeta  MetaClass)
     (perform:with: theMeta 'thisClass: orphanClass)
     (primSetClass: orphanClass theMeta)
+    (perform:with: theMeta
+                   'superclass:
+                   (perform:
+                    (perform: orphanClass 'superclass)
+                    'class))
+    (perform:with: MetaClass 'addSubclass: theMeta) ;;@@@@
     (perform: theMeta 'initialize)
     theMeta
 ) )
@@ -296,23 +303,24 @@
 ;; MetaClass class class == MetaClass
 ;; Ouch!
 
-(define (class obj) (perform: obj 'class))
+(define (class      obj) (perform: obj 'class))
+(define (superclass obj) (perform: obj 'superclass))
 
 (let* ( (metaclassClass (class MetaClass))
         (cloneDict
          (clone-method-dictionary
           (st-obj-behavior metaclassClass)))
       )
-  ;; MetaClass and (class MetaClass) have same behavior
-  ;; Change this
-  (vector-set! metaclassClass 1 cloneDict)
+  ;; (behavior MetaClass) == (behavior (class MetaClass)
+  ;; Change this.
+  (st-obj-behavior-set! metaclassClass cloneDict)
   ;; Now we can set the 'class method
   (primAddSelector:withMethod: cloneDict
                                'class
                                (lambda (self) MetaClass))
 )
 
-;; Now we have the desired circular relationship
+;;; Now we have the desired circular relationship
 
 ;; > (describe (class MetaClass))
 ;; "MetaClass class" is an instance of class #'MetaClass'
@@ -320,6 +328,12 @@
 ;; > (describe MetaClass)
 ;; "MetaClass" is an instance of class #'MetaClass class'
 
+;;; Note Also:
+;; > (describe (superclass MetaClass))
+;; "ClassDescription" is an instance of class #'ClassDescription class'
+
+;; > (describe (superclass (class MetaClass)))
+;; "ClassDescription class" is an instance of class #'MetaClass class'
 
 
 

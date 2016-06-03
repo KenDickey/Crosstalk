@@ -234,8 +234,8 @@
 
 (define (st-obj-tag      obj) (vector-ref obj st-obj-tag-index))
 (define (st-obj-behavior obj) (vector-ref obj st-obj-behavior-index))
-(define (st-obj-behavior-set! obj newBehavior)
-  (vector-set! obj st-obj-behavior-index nedwBehavior))
+(define (st-obj-behavior-set! obj new-behavior)
+  (vector-set! obj st-obj-behavior-index new-behavior))
 
 (define (st-object? thing)
   (and (vector? thing)
@@ -572,12 +572,17 @@
 (define (display-obj st-obj-or-list)
   (cond
    ((st-object? st-obj-or-list)
-    (display "instance of #'")
-    (display
-     (perform:
-      (perform: st-obj-or-list 'class)
-      'name))
-    (display "'."))
+    (if (perform:with: st-obj-or-list 'respondsTo: 'name)
+        (begin
+          (display "'")
+          (display (perform: st-obj-or-list 'name)))
+        (begin
+          (display "instance of #'")
+          (display
+           (perform:
+            (perform: st-obj-or-list 'class)
+            'name))))
+    (display "' "))
    ((and (list? st-obj-or-list)
          (every? st-object? st-obj-or-list))
     (display "(")
