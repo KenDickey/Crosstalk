@@ -35,12 +35,83 @@
    "obj glerph -> doesNotUnderstand")
 
 (add-eq-test 'st-object
-  #f
+  #false
   (perform:with: %%test-object '== 37)
   "anObject == 37")
 
 (add-eq-test 'st-object
-  #f
+  #false
+  (perform:with: Object 'respondsTo: 'ugly)
+  "anObject respondsTo: #ugly")
+
+(add-eq-test 'st-object
+  #true
+  (perform:with: %%test-object '~= 37)
+  "anObject ~= 37")
+
+(add-eq-test 'st-object
+  #false
+  (perform:with: #true '~~ #true)
+  "true ~~ true")
+
+(add-eq-test 'st-object
+  #true
+  (perform:with: #true '== #true)
+  "true == true")
+
+(add-eq-test 'st-object
+  #true
+  (perform:with: #true '= #true)
+  "true = true")
+
+(add-eq-test 'st-object
+  #false
+  (perform:with: #true '~= #true)
+  "true ~= true")
+
+(add-eq-test 'st-object
+  #true
+  (perform:with: #true '~~ #false)
+  "true ~~ false")
+
+(add-eq-test 'st-object
+  #false
+  (perform:with: #true '== #false)
+  "true == false")
+
+(add-eq-test 'st-object
+  #false
+  (perform:with: #true '= #false)
+  "true = false")
+
+(add-eq-test 'st-object
+  #true
+  (perform:with: #true '~= #false)
+  "true ~= false")
+
+
+;; (add-eq-test 'st-object
+;;   #false
+;;   (perform:with: "foo" '~~ "foo")
+;;   "'foo' ~~ 'foo'")
+
+;; (add-eq-test 'st-object
+;;   #true
+;;   (perform:with: 'foo '== 'foo)
+;;   "#foo == #foo")
+
+;; (add-eq-test 'st-object
+;;   #true
+;;   (perform:with: "foo" '= "foo")
+;;   "'foo' = 'foo'")
+
+;; (add-eq-test 'st-object
+;;   #false
+;;   (perform:with: "foo" '~= "foo")
+;;   "'foo' ~= 'foo'")
+
+(add-eq-test 'st-object
+  #false
   (perform:with: %%test-object '== (vector '(object) '() 3))
   "anObject == anOtherObject")
 
@@ -48,6 +119,27 @@
   #true
   (perform:with: %%test-object '== %%test-object)
   "anObject == anObject")
+
+(add-eq-test 'st-object
+  Object
+  (perform: Object 'yourself)
+  "Object yourSelf")
+
+(add-equal-test 'st-object
+  0
+  (perform: Object 'basicSize)
+  "Object basicSize")
+
+
+(add-equal-test 'st-object
+  #false
+  (perform: st-nil 'notNil)
+  "nil notNil")
+
+(add-equal-test 'st-object
+  #true
+  (perform: st-false 'notNil)
+  "false notNil")
 
 (ensure-exception-raised 'st-object
    (make-error-string-predicate  "Failed message send: #bogus: to ")
