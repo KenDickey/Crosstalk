@@ -117,11 +117,14 @@
  	st-object-behavior
         'printOn: 
         (lambda (self outport)
-          (if (perform:with self 'respondsTo: 'name)
+          (if (perform:with: self 'respondsTo: 'name)
               (display (perform: self 'name) outport)
               (begin
                 (display "<instance of ")
-                (display (perform: (perform: self 'class) 'name) outport)
+                (display (perform:
+                            (perform: self 'class)
+                            'name)
+                         outport)
                 (display ">"))))
 )
 
@@ -152,6 +155,13 @@
         'notNil
         (lambda (self)
           (not (st-nil? self)))
+)
+
+(primAddSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'isNil
+        (lambda (self)
+          (st-nil? self))
 )
 
 (primAddSelector:withMethod:  ;; base case

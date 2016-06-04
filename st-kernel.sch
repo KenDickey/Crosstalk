@@ -136,6 +136,18 @@
           (display "nil" port)))
 
 (primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'notNil
+        (lambda (self)
+          #false))
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'isNil
+        (lambda (self)
+          #true))
+
+(primAddSelector:withMethod: 
  	st-true-behavior
         'printOn:
         (lambda (self port)

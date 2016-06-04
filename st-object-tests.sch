@@ -130,6 +130,20 @@
   (perform: Object 'basicSize)
   "Object basicSize")
 
+(add-equal-test 'st-object
+  #true
+  (perform: st-nil 'isNil)
+  "nil isNil")
+
+(add-equal-test 'st-object
+  #false
+  (perform: %%test-object 'isNil)
+  "anObject isNil")
+
+(add-equal-test 'st-object
+  #false
+  (perform: #false 'isNil)
+  "false isNil")
 
 (add-equal-test 'st-object
   #false
