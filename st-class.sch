@@ -54,11 +54,13 @@
 ;;         Class
 ;;         MetaClass
 
-(define st-Object-behavior
+(define st-Object-behavior ;; Object Class instance behavior
   (clone-method-dictionary st-object-behavior))
-(add-getters&setters st-Object-behavior
+
+(add-getters&setters st-Object-behavior ;; NB: the Object Class, not instance
                      num-header-slots
                      basic-class-instance-variable-names)
+
 (define Object ;; class Object
   (make-st-object st-Object-behavior
                   num-basic-class-ivars))
@@ -66,6 +68,9 @@
 (perform:with: Object
                'myMethodNames:
                (primSelectors st-Object-behavior))
+
+
+;; OK. Create core class instances (structure)
 
 (define st-Behavior-behavior  ;; start with object methods
   (clone-method-dictionary st-Object-behavior))
@@ -84,12 +89,12 @@
 
 (define st-MetaClass-behavior
   (clone-method-dictionary st-ClassDescription-behavior))
+(define MetaClass
+  (make-st-object st-MetaClass-behavior
+                  (+ 1 num-header-slots num-basic-class-ivars)))
 (add-getters&setters st-MetaClass-behavior
                      (+ num-header-slots num-basic-class-ivars)
                      '(thisClass)) ;; added
-(define MetaClass
-  (make-st-object st-MetaClass-behavior
-                  (+ 2 num-header-slots num-basic-class-ivars)))
 (perform:with: MetaClass
                'myMethodNames:
                '(thisClass thisClass:))
@@ -103,7 +108,7 @@
 (hashtable-set! smalltalk-dictionary 'Class            Class)
 (hashtable-set! smalltalk-dictionary 'MetaClass        MetaClass)
 
-;; Class names
+;; Class names are symbols
 (perform:with: Object           'name: 'Object)
 (perform:with: Behavior         'name: 'Behavior)
 (perform:with: ClassDescription 'name: 'ClassDescription)
@@ -121,12 +126,18 @@
 ;;(perform:with: Class            'subclasses (list ...))
 (perform:with: MetaClass        'superclass: ClassDescription)
 
-;; behaviors are method dictionaries
-(perform:with: Object           'methodDict: st-Object-behavior)
-(perform:with: Behavior         'methodDict: st-Behavior-behavior)
-(perform:with: ClassDescription 'methodDict: st-ClassDescription-behavior)
-(perform:with: Class            'methodDict: st-Class-behavior)
-(perform:with: MetaClass        'methodDict: st-MetaClass-behavior)
+;; behaviors are eq? among all instances and the methodDict of the class
+;; (behavior instance) == (methodDict (class instance))
+(perform:with: Object
+               'methodDict: st-object-behavior) ;; NOT st-Object-behavior !!
+(perform:with: Behavior
+               'methodDict: (clone-method-dictionary st-object-behavior))
+(perform:with: ClassDescription
+               'methodDict: (clone-method-dictionary st-object-behavior))
+(perform:with: Class
+               'methodDict: (clone-method-dictionary st-object-behavior))
+(perform:with: MetaClass
+               'methodDict: (clone-method-dictionary st-object-behavior))
 
 ;; Each class inherits iVars and adds any of its own
 (perform:with: Behavior         'instanceVariables: '(superclass methodDict format))
@@ -134,8 +145,114 @@
 (perform:with: Class            'instanceVariables: '(subclasses name category comment myMethodNames))
 (perform:with: MetaClass        'instanceVariables: '(thisClass))
 
-;; More structure mechanics
+;; Below basicNew: Make a new instance of some class
+(define (primNew: classSelf num-object-slots)
+  (make-st-object
+   (perform: classSelf 'methodDict)
+   (+ num-header-slots num-object-slots)
+) )
 
+;; Add a metaClass to an "orphan" class
+(define (primAddMetaClass: orphanClass)
+  (let* ( (metaName
+              (string->symbol
+               (string-append
+                (symbol->string
+                 (perform: orphanClass 'name))
+                " class"))
+          )
+          (allClassVarNames
+              (append basic-class-instance-variable-names
+                      '(thisClass))
+          )
+          (theMeta
+              (primNew: MetaClass (length allClassVarNames)))
+          (start-index ;; for added slot(s)
+           ;; All slots are added here, so just skip header
+              num-header-slots)
+          (orphansSuper (perform: orphanClass 'superclass))
+          (metaSuper
+              (if (null? orphansSuper) ;; ==> Object
+                  Class  ;; Nota Bene!!
+                  (perform: orphansSuper 'class)))
+        )
+    (add-getters&setters (behavior theMeta) start-index allClassVarNames)
+    (perform:with: theMeta 'name: metaName)
+    (primSetClass: theMeta  MetaClass)
+    (perform:with: theMeta 'thisClass: orphanClass)
+    (primSetClass: orphanClass theMeta)
+    (perform:with: theMeta
+                   'superclass:
+                   (perform:
+                    (perform: orphanClass 'superclass)
+                    'class))
+    (perform:with: theMeta
+                   'methodDict:
+                   (behavior orphanClass))
+    (unless (null? metaSuper) ;; addSubclass: not yet def'ed
+      (perform:with: metaSuper 'subclasses:
+                      (cons theMeta
+                            (perform: metaSuper 'subclasses))))
+    (perform: theMeta 'initialize)
+    theMeta
+) )
+
+
+;;; OK, now for the meta-class hierarchy..
+
+(primAddMetaClass: Object)
+(primAddMetaClass: Behavior)
+(primAddMetaClass: ClassDescription)
+(primAddMetaClass: Class)
+(primAddMetaClass: MetaClass)
+
+(perform:with: Class 'subclasses: (list (perform: Object 'class)))
+(perform:with: (perform: Object 'class) 'superclass: Class)
+
+;; shortcuts
+(define (class      obj) (perform: obj 'class))
+(define (superclass obj) (perform: obj 'superclass))
+
+
+
+;;; MetaClass class class == MetaClass
+;;; Ouch!
+
+(let* ( (metaclassClass (class MetaClass))
+        (cloneDict
+         (clone-method-dictionary
+          (st-obj-behavior metaclassClass)))
+      )
+  ;; (behavior MetaClass) == (behavior (class MetaClass)
+  ;; Change this.
+  (st-obj-behavior-set! metaclassClass cloneDict)
+  ;; Set the 'class method for 'MetaClass class'
+  ;;  nbut now without mutating others..
+  (primAddSelector:withMethod: cloneDict
+                               'class
+                               (lambda (self) MetaClass))
+)
+
+;;; Now we have the desired circular relationship:
+
+;; > (describe (class MetaClass))
+;; "MetaClass class" is an instance of class #'MetaClass'
+
+;; > (describe MetaClass)
+;; "MetaClass" is an instance of class #'MetaClass class'
+
+;;; Note Also:
+;; > (describe (superclass MetaClass))
+;; "ClassDescription" is an instance of class #'ClassDescription class'
+
+;; > (describe (superclass (class MetaClass)))
+;; "ClassDescription class" is an instance of class #'MetaClass class'
+
+
+;;; More structure mechanics
+
+;;;(allInstVarNames st-obj)
+;; Need metaclass's set up before able to imvoke this
 (define (allInstVarNames self)
   (let ( (ivarNames (perform: self 'instanceVariables))
          (super     (perform: self 'superclass))
@@ -145,25 +262,29 @@
         (append (perform: super 'allInstVarNames) ivarNames))
 ) )
 
+;; Track which methods are added to a particular class
+;;  so they are not copied over.
 (define (add-method-name-to-myMethods self selector)
   (let ( (old-names (perform: self 'myMethodNames)) )
     (perform:with: self 'myMethodNames: (cons selector old-names))
     self
 ) )
 
-
-(define (addSelector:withMethod: aClass selector method)
-  (let* ( (mDict      (perform: aClass 'methodDict))
-          (subclasses (perform: aClass 'subclasses))
+;; subclasses inherit mDict methods from their superclass
+(define (addSelector:withMethod: classSelf selector method)
+  (let* ( (mDict      (perform: classSelf 'methodDict))
+          (subclasses (perform: classSelf 'subclasses))
         )
     (primAddSelector:withMethod: mDict selector method)
-    (add-method-name-to-myMethods aClass selector)
+    (add-method-name-to-myMethods classSelf selector) ;; def'ed here
     (for-each
-     (lambda (subClass)  ;; if not overriden, copy down
+     (lambda (subClass)
+       ;; if not overriden, copy down
+       ;; Non-standard: avoids dynamic super-chain lookup
        (unless (memq selector (perform: subClass 'myMethodNames))
          (addSelector:withMethod: subClass selector method)))
      subclasses))
-  aClass
+  classSelf
 )
 
 ;; Am I self-referential, or what??
@@ -175,33 +296,37 @@
                          'allInstVarNames
                          allInstVarNames)
 
-(addSelector:withMethod: MetaClass
+(primAddSelector:withMethod: (behavior MetaClass)
+                         'allInstVarNames
+                         allInstVarNames)
+
+(primAddSelector:withMethod: (behavior (class MetaClass))
                          'allInstVarNames
                          allInstVarNames)
 
 
-;; Make a new instance of some class
-(define (basicNew: classSelf num-indexed-vars)
-  (let ( (num-named-vars
+;; basicNew: Make a new instance of some class
+(define (basicNew: classSelf num-added-vars)
+;; NB: Added vars could be named and/or indexed
+  (let ( (num-inherited-vars
             (length
              (perform: classSelf 'allInstVarNames)))
        )
-    (make-st-object
-         (perform: classSelf 'methodDict)
-         (+ num-named-vars num-indexed-vars))
+    (primNew: classSelf
+              (+ num-inherited-vars num-added-vars))
 ) )
 
-(addSelector:withMethod: Behavior
+(addSelector:withMethod: Object
        'basicNew:
        basicNew:)
-(addSelector:withMethod: Behavior
+(addSelector:withMethod: Object
        'basicNew
        (lambda (self) (basicNew: self 0)))
-(addSelector:withMethod: Behavior
+(addSelector:withMethod: Object
        'new:
        (lambda (self size)
          (perform: (basicNew: self size) 'initialize)))
-(addSelector:withMethod: Behavior
+(addSelector:withMethod: Object
         'new
         (lambda (self)
           (perform: (basicNew: self 0) 'initialize)))
@@ -215,58 +340,7 @@
                             (perform: self 'subclasses))))
 )
 
-;; Add a metaClass to an "orphan" class
-(define (addMetaClass:classVars: orphanClass classVarNames)
-  (let* ( (metaName
-              (string->symbol
-               (string-append
-                (symbol->string
-                 (perform: orphanClass 'name))
-                " class"))
-          )
-          (allClassVarNames
-              (append (perform: MetaClass 'allInstVarNames)
-                      classVarNames)
-          )
-          (theMeta
-              (basicNew: MetaClass (length allClassVarNames)))
-          (orphansSuper (superclass orphanClass))
-          (metaSuper
-              (if (null? orphansSuper)
-                  '()
-                  (class orphansSuper)))
-        )
-;;    (perform:with: theMeta 'instanceVariables: '())
-    (perform:with: theMeta 'name: metaName)
-    (primSetClass: theMeta  MetaClass)
-    (perform:with: theMeta 'thisClass: orphanClass)
-    (primSetClass: orphanClass theMeta)
-    (perform:with: theMeta
-                   'superclass:
-                   (perform:
-                    (perform: orphanClass 'superclass)
-                    'class))
-    (unless (null? metaSuper)
-      (perform:with: metaSuper 'addSubclass: theMeta))
-    (perform: theMeta 'initialize)
-    theMeta
-) )
 
-
-;; ;; Ask a metaClass to create its class
-;; (define (classFromMeta:name:ivars:superclass:category:
-;;          metaClass name ivar-names superclass category)
-;;   (let* ( (theClass (perform:with: metaClass 'basicNew: (length ivar-names))) )
-;;     (perform:with: theClass 'name:       name)
-;;     (perform:with: theClass 'instanceVariables: ivar-names)
-;;     (primSetClass: theClass metaClass)
-;;     (perform:with: theClass 'superclass: superclass)
-;;     (perform:with: theClass 'category:   category)
-;;     (perform:with: theClass 'thisClass:  theClass) -- done by #basicNew:
-;;     (hashtable-set! smalltalk-dictionary name theClass)
-;;     (perform: theClass 'initialize)
-;;     theClass
-;; ) )
 
 ;; Create an instance of a Class or MetaClass
 (define (instantiateName:superclass:ivars:
@@ -274,18 +348,28 @@
          nameSymbol
          superClass
          ivarList)
-  (let* ( (allIvars
-             (append (perform: superClass 'allInstVarNames)
-                     ivarList))
-          (newInst
-             (basicNew: selfClass (length allIvars)))
-          (newBehavior
-             (clone-method-dictionary (perform: selfClass 'methodDict)))
+  (let* ( (inherited-vars (perform: superClass 'allInstVarNames))
+          (allIvars
+             (append inherited-vars ivarList))
           (numAddedVars (length ivarList))
+          (newInst
+             (basicNew: selfClass numAddedVars))
+          (newMethodDict
+             (clone-method-dictionary (perform: superClass 'methodDict)))
         )
+    ;; Use copies of behavior and mDict to avoid mutating originals
+    (perform:with: newInst 'methodDict: newMethodDict)
+    (st-obj-behavior-set! newInst
+                          (clone-method-dictionary
+                             (st-obj-behavior newInst)))
     (unless (zero? numAddedVars)
-      (let ( (start-index (- (vector-length newInst) numAddedVars)) )
-        (add-getters&setters newBehavior start-index ivarList)))
+      (let ( (start-index (+ num-header-slots (length inherited-vars))) )
+;;@@DEBUG{
+;; (display "start-index for added vars: ")
+;; (display (number->string start-index))
+;; (newline)
+;;}DEBUG@@
+    (add-getters&setters newMethodDict start-index ivarList)))
     (primSetClass:  newInst selfClass)
     (perform:with:
        newInst
@@ -298,14 +382,12 @@
        'instanceVariables: (list-copy ivarList))
     (perform:with:
        newInst
-       'methodDict:
-       newBehavior)
+       'methodDict: newMethodDict)
     (perform:with:
        superClass
        'addSubclass: newInst)
 ;;@@DEBUG{
-    ;; (describe newInst)
-    ;; (display-ivars newInst)
+    ;;    (display-ivars newInst)
 ;;}DEBUG@@
     (perform: newInst 'initialize)  ;; NB: should always return newInst !!
 ) )
@@ -316,6 +398,7 @@
     (symbol->string nameSym)
     " class")))
 
+;;; Create a new subclass of a class
 (define (newSubclassName:iVars:cVars:
          selfClass nameSym instanceVarsList classVarsList)
    (when (hashtable-ref smalltalk-dictionary nameSym #f)
@@ -325,12 +408,12 @@
                  (and 
                   (> (string-length name) 1)
                   (char-upper-case? (string-ref name 0)))))
-    (error: "subclass name must be a string which starts uppercase" name))
+    (error: "subclass name must be a symbol which starts uppercase" name))
   ;; (unless (or (string? category) (symbol? category))
   ;;       (error: "subclass name must be a string or symbol" category))
   (unless (and (list? instanceVarsList)
                (every? symbol? instanceVarsList))
-    (error: "InstannceVariableNames must be a list of symbols" instanceVarsList))
+    (error: "InstanceVariableNames must be a list of symbols" instanceVarsList))
   (unless (and (list? classVarsList)
                (every? symbol? classVarsList))
     (error: "ClassVariableNames must be a list of symbols" classVarsList))
@@ -351,104 +434,14 @@
     newSubClass		;; @@??@@ move initialize to here?
 ) )
 
-;; <Class> subclass: t instanceVariableNames: f classVariableNames: d poolDictionaries: s category: cat
-;; Ask a class to create a new subclass
-;; (define (subclass:instanceVariableNames:classVariableNames:category:
-;;          self name ivars-list classvars-list category)
-;;   (when (hashtable-ref smalltalk-dictionary name #f)
-;;     (error: "Class already exists" name))
-;;   (unless (and (string? name)
-;;                (> (string-length name) 1)
-;;                (char-upper-case? (string-ref name 0)))
-;;     (error: "subclass name must be a string which starts uppercase" name))
-;;   (unless (or (string? category) (symbol? category))
-;;         (error: "subclass name must be a string or symbol" category))
-;;   (unless (and (list? ivars-list)
-;;                (every? symbol? ivars-list))
-;;     (error: "InstannceVariableNames must be a list of symbols" ivars-list))
-;;   (unless (and (list? classvars-list)
-;;                (every? symbol? classvars-list))
-;;     (error: "ClassVariableNames must be a list of symbols" classvars-list))
-  
-;;   (let* ( (metaName  (string-append name " class"))
-;;           (allClassvarNames
-;;              (append (perform: MetaClass 'allInstVarNames) classvars-list))
-;;           (metaClass
-;;              (perform:with: MetaClass 'basicNew: (length allClassvarNames)))
-;;           (allIvarNames (append (perform: self 'allInstVarNames) ivars-list))
-;;         )
-;;     ;; set up metaClass
-;;     (perform:with: metaClass 'instanceVariables: classvars-list)
-;;     (perform:with: metaClass 'name:      metaName)
-;;     (primSetClass: metaClass MetaClass)
-;;     (perform:with: metaClass 'thisClass: subClass) ;; done in #basicNew:
-;;     (perform:with: metaClass 'superclass: (perform: self 'class))
-;;     (perform: metaClass 'initialize)
-
-;;     ;; self
-;;     (let ( (subClass
-;;               (classFromMeta:name:ivars:superclass:category:
-;;                    metaClass name allIvarNames self category))
-;;          )
-;;       (hashtable-set! smalltalk-dictionary metaName metaClass)
-;;       (hashtable-set! smalltalk-dictionary name     subClass)
-;; ;;      (perform: subClass 'initialize)
-;; ;;	  -- done in #classFromMeta:name:ivars:superclass:category:
-;;       (perform:with: self 'addSubclass: subClass)
-;;       ;; return value:
-;;       subClass)
-;; ) )
 
 ;; (addSelector:withMethod:
 ;;     Object
 ;;     'subclass:instanceVariableNames:classVariableNames:category:
 ;;      subclass:instanceVariableNames:classVariableNames:category:)
 
-;; OK, now for the meta-class hierarchy..
 
-(addMetaClass:classVars: Object    basic-class-instance-variable-names)
-(addMetaClass:classVars: Behavior  basic-class-instance-variable-names)
-(addMetaClass:classVars: ClassDescription basic-class-instance-variable-names)
-(addMetaClass:classVars: Class     basic-class-instance-variable-names)
-(addMetaClass:classVars: MetaClass (append basic-class-instance-variable-names '(thisClass)))
 
-(perform:with: Class 'subclasses: (list (perform: Object 'class)))
-(perform:with: (perform: Object 'class) 'superclass: Class)
-
-;; MetaClass class class == MetaClass
-;; Ouch!
-
-(define (class      obj) (perform: obj 'class))
-(define (superclass obj) (perform: obj 'superclass))
-
-(let* ( (metaclassClass (class MetaClass))
-        (cloneDict
-         (clone-method-dictionary
-          (st-obj-behavior metaclassClass)))
-      )
-  ;; (behavior MetaClass) == (behavior (class MetaClass)
-  ;; Change this.
-  (st-obj-behavior-set! metaclassClass cloneDict)
-  ;; Now we can set the 'class method
-  (primAddSelector:withMethod: cloneDict
-                               'class
-                               (lambda (self) MetaClass))
-)
-
-;;; Now we have the desired circular relationship:
-
-;; > (describe (class MetaClass))
-;; "MetaClass class" is an instance of class #'MetaClass'
-
-;; > (describe MetaClass)
-;; "MetaClass" is an instance of class #'MetaClass class'
-
-;;; Note Also:
-;; > (describe (superclass MetaClass))
-;; "ClassDescription" is an instance of class #'ClassDescription class'
-
-;; > (describe (superclass (class MetaClass)))
-;; "ClassDescription class" is an instance of class #'MetaClass class'
 
 ;; (provide 'st-class)
 

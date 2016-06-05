@@ -52,12 +52,12 @@
   (hashtable-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
-(define primSelectors hashtable-keys)
+(define (primSelectors methodDict) (vector->list (hashtable-keys methodDict)))
 
 (define primIncludesSelector: hashtable-contains?)
 
 (define (primSelectorsDo: methodDict closure)
-  (for-each closure (hashtable-keys methodDict)))
+  (vector-for-each closure (hashtable-keys methodDict)))
 
 (define (primSelectorsAndMethodsDo: methodDict closure)
   (let-values ( ((selectors methods) (hashtable-entries methodDict)) )
@@ -258,12 +258,40 @@
 ;;;       ..into vector of behaviors :FIXME@@
 (define num-header-slots 2) ;; tag + behavior; @@remove tag@@
 
+;;; Generic ST Object representation:
+;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
+
+(define (make-st-object behavior num-indexed+named-slots)
+  (let ( (st-obj (make-vector
+                   (+ num-header-slots num-indexed+named-slots)
+                   st-nil))
+       )
+    (vector-set! st-obj 0 %%st-object-tag%%)  ;; @@Change when switch to native tags@@
+    (vector-set! st-obj 1 behavior)
+    st-obj)
+)
+;; TEST -- zeros in indexed slota
+;;     (if (zero? num-indexed-slots)
+;;         st-obj
+;;         (let* ( (vec-len (vector-length st-obj))
+;;                 (start-index (- vec-len num-indexed-slots))
+;;               )
+;;           (let loop ( (index start-index) )
+;;             (if (>= index vec-len)
+;;                 st-obj
+;;                 (begin
+;;                   (vector-set! st-obj index 0)
+;;                   (loop (+ 1 index)))))))
+;; ) )
+
+
+;;; (behavior obj)
 (define (behavior thing)
   (case thing  
     ;; immediates
     ((#true)  st-true-behavior)
     ((#false) st-false-behavior)
-    ((())    st-nil-behavior)
+    (( () )   st-nil-behavior)
     (else
      (cond
       ((integer? thing) st-integer-behavior)
@@ -273,8 +301,8 @@
         ((real?     thing) st-real-behavior)
         ((complex?  thing) st-complex-behavior)
         ;; FIXME:: Scaled Decimal
-        (else st-nil))
-       )
+        (else (error: "Unknown Scheme number representation" thing))
+       ))
       ((vector? thing)
        (if (and (< 1 (vector-length thing))
                 (eq? %%st-object-tag%% (st-obj-tag thing)))
@@ -293,7 +321,7 @@
     ))
 ) )
 
-;; Message lookup
+;;; Message lookup
 
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
@@ -302,11 +330,10 @@
         (primLookup: mDict selectorSym)
 ) ) )
 
-;;; Objects
 
 ;; immediates, vector-like, bytevector-like
 
-;;; R7RS
+;;; R7RS bytevector accessors named differently
 
 (define bytevector-ref  bytevector-u8-ref)
 (define bytevector-set! bytevector-u8-set!)
@@ -351,30 +378,6 @@
        (bytevector-length self)))
 
 
-;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
-
-(define (make-st-object behavior num-indexed+named-slots)
-  (let ( (st-obj (make-vector
-                   (+ num-header-slots num-indexed+named-slots)
-                   st-nil))
-       )
-    (vector-set! st-obj 0 %%st-object-tag%%)  ;; @@Change when switch to native tags@@
-    (vector-set! st-obj 1 behavior)
-    st-obj)
-)
-;; TEST -- zeros in indexed slota
-;;     (if (zero? num-indexed-slots)
-;;         st-obj
-;;         (let* ( (vec-len (vector-length st-obj))
-;;                 (start-index (- vec-len num-indexed-slots))
-;;               )
-;;           (let loop ( (index start-index) )
-;;             (if (>= index vec-len)
-;;                 st-obj
-;;                 (begin
-;;                   (vector-set! st-obj index 0)
-;;                   (loop (+ 1 index)))))))
-;; ) )
   
 ;; Done at class creation
 ;; NB: start-index includes num-header-slots, which is the minimum index
@@ -388,6 +391,13 @@
                   (string-append
                    (symbol->string getter-name) ":")))
                 )
+;;@@DEBUG{
+;; (display "[")
+;; (display (number->string index))
+;; (display "] -> ")
+;; (display getter-name)
+;; (newline)
+;;}DEBUG@@
           (primAddSelector:withMethod:
            behavior
            getter-name
@@ -553,23 +563,25 @@
 
 
 ;;;======================================================
-;; What do we have here?
+;;; What do we have here?
 
-(define (selectors st-obj)
+;; What selectors does  obj  respond to?
+(define (selectors obj)
   (list-sort
    (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
-   (vector->list (primSelectors (behavior st-obj)))))
+   (primSelectors (behavior obj))))
 
-(define (display-selectors st-obj)
-  (display (selectors st-obj)))
-  
+(define (display-selectors obj)
+  (display (selectors obj)))
+
+
+;; Most useful..
 (define (display-ivars st-obj)
   (if (st-object? st-obj)
       (let ( (ivarNames (perform: (perform: st-obj 'class)
                                   'allInstVarNames))
            )
-        (display "an instance of ")
-        (display (perform: (perform: st-obj 'class) 'name))
+        (describe st-obj)
         (for-each
          (lambda (ivarName)
            (newline)
