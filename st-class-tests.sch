@@ -22,27 +22,27 @@
 ;;   "Class printString")
 
 (add-equal-test 'st-class
-  "Class"
+  'Class
   (perform: Class 'name)
   "Class name")
 
 (add-equal-test 'st-class
-  "Class class"
+  '|Class class|
   (perform: (perform: Class 'class) 'name)
   "Class class name")
 
 (add-equal-test 'st-class
-  "Object"
+  'Object
   (perform: (perform: Behavior 'superclass) 'name)
   "Behavior superclass name")
 
 (add-equal-test 'st-class
-  "ClassDescription"
+  'ClassDescription
   (perform: (perform: MetaClass 'superclass) 'name)
   "MetaClass superclass name")
 
 (add-equal-test 'st-class
-  "ClassDescription class"
+  '|ClassDescription class|
   (perform:
    (perform:
     (perform: MetaClass 'superclass)
@@ -51,7 +51,7 @@
   "MetaClass superclass class name")
 
 (add-equal-test 'st-class
-  "ClassDescription class"
+  '|ClassDescription class|
   (perform:
    (perform:
     (perform: MetaClass 'class)
@@ -60,12 +60,12 @@
   "MetaClass class superclass name")
 
 (add-equal-test 'st-class
-  "MetaClass class"
+  '|MetaClass class|
   (perform: (perform: MetaClass 'class) 'name)
   "MetaClass class name")
 
 (add-equal-test 'st-class
-  "MetaClass"
+  'MetaClass
   (perform:
    (perform:
     (perform: MetaClass 'class)
