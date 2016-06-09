@@ -76,6 +76,8 @@
     clone)
 )
 
+(define clone-behavior clone-method-dictionary) ;; shorter to type
+
 ;;; Basic Objects
 
 (define st-nil  '())
@@ -84,6 +86,7 @@
 
 (define st-nil? null?)
 
+;; for debug..
 (define (make-mDict-placeholder classNameSym)
   (let ( (mDict (make-method-dictionary)) )
     (primAddSelector:withMethod: mDict
@@ -91,6 +94,8 @@
                              (lambda (self) classNameSym))
     mDict
 ) )
+
+;; Behavior adds breains to structure
 
 (define st-nil-behavior        (make-mDict-placeholder 'UndefinedObject))
 (define st-true-behavior       (make-mDict-placeholder 'True))
@@ -333,10 +338,6 @@
 
 ;; immediates, vector-like, bytevector-like
 
-;;; R7RS bytevector accessors named differently
-
-(define bytevector-ref  bytevector-u8-ref)
-(define bytevector-set! bytevector-u8-set!)
 
 (define (make-st-bytevector numBytes initialValue)
   (let ( (initVal (if (and (integer? initialValue)
@@ -558,9 +559,11 @@
 ) )
 
 
-(define (primSetClass: obj class)
-  (primSet:toValue: (behavior obj) 'class (lambda (self) class)))
+(define (primSetClass: behavior class)
+  (primSet:toValue: behavior 'class (lambda (self) class)))
 
+(define (setClass: obj class)
+  (primSetClass: (behavior obj) class))
 
 ;;;======================================================
 ;;; What do we have here?
@@ -578,17 +581,25 @@
 ;; Most useful..
 (define (display-ivars st-obj)
   (if (st-object? st-obj)
-      (let ( (ivarNames (perform: (perform: st-obj 'class)
-                                  'allInstVarNames))
+      (let* ( (obj-class (perform: st-obj 'class))
+              (ivarNames
+               (if (null? obj-class)
+                   '()
+                   (perform: obj-class 'allInstVarNames)))
            )
-        (describe st-obj)
-        (for-each
-         (lambda (ivarName)
-           (newline)
-           (display ivarName)
-           (display " -> ")
-           (display-obj (perform: st-obj ivarName)))
-         ivarNames)
+        (cond
+         ((null? obj-class)
+          (display "entity has no class!!")
+          )
+         (else
+          (describe st-obj)
+          (for-each
+           (lambda (ivarName)
+             (newline)
+             (display ivarName)
+             (display " -> ")
+             (display-obj (perform: st-obj ivarName)))
+           ivarNames)))
         (newline))
       (write st-obj))
 )
@@ -596,24 +607,32 @@
 (define (display-obj st-obj-or-list)
   (cond
    ((st-object? st-obj-or-list)
-    (if (perform:with: st-obj-or-list 'respondsTo: 'name)
-        (begin
-          (display "'")
-          (display (perform: st-obj-or-list 'name)))
-        (begin
-          (display "instance of #'")
-          (display
-           (perform:
-            (perform: st-obj-or-list 'class)
-            'name))))
-    (display "' "))
+    (cond
+     ((perform:with: st-obj-or-list 'respondsTo: 'name)
+      (display "'")
+      (display (perform: st-obj-or-list 'name))
+      )
+     ((perform:with: st-obj-or-list 'respondsTo: 'printString)
+      (display "'")
+      (display (perform: st-obj-or-list 'printString))
+      )
+     (else
+      (display "instance of #'")
+      (display
+       (perform:
+        (perform: st-obj-or-list 'class)
+        'name))
+      )
+    )
+    (display "' ")
+   )
    ((and (list? st-obj-or-list)
          (every? st-object? st-obj-or-list))
     (display "(")
     (for-each display-obj st-obj-or-list)
     (display ")"))
    (else (write st-obj-or-list))
-) )
+ ) )
 
 (define (describe obj)
   (cond

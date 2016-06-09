@@ -40,14 +40,21 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
+;;; R7RS bytevector accessors named differently
+
+(define bytevector-ref  bytevector-u8-ref)
+(define bytevector-set! bytevector-u8-set!)
+
 
 (define st-root-directory-prefix "/home/kend/SiS/")
 
 (define st-bootstrap-files
-  '( "st-kernel"     ;; message mechanics
-     "st-object"     ;; Object behavior
-     "st-class"      ;; Object Class MetaClass ClassDescription Behavior
-     "st-boolean"    ;; Boolean True False
+  '( "st-kernel"       ;; message mechanics
+     "st-object"      ;; Object behavior
+     "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
+     
+;     "st-class"       ;; Object Class MetaClass ClassDescription Behavior
+;     "st-boolean"     ;; Boolean True False
     )
  )
 
