@@ -344,6 +344,7 @@
 
 (perform:with: MetaClassClass 'superclass: (class ClassDescription))
 (perform:with: ClassClass     'superclass: (class ClassDescription))
+;;; MetaClass class class == MetaClass
 (setClass: MetaClass MetaClassClass)
 
 (perform:with: Class
@@ -356,27 +357,53 @@
                'instanceVariables: '())
 
 
-(for-each ;; get regular
- (lambda (class)
-   (primAddSelector:withMethod:
-    (behavior class)
-    'allInstVarNames allInstVarNames)
-   )
- (list Object Behavior ClassDescription Class MetaClass
-       (class Object) (class Behavior) (class ClassDescription)
-       (class Class) (class MetaClass)))
+;; (for-each ;; get regular
+;;  (lambda (class)
+;;    (primAddSelector:withMethod:
+;;     (behavior class)
+;;     'allInstVarNames allInstVarNames)
+;;    )
+;;  (list Object Behavior ClassDescription Class MetaClass
+;;        (class Object) (class Behavior) (class ClassDescription)
+;;        (class Class) (class MetaClass)))
+;;
+;; See below.  Now done as:
+;;   (addSelector:withMethod: Object
+;;                            'allInstVarNames
+;;                            allInstVarNames)
 
 (perform:with: Class     'superclass: ClassDescription)
 (perform:with: MetaClass 'superclass: ClassDescription)
 
-;; ;; add methods from st-object-behavior into Object
-;; (let ( (obj-behavior (behavior Object)) )
-;;   (primSelectorsAndMethodsDo:
-;;    st-object-behavior
-;;    (lambda (selector method)
-;;      (unless (primIncludesSelector: obj-behavior selector)
-;;        (primAddSelector:withMethod: obj-behavior selector method))))
-;;   (set! st-object-behavior obj-behavior))
+
+;;; Subclasses inherit mDict methods from their superclass
+;;;  so adding a selector_method to a class affects
+;;;  its instances, NOT the class instance itself.
+(define (addSelector:withMethod: classSelf selector method)
+  (let* ( (mDict      (perform: classSelf 'methodDict))
+          (subclasses (perform: classSelf 'subclasses))
+        )
+    (primAddSelector:withMethod: mDict selector method)
+    (add-method-name-to-myMethods classSelf selector) ;; def'ed here
+    (for-each
+     (lambda (subClass)
+       ;; if not overriden, copy down
+       ;; Non-standard: avoids dynamic super-chain lookup
+       (unless (memq selector (perform: subClass 'myMethodNames))
+         (addSelector:withMethod: subClass selector method)))
+     subclasses))
+  classSelf
+)
+
+;; Am I self-referential, or what??
+;; Talk about "meta-circular"..
+(addSelector:withMethod: Object
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: Object
+                         'allInstVarNames
+                         allInstVarNames)
 
 ;; (provide 'st-core-classes)
 
