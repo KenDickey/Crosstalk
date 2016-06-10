@@ -85,6 +85,13 @@
         (append (perform: super 'allInstVarNames) ivarNames))
 ) )
 
+(define (allSuperclasses self)
+  (let ( (mySuper (perform: self 'superclass)) )
+    (if (null? mySuper)
+        st-nil
+        (append (allSuperclasses mySuper) (list mySuper)))
+) )
+
 ;; Track which methods are added to a particular class
 ;;  so they are not copied over.
 (define (add-method-name-to-myMethods self selector)
@@ -321,6 +328,7 @@
    'Object '() '()))
 
 (perform:with: Object 'superclass: st-nil) ;; ground case
+(perform:with: (class Object) 'superclass: Class)
 
 (define Behavior
   (newSubclassName:iVars:cVars:
@@ -334,9 +342,32 @@
 
 ;; Redo relations
 
+(perform:with: MetaClassClass 'superclass: (class ClassDescription))
+(perform:with: ClassClass     'superclass: (class ClassDescription))
+(setClass: MetaClass MetaClassClass)
+
+(perform:with: Class
+               'instanceVariables: class-added-var-names)
+(perform:with: MetaClass
+               'instanceVariables: metaClass-added-var-names)
+(perform:with: ClassClass
+               'instanceVariables: '())
+(perform:with: MetaClassClass
+               'instanceVariables: '())
+
+
+(for-each ;; get regular
+ (lambda (class)
+   (primAddSelector:withMethod:
+    (behavior class)
+    'allInstVarNames allInstVarNames)
+   )
+ (list Object Behavior ClassDescription Class MetaClass
+       (class Object) (class Behavior) (class ClassDescription)
+       (class Class) (class MetaClass)))
+
 (perform:with: Class     'superclass: ClassDescription)
 (perform:with: MetaClass 'superclass: ClassDescription)
-(setClass: MetaClass MetaClassClass)
 
 ;; ;; add methods from st-object-behavior into Object
 ;; (let ( (obj-behavior (behavior Object)) )

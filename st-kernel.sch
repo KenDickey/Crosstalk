@@ -648,7 +648,7 @@
           (display (perform: obj 'name))
           (display #\")
           (display " is ")))
-    (display "an instance of class #'")
+    (display "an instance of #'")
     (display (perform: (perform: obj 'class) 'name))
     (display "'")
     )
