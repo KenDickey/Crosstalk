@@ -51,43 +51,43 @@
 
 (add-eq-test 'st-object
   #false
-  (perform:with: #true '~~ #true)
-  "true ~~ true")
+  (perform:with: %%test-object '~~ %%test-object)
+  "anObj ~~ anObj")
 
 (add-eq-test 'st-object
   #true
-  (perform:with: #true '== #true)
-  "true == true")
+  (perform:with: %%test-object '== %%test-object)
+  "anObj == anObj")
 
 (add-eq-test 'st-object
   #true
-  (perform:with: #true '= #true)
-  "true = true")
+  (perform:with: %%test-object '= %%test-object)
+  "anObj = anObj")
 
 (add-eq-test 'st-object
   #false
-  (perform:with: #true '~= #true)
-  "true ~= true")
+  (perform:with: %%test-object '~= %%test-object)
+  "anObj ~= anObj")
 
 (add-eq-test 'st-object
   #true
-  (perform:with: #true '~~ #false)
-  "true ~~ false")
+  (perform:with: %%test-object '~~ #false)
+  "anObj ~~ false")
 
 (add-eq-test 'st-object
   #false
-  (perform:with: #true '== #false)
-  "true == false")
+  (perform:with: %%test-object '== #false)
+  "anObj == false")
 
 (add-eq-test 'st-object
   #false
-  (perform:with: #true '= #false)
-  "true = false")
+  (perform:with: %%test-object '= #false)
+  "anObj = false")
 
 (add-eq-test 'st-object
   #true
-  (perform:with: #true '~= #false)
-  "true ~= false")
+  (perform:with: %%test-object '~= #false)
+  "anObj ~= false")
 
 
 ;; (add-eq-test 'st-object
@@ -120,40 +120,35 @@
   (perform:with: %%test-object '== %%test-object)
   "anObject == anObject")
 
-(add-eq-test 'st-object
-  Object
-  (perform: Object 'yourself)
-  "Object yourSelf")
-
 (add-equal-test 'st-object
   0
   (perform: Object 'basicSize)
   "Object basicSize")
 
-(add-equal-test 'st-object
-  #true
-  (perform: st-nil 'isNil)
-  "nil isNil")
+;; (add-equal-test 'st-object
+;;   #true
+;;   (perform: st-nil 'isNil)
+;;   "nil isNil")
 
 (add-equal-test 'st-object
   #false
   (perform: %%test-object 'isNil)
   "anObject isNil")
 
-(add-equal-test 'st-object
-  #false
-  (perform: #false 'isNil)
-  "false isNil")
+;; (add-equal-test 'st-object
+;;   #false
+;;   (perform: #false 'isNil)
+;;   "false isNil")
 
-(add-equal-test 'st-object
-  #false
-  (perform: st-nil 'notNil)
-  "nil notNil")
+;; (add-equal-test 'st-object
+;;   #false
+;;   (perform: st-nil 'notNil)
+;;   "nil notNil")
 
-(add-equal-test 'st-object
-  #true
-  (perform: st-false 'notNil)
-  "false notNil")
+;; (add-equal-test 'st-object
+;;   #true
+;;   (perform: st-false 'notNil)
+;;   "false notNil")
 
 (ensure-exception-raised 'st-object
    (make-error-string-predicate  "Failed message send: #bogus: to ")
