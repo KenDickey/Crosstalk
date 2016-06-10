@@ -65,7 +65,7 @@
 
 ;; superclass           class               class class
 ;; ----------------------------------------------------
-;; nil                  UndefinedObject
+;; nil                  UndefinedObject  UndefinedObject class
 ;;  Object              Object class        MetaClass
 ;;    Behavior          Behavior class           "
 ;;      ClassDescrption ClassDescription class   "
@@ -92,13 +92,11 @@
         (append (allSuperclasses mySuper) (list mySuper)))
 ) )
 
-;; Track which methods are added to a particular class
-;;  so they are not copied over.
-(define (add-method-name-to-myMethods self selector)
-  (let ( (old-names (perform: self 'myMethodNames)) )
-    (perform:with: self 'myMethodNames: (cons selector old-names))
-    self
-) )
+(define (display-allSupers obj)
+  (display-obj (allSuperclasses obj)))
+
+(define (display-subs obj) ;; direct subclasses
+  (display-obj (perform: obj 'subclasses)))
 
 ;; Below basicNew: Make a new instance of some class
 (define (primNew: classSelf num-object-slots)
@@ -128,12 +126,14 @@
      st-class-behavior
      'basicNew: basicNew:)
 
+(define (addSubclass: classSelf subclass)
+  (perform:with: classSelf 'subclasses:
+                 (cons subclass
+                       (perform: classSelf 'subclasses))))
+
 (primAddSelector:withMethod:
      st-class-behavior
-     'addSubclass: (lambda (self subclass)
-                     (perform:with: self 'subclasses:
-                                    (cons subclass
-                                          (perform: self 'subclasses)))))
+     'addSubclass: addSubclass:)
 
 (define st-metaClass-behavior (clone-behavior st-class-behavior))
 
@@ -147,6 +147,8 @@
 
 ;;; Scaffolding setup
 ;; Just enough behavior to allow instantiation bootstrap
+;; to call: newSubclassName:iVars:cVars:
+
 (define (make-protoClass
          name behav slot-names
          mDict child-ivar-names
@@ -215,21 +217,28 @@
 (perform:with: ClassClass     'thisClass:  Class)
 (setClass:     ClassClass     MetaClass)
 (perform:with: MetaClassClass 'thisClass:  MetaClass)
-(perform:with: MetaClassClass 'superclass: ClassClass)
+(perform:with: MetaClassClass 'superclass: ClassClass) ;; ClassDescription class
+
 (setClass:     MetaClassClass  MetaClass) ;; Nota Bene!
 (perform:with: MetaClass      'superclass: Class) ;; ClassDescription
-;; Ficup until we fix things
+
+;; Fake it until we fixup relations, below
 (primAddSelector:withMethod:
      (behavior MetaClass)
      'allInstVarNames (lambda (self) combined-metaClass-ivar-names))
+
 (primAddSelector:withMethod:
      (behavior MetaClassClass)
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
+;;; OK. Scaffolding in place.
+;;; Can now use #newSubclassName:iVars:cVars:
 
-;;; Get regular
+;;;The regular way to make a new (sub)class instance:
+;;;   Ask MetaClass to make the metaClass
+;;;   Then ask the metaClass to make its class
 
-;; Create an instance of a Class or MetaClass
+;; Helper. Create an instance of a Class or MetaClass
 (define (instantiateName:superclass:ivars:
          selfClass
          nameSymbol
@@ -252,26 +261,22 @@
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots (length inherited-vars) -1)) )
 ;;@@DEBUG{
-(display "start-index for added vars: ")
+(display (perform: selfClass 'name))
+(display ":  start-index for added vars: ")
 (display (number->string start-index))
 (newline)
 ;;}DEBUG@@
-      (add-getters&setters newMethodDict start-index addedInstanceVars)))
-    (setClass: newInst selfClass)
-    (perform:with:
-       newInst
-       'name:       nameSymbol)
-    (perform:with:
-       newInst
-       'superclass: superClass)
+         (add-getters&setters newMethodDict start-index addedInstanceVars))
+    )
+    (setClass:     newInst    selfClass)
+    (perform:with: newInst    'superclass: superClass)
+    (addSubclass:  superClass newInst)
+    (perform:with: newInst    'name:       nameSymbol)
     (perform:with:
        newInst ;; ANSI requires a fresh (unshared) list
        'instanceVariables: (list-copy addedInstanceVars))
-    (perform:with:
-       superClass
-       'addSubclass: newInst)
 ;;@@DEBUG{
-    ;;    (display-ivars newInst)
+    (display-ivars newInst)
 ;;}DEBUG@@
     (perform: newInst 'initialize)  ;; NB: should always return newInst !!
 ) )
@@ -282,7 +287,7 @@
     (symbol->string nameSym)
     " class")))
 
-;;; Create a new subclass of a class
+;;; Ask a class to create a new subclass
 (define (newSubclassName:iVars:cVars:
          selfClass nameSym instanceVarsList classVarsList)
    ;; (when (hashtable-ref smalltalk-dictionary nameSym #f)
@@ -307,16 +312,16 @@
                 (name->metaName nameSym)
                 (class selfClass) ;;(perform: selfClass 'class)
                 classVarsList))
-          (newSubClass
+          (newSubclass
              (instantiateName:superclass:ivars:
                 newMetaClass
                 nameSym
                 selfClass
                 instanceVarsList))
         )
-    (perform:with: newMetaClass 'thisClass: newSubClass)
-    (hashtable-set! smalltalk-dictionary nameSym newSubClass)
-    newSubClass		;; @@??@@ move initialize to here?
+    (perform:with: newMetaClass 'thisClass: newSubclass)
+    (primSet:toValue: smalltalk-dictionary nameSym newSubclass)
+    newSubclass		;; @@??@@ move initialize to here?
 ) )
 
 ;;; OK.  Now use protoClasses to bootstrap core classes
@@ -344,7 +349,10 @@
 
 (perform:with: MetaClassClass 'superclass: (class ClassDescription))
 (perform:with: ClassClass     'superclass: (class ClassDescription))
-;;; MetaClass class class == MetaClass
+(perform:with: (class ClassDescription)
+               'subclasses: (list ClassClass MetaClassClass))
+
+;;; (MetaClass class class) == MetaClass
 (setClass: MetaClass MetaClassClass)
 
 (perform:with: Class
@@ -355,7 +363,6 @@
                'instanceVariables: '())
 (perform:with: MetaClassClass
                'instanceVariables: '())
-
 
 ;; (for-each ;; get regular
 ;;  (lambda (class)
@@ -374,29 +381,46 @@
 
 (perform:with: Class     'superclass: ClassDescription)
 (perform:with: MetaClass 'superclass: ClassDescription)
+(perform:with: ClassDescription
+               'subclasses: (list Class MetaClass))
 
+;; Track which methods are added to a particular class
+;;  so they are not copied over from above.
+(define (add-method-name-to-myMethods self selector)
+  (let ( (old-names (perform: self 'myMethodNames)) )
+    (perform:with: self 'myMethodNames: (cons selector old-names))
+    self
+) )
+
+(perform:with: Object 'myMethodNames: (selectors Object))
 
 ;;; Subclasses inherit mDict methods from their superclass
 ;;;  so adding a selector_method to a class affects
 ;;;  its instances, NOT the class instance itself.
 (define (addSelector:withMethod: classSelf selector method)
+  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
+  (subclassAddSelector:withMethod: classSelf selector method))
+
+;;; NB: method added to methodDict of class
+;;; => behavior of instances, not class itself !!
+(define (subclassAddSelector:withMethod:
+         classSelf selector method)
   (let* ( (mDict      (perform: classSelf 'methodDict))
           (subclasses (perform: classSelf 'subclasses))
         )
     (primAddSelector:withMethod: mDict selector method)
-    (add-method-name-to-myMethods classSelf selector) ;; def'ed here
     (for-each
      (lambda (subClass)
        ;; if not overriden, copy down
        ;; Non-standard: avoids dynamic super-chain lookup
        (unless (memq selector (perform: subClass 'myMethodNames))
-         (addSelector:withMethod: subClass selector method)))
+         (subclassAddSelector:withMethod: subClass selector method)))
      subclasses))
   classSelf
 )
 
 ;; Am I self-referential, or what??
-;; Talk about "meta-circular"..
+;; Talk about "meta-circular"!!
 (addSelector:withMethod: Object
                          'addSelector:withMethod:
                          addSelector:withMethod:)
@@ -404,6 +428,32 @@
 (addSelector:withMethod: Object
                          'allInstVarNames
                          allInstVarNames)
+
+(addSelector:withMethod:
+     Object
+     'basicNew: basicNew:)
+
+(addSelector:withMethod:
+     Object
+     'basicNew
+     (lambda (self) (basicNew: self 0)))
+
+(addSelector:withMethod:
+     Object
+     'new:
+     (lambda (self size)
+       (perform: (basicNew: self size) 'initialize)))
+
+(addSelector:withMethod:
+     Object
+     'new
+     (lambda (self)
+       (perform: (basicNew: self 0) 'initialize)))
+
+(addSelector:withMethod:
+     Object
+     'addSubclass: addSubclass:)
+
 
 ;; (provide 'st-core-classes)
 

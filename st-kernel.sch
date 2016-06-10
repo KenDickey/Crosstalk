@@ -598,10 +598,11 @@
              (newline)
              (display ivarName)
              (display " -> ")
-             (display-obj (perform: st-obj ivarName)))
-           ivarNames)))
-        (newline))
+             (display-obj (perform: st-obj ivarName))
+           )
+           ivarNames))))
       (write st-obj))
+  (newline)
 )
 
 (define (display-obj st-obj-or-list)
@@ -687,7 +688,7 @@
    ;; @@FIXME: ...
    (else (write obj)) ;; procedures..
    )
-  (newline)
+;;  (newline)
  )
 
 ;;;======================================================
