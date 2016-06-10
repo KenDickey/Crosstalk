@@ -636,6 +636,7 @@
  ) )
 
 (define (describe obj)
+  (newline) ;; mostly harmless
   (cond
    ((null? obj) (display 'nil)
     )

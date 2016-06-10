@@ -102,18 +102,21 @@
 (define (primNew: classSelf num-object-slots)
   (make-st-object
    (perform: classSelf 'methodDict)
-   (+ num-header-slots num-object-slots)
-) )
+   num-object-slots)
+)
 
 ;; basicNew: Make a new instance of some class
 (define (basicNew: classSelf num-added-vars)
 ;; NB: Added vars could be named and/or indexed
-  (let ( (num-inherited-vars
-            (length
-             (perform: classSelf 'allInstVarNames)))
+  (let* ( (num-inherited-vars
+           (length
+            (perform: classSelf 'allInstVarNames)))
+          (newInst
+           (primNew: classSelf
+                     (+ num-inherited-vars num-added-vars)))
        )
-    (primNew: classSelf
-              (+ num-inherited-vars num-added-vars))
+    (setClass: newInst classSelf)
+    newInst
 ) )
 
 (define st-class-behavior (clone-behavior st-object-behavior))
@@ -247,6 +250,7 @@
   (let* ( (inherited-vars (perform: superClass 'allInstVarNames))
           (allIvars
              (append inherited-vars addedInstanceVars))
+          (num-inherited-vars (length inherited-vars))
           (numAddedVars (length addedInstanceVars))
           (newInst
              (basicNew: selfClass numAddedVars))
@@ -259,7 +263,7 @@
                           (clone-method-dictionary
                              (st-obj-behavior newInst)))
     (unless (zero? numAddedVars)
-      (let ( (start-index (+ num-header-slots (length inherited-vars) -1)) )
+      (let ( (start-index (+ num-header-slots num-inherited-vars)) )
 ;;@@DEBUG{
 (display (perform: selfClass 'name))
 (display ":  start-index for added vars: ")
@@ -334,6 +338,7 @@
 
 (perform:with: Object 'superclass: st-nil) ;; ground case
 (perform:with: (class Object) 'superclass: Class)
+(perform:with: Object 'methodDict: st-object-behavior)
 
 (define Behavior
   (newSubclassName:iVars:cVars:
