@@ -265,10 +265,10 @@
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots num-inherited-vars)) )
 ;;@@DEBUG{
-(display (perform: selfClass 'name))
-(display ":  start-index for added vars: ")
-(display (number->string start-index))
-(newline)
+;; (display (perform: selfClass 'name))
+;; (display ":  start-index for added vars: ")
+;; (display (number->string start-index))
+;; (newline)
 ;;}DEBUG@@
          (add-getters&setters newMethodDict start-index addedInstanceVars))
     )
@@ -280,7 +280,7 @@
        newInst ;; ANSI requires a fresh (unshared) list
        'instanceVariables: (list-copy addedInstanceVars))
 ;;@@DEBUG{
-    (display-ivars newInst)
+;;    (display-ivars newInst)
 ;;}DEBUG@@
     (perform: newInst 'initialize)  ;; NB: should always return newInst !!
 ) )
