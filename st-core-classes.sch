@@ -466,7 +466,43 @@
      (lambda (self aBlock)
        (for-each aBlock (perform: self 'subclasses))))
 
+;;; Send to super
+(define (superPerform: self selectorSym)
+  ((lookupSelector: (superclass self) selectorSym) self))
 
+(define (superPerform:with: self selectorSym arg)
+  ((lookupSelector: (superclass self) selectorSym) self arg))
+
+(define (superPerform:with:with: self selectorSym arg1 arg2)
+  ((lookupSelector: (superclass self) selectorSym) self arg1 arg2))
+
+(define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
+  ((lookupSelector: (superclass self) selectorSym) self arg1 arg2 arg3))
+
+(define (superPerform:withArguments: self selectorSym argsArray)
+  ;; @@FIXME: Check argsArry is a Smalltalk Array object..
+  (apply (lookupSelector: (superclass self) selectorSym)
+         (cons self (cddr (vector->list argsArray)))))
+
+(addSelector:withMethod:
+     Object
+     'superPerform: superPerform:)
+
+(addSelector:withMethod:
+     Object
+     'superPerform:with: superPerform:with:)
+
+(addSelector:withMethod:
+     Object
+     'superPerform:with:with: superPerform:with:with:)
+
+(addSelector:withMethod:
+     Object
+     'superPerform:with:with:with: superPerform:with:with:with:)
+
+(addSelector:withMethod:
+     Object
+     'superPerform:withArguments: superPerform:withArguments:)
 
 
 ;; (provide 'st-core-classes)
