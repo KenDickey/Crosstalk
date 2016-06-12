@@ -44,7 +44,7 @@
            rest-args)
 ) )
 
-;; methodDict primAddSelector: selector withMethod: compiledMethod
+;;; methodDict primAddSelector: selector withMethod: compiledMethod
 (define (primAddSelector:withMethod: methodDict symbol methodClosure)
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
@@ -266,13 +266,14 @@
 ;;; Generic ST Object representation:
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define (make-st-object behavior num-indexed+named-slots)
+(define (make-st-object behavior num-object-slots)
   (let ( (st-obj (make-vector
-                   (+ num-header-slots num-indexed+named-slots)
+                   (+ num-header-slots num-object-slots)
                    st-nil))
        )
-    (vector-set! st-obj 0 %%st-object-tag%%)  ;; @@Change when switch to native tags@@
-    (vector-set! st-obj 1 behavior)
+    ;; @@Change when switch to native tags@@
+    (vector-set! st-obj st-obj-tag-index %%st-object-tag%%)
+    (vector-set! st-obj st-obj-behavior-index behavior)
     st-obj)
 )
 ;; TEST -- zeros in indexed slota
@@ -289,6 +290,8 @@
 ;;                   (loop (+ 1 index)))))))
 ;; ) )
 
+
+;;; Behavior adds intelligence to structure
 
 ;;; (behavior obj)
 (define (behavior thing)

@@ -172,6 +172,13 @@
 
 (primAddSelector:withMethod:
  	st-object-behavior
+        'shallowCopy  
+        ;; A shallow copy shares slot-values
+        (lambda (self) (vector-copy self))
+)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
         'yourself    ;; ANSI
         (lambda (self) self)
 )
@@ -181,6 +188,7 @@
  	st-object-behavior
         'initialize
         (lambda (self) self))
+
 
 
 

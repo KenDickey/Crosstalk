@@ -1,54 +1,406 @@
 ;;; FILE: "st-boolean.sch"
-;;; IMPLEMENTS: Boolean True False
+;;; IMPLEMENTS: Boolean True False UndefinedObject (a.k.a. nil)
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 10 May 2016
+;;; DATE: 10 June 2016
 
-;; (require 'st-object)
+;; (require 'st-core-classes)
 
-(define st-boolean-behavior (clone-method-dictionary (behavior Object)))
+;;; Boolean logic is typically inlined, but as a bootstrap..
+
+(define Boolean
+  (newSubclassName:iVars:cVars:
+   Object
+   'Boolean '() '())
+)
+
+(define True
+  (newSubclassName:iVars:cVars:
+   Boolean
+   'True '() '())
+)
+
+(define False
+  (newSubclassName:iVars:cVars:
+   Boolean
+   'False '() '())
+)
+
+(define UndefinedObject
+  (newSubclassName:iVars:cVars:
+   Object
+   'UndefinedObject '() '()))
+
+(perform:with: UndefinedObject
+               'comment:
+               "I describe the behavior of my sole instance, nil. nil represents a prior value for variables that have not been initialized, or for results which are meaningless.")
+
+(addSelector:withMethod:
+        Boolean
+        'shallowCopy ;; Can't clone a boolean
+        (lambda (self) self))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'shallowCopy ;; Can't clone nil
+        (lambda (self) self))
+
+;;(define st-boolean-behavior (behavior Boolean))
 ;; st-true-behavior and st-false-behavior are def'ed in "st_kernel.sch"
 ;; reset their behaviors
-(set! st-true-behavior  (clone-method-dictionary st-boolean-behavior))
-(set! st-false-behavior (clone-method-dictionary st-boolean-behavior))
-
-;; Boolean logic is typically inlined, but as a bootstrap..
-
+(set! st-true-behavior  (perform: True            'methodDict))
+(set! st-false-behavior (perform: False           'methodDict))
+(set! st-nil-behavior   (perform: UndefinedObject 'methodDict))
 
 
+(addSelector:withMethod: 
+ 	(class Object)
+        'initializedInstance
+        (lambda (self) (perform: self 'new)))
 
-(primAddSelector:withMethod: 
- 	st-true-behavior
-        'printString
-        (lambda (self) "true"))
+(addSelector:withMethod: 
+ 	(class Boolean)
+        'initializedInstance
+        (lambda (self) st-nil)) ;; Nota Bene
 
-(primAddSelector:withMethod: 
- 	st-false-behavior
-        'printString
-        (lambda (self) "false"))
+(addSelector:withMethod: 
+ 	(class True)
+        'initializedInstance
+        (lambda (self) st-true)) ; #true
 
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printOn:
-        (lambda (self port)
-          (display "nil" port)))
+(addSelector:withMethod: 
+ 	(class False)
+        'initializedInstance
+        (lambda (self) st-false)) ; #false
 
-(primAddSelector:withMethod: 
- 	st-true-behavior
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'initializedInstance
+        (lambda (self) st-nil)) ; '()
+
+(addSelector:withMethod: 
+ 	True
         'printOn:
         (lambda (self port)
           (display "true" port)))
 
-(primAddSelector:withMethod: 
- 	st-false-behavior
+(addSelector:withMethod: 
+ 	False
         'printOn:
         (lambda (self port)
           (display "false" port)))
 
-(primAddSelector:withMethod: 
- 	st-string-behavior
-        'printString
-        printString)
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'printOn:
+        (lambda (self port)
+          (display "nil" port)))
+
+;; ANSI
+
+;;; UndefinedObject -> nil
+
+(addSelector:withMethod:
+        UndefinedObject
+        'notNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod:
+        Object
+        'notNil
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'isNil
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'isEmptyOrNil ;; collection protocol
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        Object
+        'isNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNil:
+        (lambda (self thunk) (thunk)))
+
+(addSelector:withMethod:
+        Object
+        'ifNil:
+        (lambda (self thunk) st-nil))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNil:ifNotNil:
+        (lambda (self nilBlock ifNotNilBlock)
+          (nilBlock)))
+
+(addSelector:withMethod:
+        Object
+        'ifNil:ifNotNil:
+        (lambda (self nilBlock ifNotNilBlock)
+          (ifNotNilBlock)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNil:
+        (lambda (self nilBlock) st-nil))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNil:
+        (lambda (self nilBlock)
+          (nilBlock)))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNil:ifNil
+        (lambda (self ifNotNilBlock nilBlock)
+          (ifNotNilBlock)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNil:ifNil:
+        (lambda (self ifNotNilBlock nilBlock)
+          (nilBlock)))
+
+ 
+
+;;; Boolean True False
+
+(addSelector:withMethod: 
+ 	True
+        '&  ;; logical and (full)
+        (lambda (self aBoolean) aBoolean))
+
+(addSelector:withMethod: 
+ 	False
+        '&
+        (lambda (self aBoolean) #false)) ;; self
+
+;; Note:
+;;  (symbol->string '|\||) --> "|"
+
+(addSelector:withMethod: 
+ 	True
+        '|\|| ;; logical or (full)
+        (lambda (self aBoolean) #true)) ;; self
+
+(addSelector:withMethod: 
+ 	False
+        '|\|| 
+        (lambda (self aBoolean) aBoolean)) 
+
+(addSelector:withMethod: 
+ 	True
+        'and:  ;; logical and (short circuit)
+        (lambda (self thunk) (thunk)))
+
+(addSelector:withMethod: 
+ 	False
+        'and:
+        (lambda (self thunk) #false)) ;; self
+
+(addSelector:withMethod: 
+ 	True
+        'or: ;; logical or (short circuit)
+        (lambda (self thunk) #true)) ;; self
+
+(addSelector:withMethod: 
+ 	False
+        'or:
+        (lambda (self thunk) (thunk))) 
+
+(addSelector:withMethod: 
+ 	True
+        'xor: ;; logical xor (full)
+        (lambda (self aBoolean) (not aBoolean)))
+
+(addSelector:withMethod: 
+ 	False
+        'xor:
+        (lambda (self aBoolean) aBoolean)) 
+
+(addSelector:withMethod: 
+ 	True
+        'not  ;; logical negation
+        (lambda (self) st-false))
+
+(addSelector:withMethod: 
+ 	False
+        'not
+        (lambda (self) st-true))
+
+(addSelector:withMethod: 
+ 	True
+        'ifFalse:   ;;; NB: nil, NOT #false !
+        (lambda (self alternativeBlock) st-nil)) 
+
+(addSelector:withMethod: 
+ 	False
+        'ifFalse:
+        (lambda (self alternativeBlock) (alternativeBlock)))
+
+(addSelector:withMethod: 
+ 	True
+        'ifTrue:
+        (lambda (self alternativeBlock) (alternativeBlock))) 
+
+(addSelector:withMethod: 
+ 	False
+        'ifTrue:   ;;; NB: nil, NOT #false !
+        (lambda (self alternativeBlock) st-nil)) 
+
+(addSelector:withMethod: 
+ 	True
+        'ifTrue:ifFalse:
+        (lambda (self  consequentBlock alternativeBlock) (consequentBlock))) 
+
+(addSelector:withMethod: 
+ 	False
+        'ifTrue:ifFalse:
+        (lambda (self consequentBlock alternativeBlock) (alternativeBlock))) 
+
+(addSelector:withMethod: 
+ 	True
+        'ifFalse:ifTrue:
+        (lambda (self consequentBlock alternativeBlock) (alternativeBlock))) 
+
+(addSelector:withMethod: 
+ 	False
+        'ifFalse:ifTrue:
+        (lambda (self consequentBlock alternativeBlock) (consequentBlock))) 
+
+(addSelector:withMethod:
+        Boolean
+        'eqv:  ;; boolean equivalence
+        (lambda (self aBool) (eq? self aBool))) ;; ^(self == aBool)
+
+(addSelector:withMethod:
+        Boolean
+        'storeOn:
+        (lambda (self aStream)
+          (perform:with: self 'printOn: aStream)))
+
+(define (st-false? obj) (boolean=? obj st-false))
+(define (st-true?  obj) (boolean=? obj st-true))
+
+(addSelector:withMethod:
+        Boolean
+        'and:and:
+        (lambda (self block1 block2)
+          (cond
+           ((st-false? self) self) ;; #false
+           ((st-false? (block1)) st-false)
+           ((st-false? (block2)) st-false)
+           (else st-true))))
+          
+(addSelector:withMethod:
+        Boolean
+        'and:and:and:
+        (lambda (self block1 block2 block3)
+          (cond
+           ((st-false? self) self) ;; #false
+           ((st-false? (block1)) st-false)
+           ((st-false? (block2)) st-false)
+           ((st-false? (block3)) st-false)
+           (else st-true))))
+
+(addSelector:withMethod:
+        Boolean
+        'and:and:and:and:
+        (lambda (self block1 block2 block3 block4)
+          (cond
+           ((st-false? self) self) ;; #false
+           ((st-false? (block1)) st-false)
+           ((st-false? (block2)) st-false)
+           ((st-false? (block3)) st-false)
+           ((st-false? (block4)) st-false)
+           (else st-true))))
 
 
+(addSelector:withMethod:
+        Boolean
+        'or:or:
+        (lambda (self block1 block2)
+          (cond
+           ((st-true? self) self) ;; #true
+           ((st-true? (block1)) st-true)
+           ((st-true? (block2)) st-true)
+           (else st-false))))
+
+(addSelector:withMethod:
+        Boolean
+        'or:or:or:
+        (lambda (self block1 block2 block3)
+          (cond
+           ((st-true? self) self) ;; #true
+           ((st-true? (block1)) st-true)
+           ((st-true? (block2)) st-true)
+           ((st-true? (block3)) st-true)
+           (else st-false))))
+
+(addSelector:withMethod:
+        Boolean
+        'or:or:or:or:
+        (lambda (self block1 block2 block3 block4)
+          (cond
+           ((st-true? self) self) ;; #true
+           ((st-true? (block1)) st-true)
+           ((st-true? (block2)) st-true)
+           ((st-true? (block3)) st-true)
+           ((st-true? (block4)) st-true)
+           (else st-false))))
+
+
+
+;;;Override instance creation methods
+
+(addSelector:withMethod: 
+ 	Boolean
+        'basicNew:
+        (lambda (self size)
+          (error "You may not create any more Booleans - this is two-valued logic" self)))
+
+(addSelector:withMethod: 
+ 	Boolean
+        'new
+        (lambda (self)
+          (error "You may not create any more Booleans - this is two-valued logic" self)))
+
+(addSelector:withMethod: 
+ 	Boolean
+        'new:
+        (lambda (self size)
+          (error "You may not create any more Booleans - this is two-valued logic" self)))
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'basicNew:
+        (lambda (self size)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'new
+        (lambda (self)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'new:
+        (lambda (self size)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+
+
+
+
+;; (provide 'st-boolean)
 
 ;;;			--- E O F ---			;;;

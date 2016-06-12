@@ -129,10 +129,13 @@
      st-class-behavior
      'basicNew: basicNew:)
 
+;;; More mechanics: (addSubclass: classSelf subclass)
 (define (addSubclass: classSelf subclass)
-  (perform:with: classSelf 'subclasses:
-                 (cons subclass
-                       (perform: classSelf 'subclasses))))
+  (let ( (my-subclasses (perform: classSelf 'subclasses)) )
+    (perform:with: classSelf
+                   'subclasses:
+                   (cons subclass my-subclasses))
+) )
 
 (primAddSelector:withMethod:
      st-class-behavior
@@ -257,11 +260,8 @@
           (newMethodDict
              (clone-method-dictionary (perform: superClass 'methodDict)))
         )
-    ;; Use copies of behavior and mDict to avoid mutating originals
     (perform:with: newInst 'methodDict: newMethodDict)
-    (st-obj-behavior-set! newInst
-                          (clone-method-dictionary
-                             (st-obj-behavior newInst)))
+    (primSetClass: newMethodDict newInst)
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots num-inherited-vars)) )
 ;;@@DEBUG{
@@ -389,8 +389,9 @@
 (perform:with: ClassDescription
                'subclasses: (list Class MetaClass))
 
-;; Track which methods are added to a particular class
-;;  so they are not copied over from above.
+;;; Track which methods are added to a particular class
+;;;  so they are not copied over from above.
+;;  See #subclassAddSelector:withMethod: below
 (define (add-method-name-to-myMethods self selector)
   (let ( (old-names (perform: self 'myMethodNames)) )
     (perform:with: self 'myMethodNames: (cons selector old-names))
@@ -425,7 +426,7 @@
 )
 
 ;; Am I self-referential, or what??
-;; Talk about "meta-circular"!!
+;;   Talk about "meta-circular"!!
 (addSelector:withMethod: Object
                          'addSelector:withMethod:
                          addSelector:withMethod:)
@@ -435,29 +436,37 @@
                          allInstVarNames)
 
 (addSelector:withMethod:
-     Object
-     'basicNew: basicNew:)
+     Object   ;; NB: not initialized
+     'basicNew: basicNew:) 
 
 (addSelector:withMethod:
      Object
-     'basicNew
+     'basicNew  ;; NB: not initialized
      (lambda (self) (basicNew: self 0)))
 
 (addSelector:withMethod:
      Object
-     'new:
+     'new:    ;; initialized
      (lambda (self size)
        (perform: (basicNew: self size) 'initialize)))
 
 (addSelector:withMethod:
      Object
-     'new
+     'new    ;; initialized
      (lambda (self)
        (perform: (basicNew: self 0) 'initialize)))
 
 (addSelector:withMethod:
      Object
      'addSubclass: addSubclass:)
+
+(addSelector:withMethod:
+     Object
+     'subclassesDo:
+     (lambda (self aBlock)
+       (for-each aBlock (perform: self 'subclasses))))
+
+
 
 
 ;; (provide 'st-core-classes)

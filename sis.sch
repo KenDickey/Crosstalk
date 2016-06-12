@@ -50,11 +50,10 @@
 
 (define st-bootstrap-files
   '( "st-kernel"       ;; message mechanics
-     "st-object"      ;; Object behavior
+     "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
-     
-;     "st-class"       ;; Object Class MetaClass ClassDescription Behavior
-;     "st-boolean"     ;; Boolean True False
+     "st-boolean"      ;; Boolean True False UndefinedObject (nil)
+;;;     @@@more to come...
     )
  )
 
