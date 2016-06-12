@@ -427,41 +427,41 @@
 
 ;; Am I self-referential, or what??
 ;;   Talk about "meta-circular"!!
-(addSelector:withMethod: Object
+(addSelector:withMethod: (class Object)
                          'addSelector:withMethod:
                          addSelector:withMethod:)
 
-(addSelector:withMethod: Object
+(addSelector:withMethod: (class Object)
                          'allInstVarNames
                          allInstVarNames)
 
 (addSelector:withMethod:
-     Object   ;; NB: not initialized
+     (class Object)   ;; NB: not initialized
      'basicNew: basicNew:) 
 
 (addSelector:withMethod:
-     Object
+     (class Object)
      'basicNew  ;; NB: not initialized
      (lambda (self) (basicNew: self 0)))
 
 (addSelector:withMethod:
-     Object
+     (class Object)
      'new:    ;; initialized
      (lambda (self size)
        (perform: (basicNew: self size) 'initialize)))
 
 (addSelector:withMethod:
-     Object
+     (class Object)
      'new    ;; initialized
      (lambda (self)
        (perform: (basicNew: self 0) 'initialize)))
 
 (addSelector:withMethod:
-     Object
+     (class Object)
      'addSubclass: addSubclass:)
 
 (addSelector:withMethod:
-     Object
+     (class Object)
      'subclassesDo:
      (lambda (self aBlock)
        (for-each aBlock (perform: self 'subclasses))))
