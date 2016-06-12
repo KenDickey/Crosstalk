@@ -362,37 +362,37 @@
 ;;;Override instance creation methods
 
 (addSelector:withMethod: 
- 	Boolean
+ 	(class Boolean)
         'basicNew:
         (lambda (self size)
           (error "You may not create any more Booleans - this is two-valued logic" self)))
 
 (addSelector:withMethod: 
- 	Boolean
+ 	(class Boolean)
         'new
         (lambda (self)
           (error "You may not create any more Booleans - this is two-valued logic" self)))
 
 (addSelector:withMethod: 
- 	Boolean
+ 	(class Boolean)
         'new:
         (lambda (self size)
           (error "You may not create any more Booleans - this is two-valued logic" self)))
 
 (addSelector:withMethod: 
- 	UndefinedObject
+ 	(class  UndefinedObject)
         'basicNew:
         (lambda (self size)
           (error "You may not create any more undefined objects--use nil" self)))
 
 (addSelector:withMethod: 
- 	UndefinedObject
+ 	(class UndefinedObject)
         'new
         (lambda (self)
           (error "You may not create any more undefined objects--use nil" self)))
 
 (addSelector:withMethod: 
- 	UndefinedObject
+ 	(class UndefinedObject)
         'new:
         (lambda (self size)
           (error "You may not create any more undefined objects--use nil" self)))
