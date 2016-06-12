@@ -135,11 +135,11 @@
           (let ( (my-class (perform: self 'class)) )
             (if (eq? my-class someClass)
                 #true
-                (let loop ( (super-class (perform: someClass 'superClass)) )
+                (let loop ( (super-class (perform: someClass 'superclass)) )
                   (cond
                    ((null? super-class) #false)
                    ((eq? my-class super-class) #true)
-                   (else (loop (perform: super-class 'superClass))))
+                   (else (loop (perform: super-class 'superclass))))
         ) ) ) )
 )
 
