@@ -11,6 +11,16 @@
    'Number '() '())
 )
 
+(perform:with:
+     Number
+     'category: '|Kernel-Numbers|)
+
+(perform:with:
+     Number
+     'comment:
+"Class Number holds the most general methods for dealing with numbers. Subclasses Float, Fraction, and Integer, and their subclasses, provide concrete representations of a numeric quantity."
+)
+
 (addSelector:withMethod: 
         Magnitude
         'between:and:

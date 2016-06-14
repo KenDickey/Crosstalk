@@ -32,7 +32,7 @@ Here are some example of my protocol:
 
 (perform:with:
      Magnitude
-     'category: "Kernel-Magnitude")
+     'category: '|Kernel-Magnitude|)
 
 
 (define make-subclassResponsibility
