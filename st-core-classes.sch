@@ -466,6 +466,89 @@
      (lambda (self aBlock)
        (for-each aBlock (perform: self 'subclasses))))
 
+
+;;; Class Info
+
+(perform:with:
+     Object
+     'category: '|Kernel-Objects|)
+
+(perform:with:
+     Object
+     'comment:
+"Object is the root class for all of the other classes in the class hierarchy.
+
+Class Object provides default behavior common to all normal objects, such as access, copying, comparison, error handling, message sending, and reflection. Also utility messages that all objects should respond to are defined here.
+
+Object has no instance variables, nor should any be added. This is due to several classes of objects that inherit from Object that have special implementations (Array and UndefinedObject for example) or the VM knows about and depends on the structure and layout of certain standard classes.
+
+Because Object is the root of the inheritance tree, methods are often defined in Object to give all objects special behaviors needed by certain subsystems or applications, or to respond to certain general test messages such as #isNil."
+)
+
+(perform:with:
+     Behavior
+     'category: '|Kernel-Classes|)
+
+(perform:with:
+     Behavior
+     'comment:
+"My instances describe the behavior of other objects. I provide the minimum state necessary for compiling methods, and creating and running instances. Most objects are created as instances of the more fully supported subclass, Class, but I am a good starting point for providing instance-specific behavior (as in Metaclass)."
+)
+
+(perform:with:
+     ClassDescription
+     'category: '|Kernel-Classes|)
+
+(perform:with:
+     ClassDescription
+     'comment:
+"I add a number of facilities to basic Behaviors:
+	Named instance variables
+	Category organization for methods
+	The notion of a name of this class (implemented as subclass responsibility)
+	The maintenance of a ChangeSet, and logging changes on a file
+	Most of the mechanism for fileOut.
+	
+I am an abstract class, in particular, my facilities are intended for inheritance by two subclasses, Class and Metaclass.
+"
+)
+
+(perform:with:
+     Class
+     'category: '|Kernel-Objects|)
+
+(perform:with:
+     Class
+     'comment:
+"I add a number of facilities to those in ClassDescription:
+	A set of all my subclasses (defined in ClassDescription, but only used here and below)
+	A name by which I can be found in a SystemDictionary
+	A classPool for class variables shared between this class and its metaclass
+	A list of sharedPools which probably should be supplanted by some better mechanism.
+
+My instances describe the representation and behavior of objects. I add more comprehensive programming support facilities to the basic attributes of Behavior and the descriptive facilities of ClassDescription.
+"
+)
+
+(perform:with:
+     MetaClass
+     'category: '|Kernel-Classes|)
+
+(perform:with:
+     MetaClass
+     'comment:
+"My instances add instance-specific behavior to various class-describing objects in the system. This typically includes messages for initializing class variables and instance creation messages particular to a class. There is only one instance of a particular Metaclass, namely the class which is being described. A Metaclass shares the class variables of its instance.
+	
+In general, the superclass hierarchy for metaclasses parallels that for classes. Thus,
+	Integer superclass == Number, and
+	Integer class superclass == Number class.
+However there is a singularity at Object. Here the class hierarchy terminates, but the metaclass hierarchy must wrap around to Class, since ALL metaclasses are subclasses of Class. Thus,
+	Object superclass == nil, and
+	Object class superclass == Class."
+)
+
+
+
 ;;; Send to super
 (define (superPerform: self selectorSym)
   ((lookupSelector: (superclass self) selectorSym) self))

@@ -15,6 +15,16 @@
 
 (set! st-character-behavior  (perform: Character 'methodDict))
 
+
+(perform:with:
+     Character
+     'category: "Kernel-Text")
+
+(perform:with:
+     Character
+     'comment:
+     "I support Unicode, rather than ASII characters.")
+
 (addSelector:withMethod:
         Character
         'printOn:
