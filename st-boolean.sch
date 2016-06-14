@@ -115,6 +115,11 @@
         (lambda (self) st-true))
 
 (addSelector:withMethod:
+        Object
+        'isNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod:
         UndefinedObject
         'isEmptyOrNil ;; collection protocol
         (lambda (self) st-true))
@@ -169,31 +174,41 @@
         (lambda (self ifNotNilBlock nilBlock)
           (nilBlock)))
 
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNilDo:
+        (lambda (self block) st-nil))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNilDo:
+        (lambda (self block) (block self)))
  
 
 ;;; Boolean True False
 
 (addSelector:withMethod: 
  	True
-        '&  ;; logical and (full)
+        '&  ;; #&  logical and  (full)
         (lambda (self aBoolean) aBoolean))
 
 (addSelector:withMethod: 
  	False
-        '&
-        (lambda (self aBoolean) #false)) ;; self
+        '& ;; #&
+        (lambda (self aBoolean) st-false)) ;; self
 
 ;; Note:
 ;;  (symbol->string '|\||) --> "|"
+;;  (string->symbol "|")   --> |\||
 
 (addSelector:withMethod: 
  	True
-        '|\|| ;; logical or (full)
-        (lambda (self aBoolean) #true)) ;; self
+        '|\|| ;; #| logical or (full)
+        (lambda (self aBoolean) st-true)) ;; self
 
 (addSelector:withMethod: 
  	False
-        '|\|| 
+        '|\|| ;; #|
         (lambda (self aBoolean) aBoolean)) 
 
 (addSelector:withMethod: 
@@ -204,12 +219,12 @@
 (addSelector:withMethod: 
  	False
         'and:
-        (lambda (self thunk) #false)) ;; self
+        (lambda (self thunk) st-false)) ;; self
 
 (addSelector:withMethod: 
  	True
         'or: ;; logical or (short circuit)
-        (lambda (self thunk) #true)) ;; self
+        (lambda (self thunk) st-true)) ;; self
 
 (addSelector:withMethod: 
  	False
