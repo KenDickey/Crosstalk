@@ -29,6 +29,30 @@
         (lambda (self otherChar)
           (char=? self otherChar)))
 
+(addSelector:withMethod:
+        Character
+        '<
+        (lambda (self otherChar)
+          (char<? self otherChar)))
+
+(addSelector:withMethod:
+        Character
+        '>
+        (lambda (self otherChar)
+          (char>? self otherChar)))
+
+(addSelector:withMethod:
+        Character
+        '>=
+        (lambda (self otherChar)
+          (char>=? self otherChar)))
+
+(addSelector:withMethod:
+        Character
+        '<=
+        (lambda (self otherChar)
+          (char<=? self otherChar)))
+
 
 (addSelector:withMethod:
         Character
