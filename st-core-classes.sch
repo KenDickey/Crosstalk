@@ -515,7 +515,7 @@ I am an abstract class, in particular, my facilities are intended for inheritanc
 
 (perform:with:
      Class
-     'category: '|Kernel-Objects|)
+     'category: '|Kernel-Classes|)
 
 (perform:with:
      Class
