@@ -11,14 +11,15 @@ Doing so in a different language with a well understood semantics is a good exer
 This is very much a work in progress.
 
 ## Basics:
-  Message send 
-   -- behaviors are dictionaries/hash-tables
-  Leverage Scheme runtime
-   -- Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
-  Keep things as simple as possible
+  - Message send 
+    - Object behaviors are dictionaries/hash-tables
+  - Leverage Scheme runtime
+    - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
+  - Keep things as simple as possible
+    - Comprehension over speed, but don't be odiously dumb
 
 ## Open Questions/Problems:
-  - Can Larceny Scheme's Environments be leverages to provide cleanly separated Scheme and Smalltalk namespaces?
+  - Can Larceny Scheme's *Environments* be leveraged to provide cleanly separated Scheme and Smalltalk namespaces?
   - How to introduce decent debugging?
   - What kinds of caching would make significant performance difference?
       - Symbol property-list
