@@ -1,5 +1,6 @@
 ;;; FILE: "st-boolean.sch"
 ;;; IMPLEMENTS: Boolean True False UndefinedObject (a.k.a. nil)
+;;; LANGUAGE: Scheme R7RS
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 10 June 2016
 
