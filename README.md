@@ -15,6 +15,8 @@ This is very much a work in progress.
     - Object behaviors are dictionaries/hash-tables
   - Leverage Scheme runtime
     - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
+    - Closures, GC, exceptions, finalization
+    - Dynamic compilation to native machine code
   - Keep things as simple as possible
     - Comprehension over speed, but don't be odiously dumb
 
