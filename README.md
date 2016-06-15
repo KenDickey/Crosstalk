@@ -43,7 +43,7 @@ This is very much a work in progress.
   - Transliteration into Scheme
   - Read and execute Smalltalk code directly
   - Look at runtime issues
-  
+  - _Bootstrap Morphic_
     
 
 
