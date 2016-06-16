@@ -22,7 +22,7 @@ This is very much a work in progress.
 
 ## Open Questions/Problems:
   - Can Larceny Scheme's *Environments* be leveraged to provide cleanly separated Scheme and Smalltalk namespaces?
-  - How to introduce decent debugging?
+  - #thisContext: How to introduce decent debugging?
   - What kinds of caching would make significant performance difference?
       - Symbol property-list
       - PIC at call sites
