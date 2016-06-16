@@ -6,12 +6,18 @@
 ; Implementation Language/platform: Larceny R7RS Scheme
 ;   http://larcenists.org/
 ;   https://github.com/larcenists/larceny
-;
+
 ; ANSI Smalltalk
 ;   https://en.wikipedia.org/wiki/Smalltalk
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
-;; larceny -r7rs, then (import (scheme load)) (load "sis.sch")
+;; Run from command line via "larceny -r7rs", then
+;;   (import (scheme load))
+;;   (load "sis.scm")
+;;   (load-sourec-bootstrap)
+;; Optional:
+;;   (load "sis-tests.scm")
+;;   (run-source-tests)
 
 (import
     (rnrs hashtables (6))
@@ -54,13 +60,18 @@
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
      "st-boolean"      ;; Boolean True False UndefinedObject (nil)
      "st-character"    ;; Character
+     "st-magnitude"
+     "st-number"
+     "st-collection"
+     "st-string"       ;; String
+     "st-blockClosure" ;; BlockClosure
 ;;     @@@more to come...
     )
  )
 
 (define (source-files)
   (map (lambda (file-name)
-         (string-append st-root-directory-prefix file-name ".sch"))
+         (string-append st-root-directory-prefix file-name ".scm"))
        st-bootstrap-files)
 )
 

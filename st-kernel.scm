@@ -1,5 +1,6 @@
 ;;; FILE: "st-kernel.sch"
 ;;; IMPLEMENTS: Basic Smalltalk object mechanics
+;;; LANGUAGE: Scheme (R7RS small)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 12 May 2016
 
@@ -113,26 +114,29 @@
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior     (make-mDict-placeholder 'Object))
 
+;;;  Smalltalk                      Scheme
+;;; anArray at: 2 put: 'foo'       (at:put: anArray 2 "foo")
+
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
   (let ( (outport (open-output-string)) )
     (perform:with: obj 'printOn: outport)
     (get-output-string outport)))
 
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printString
-        (lambda (self) "nil"))
+;; (primAddSelector:withMethod: 
+;;  	st-nil-behavior
+;;         'printString
+;;         (lambda (self) "nil"))
 
-(primAddSelector:withMethod: 
- 	st-true-behavior
-        'printString
-        (lambda (self) "true"))
+;; (primAddSelector:withMethod: 
+;;  	st-true-behavior
+;;         'printString
+;;         (lambda (self) "true"))
 
-(primAddSelector:withMethod: 
- 	st-false-behavior
-        'printString
-        (lambda (self) "false"))
+;; (primAddSelector:withMethod: 
+;;  	st-false-behavior
+;;         'printString
+;;         (lambda (self) "false"))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
@@ -164,10 +168,10 @@
         (lambda (self port)
           (display "false" port)))
 
-(primAddSelector:withMethod: 
- 	st-string-behavior
-        'printString
-        printString)
+;; (primAddSelector:withMethod: 
+;;  	st-string-behavior
+;;         'printString
+;;         printString)
 
 (primAddSelector:withMethod: 
  	st-string-behavior
