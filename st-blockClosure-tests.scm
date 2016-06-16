@@ -51,20 +51,29 @@
 
 (add-eq-test 'st-blockClosure
   3
-  (perform:with:
-     (lambda () 3)
+  (let ( (x st-nil) )
+    (perform:with:
+     (lambda () (set! x 1) 2)
      'ensure:
-     (lambda () 4))
-  "[4] ensure: [3]")
+     (lambda () (set! x 3)))
+    x)
+  "[x := 1. 2] ensure: [x := 3]. x")
 
-;; (add-eq-test 'st-blockClosure
-;;   4
-;;   (perform:with:
-;;      (lambda () (error 'bogus))
-;;      'ensure:
-;;      (lambda () 4))
-;;   "[<error>] ensure: [3]")
-
+(add-eq-test 'st-blockClosure
+  4
+  (let ( (x #false) )
+    (call-with-current-continuation
+     (lambda (k)
+       (with-exception-handler
+        (lambda (exn) (k x))
+        (lambda ()
+          (perform:with:
+           (lambda () (error 'bogus))
+           'ensure:
+           (lambda () (set! x 4)))))))
+    x)
+  "[<error>] ensure: [4]")
+  
 
 ;; (ensure-exception-raised 'st-blockClosure
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
