@@ -1,12 +1,12 @@
 ;;; FILE: "st-object.sch"
-;;; IMPLEMENTS: Basic Smalltalk objects
+;;; IMPLEMENTS: Basic Smalltalk object behavior
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 12 May 2016
 
 ;; (require 'st-kernel)
 
-;;; Classes ProtoObject Object
-;;@@ FIXME: ProtoObject NYI
+;;; Note that class Object is defined in "core-classes.scm"
+;;; which requires this file.
 
 ;; @@FIXME: make continuable -- use Message object
 (define (doesNotUnderstand: self selector)
@@ -20,7 +20,24 @@
                 " not understood by ")
          self)
  )
-  
+
+
+(define make-subclassResponsibility
+  (lambda (selector)
+    (let ( (err-msg
+             (string-append
+              "My subclass should have overridden "
+              (symbol->string selector)))
+         )
+      (lambda (self)
+        (error err-msg
+               self
+               selector)))
+) )
+
+
+(define (subclassResponsibility self)
+  (error "My subclass should have overwridden this method" self))
 
 ;; All methods in Smalltalk have an exact number of arguments
 ;; The 'receiver' of the message is #self,
@@ -120,12 +137,12 @@
           (if (perform:with: self 'respondsTo: 'name)
               (display (perform: self 'name) outport)
               (begin
-                (display "<instance of ")
+                (display "<instance of " outport)
                 (display (perform:
                             (perform: self 'class)
                             'name)
                          outport)
-                (display ">"))))
+                (display ">" outport))))
 )
 
 (primAddSelector:withMethod: ;; ANSI
