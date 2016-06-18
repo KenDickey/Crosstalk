@@ -8,7 +8,7 @@
 
 (define Array
   (newSubclassName:iVars:cVars:
-   SequenceableCollection
+   ArrayedCollection
    'Array '() '())
 )
 
@@ -90,6 +90,13 @@
            self
            (superPerform:with: self 'asArray))))
 
+(addSelector:withMethod:
+     Array
+     'printOn:
+     (lambda (self port)
+       (display "#" port)
+       (perform:with:
+           self 'printElementsOn: port)))
 
 ;; (provide 'st-array)
 

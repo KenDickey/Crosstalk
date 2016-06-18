@@ -1,5 +1,5 @@
 ;;; FILE: "st-collection.sch"
-;;; IMPLEMENTS: Collection
+;;; IMPLEMENTS: Collection, SequenceableCollection, ArrayedCollection
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 
@@ -52,6 +52,21 @@
 (perform:with:
      ArrayedCollection
      'category: '|Collections-Abstract|)
+
+
+(addSelector:withMethod:
+     Collection
+     'printElementsOn:
+     (lambda (self port)
+       (display "(" port)
+       (perform:with: self
+                      'do:
+                      (lambda (elt)
+                        (perform:with:
+                           elt 'printOn: port)
+                        (display " " port)))
+       (display ")" port)))
+
 
 ;; (provide 'st-collection)
 

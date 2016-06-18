@@ -79,6 +79,11 @@
     (perform:with: array 'at: 2))
   "#(1 2 3) at: 2 modify: '[:x| 2 * x ]")
 
+(add-equal-test 'st-array
+  "#($a $b $c )"
+  (perform: (vector #\a #\b #\c) 'printString)
+  "#($a $b $c) printString")
+
 ;; (ensure-exception-raised 'st-array
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)
