@@ -155,20 +155,23 @@
 ;; Just enough behavior to allow instantiation bootstrap
 ;; to call: newSubclassName:iVars:cVars:
 
+(define broken #false)
+
 (define (make-protoClass
          name behav slot-names
          mDict child-ivar-names
          class super )
   (let* ( (behavior   (clone-behavior behav))
           (methodDict (clone-method-dictionary mDict))
-          (class-instance (make-st-object behavior (length slot-names)))
+          (class-instance
+             (make-st-object behavior (length slot-names)))
         )
     (setClass: class-instance class) ;; NB: may be nil
     (perform:with: class-instance 'name: name)
     (perform:with: class-instance 'superclass: super) ;; may be nil
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
     (perform:with: class-instance 'methodDict: methodDict)
-    ;; return the new Class instance
+   ;; return the new Class instance
     class-instance
 ) )
 
@@ -587,6 +590,15 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      Object
      'superPerform:withArguments: superPerform:withArguments:)
 
+(addSelector:withMethod:
+     Object
+     'species
+;; "Answer the preferred class for reconstructing the receiver.  For example, 
+;; collections create new collections whenever enumeration messages such as 
+;; collect: or select: are invoked.  The new kind of collection is determined by 
+;; the species of the original collection.  Species and class are not always the 
+;; same.  For example, the species of Interval is Array."
+     (lambda (self) (class self)))
 
 ;; (provide 'st-core-classes)
 

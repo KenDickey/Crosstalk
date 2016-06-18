@@ -65,6 +65,7 @@
      "st-collection"
      "st-string"       ;; String
      "st-blockClosure" ;; BlockClosure
+     "st-array"        ;; Array
 ;;     @@@more to come...
     )
  )

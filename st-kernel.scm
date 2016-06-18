@@ -13,7 +13,7 @@
 ;; All (import ...) done in "sis.sch"
 
 
-;;; Method Dictionarys
+;;; Method Dictionarys are Scheme hashtables
 
 ;; Syntactic sugar tastes sweeter ;^)
 
@@ -232,9 +232,12 @@
 ;; ) )
 
 
+;;;
 ;;; Smalltalk Object Representation
+;;;
 
 ; Use Scheme immediates, bytevectors, & numbers
+; See (define (behavior obj) ...) below
 ;	byte-tag + mask -> index into table of classes
 
 ; Use tagged Vector as ST Object (named & indexed slots)
@@ -270,14 +273,14 @@
 ;;; Generic ST Object representation:
 ;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define (make-st-object behavior num-object-slots)
+(define (make-st-object Behavior num-object-slots)
   (let ( (st-obj (make-vector
                    (+ num-header-slots num-object-slots)
                    st-nil))
        )
     ;; @@Change when switch to native tags@@
     (vector-set! st-obj st-obj-tag-index %%st-object-tag%%)
-    (vector-set! st-obj st-obj-behavior-index behavior)
+    (vector-set! st-obj st-obj-behavior-index Behavior)
     st-obj)
 )
 ;; TEST -- zeros in indexed slota
@@ -300,18 +303,21 @@
 ;;; (behavior obj)
 (define (behavior thing)
   (case thing  
-    ;; immediates
+    ;; immediates -- err
     ((#true)  st-true-behavior)
     ((#false) st-false-behavior)
     (( () )   st-nil-behavior)
+;; eof-object -- err
     (else
-     (cond
-      ((integer? thing) st-integer-behavior)
+;; @@FIXME: rep tag -> index into vector of behaviors
+     (cond  
+      ((char?    thing)    st-character-behavior) ;; err
+      ((integer? thing)    st-integer-behavior) ;;bignum->tag=4,else err
       ((number?  thing)
-       (cond
-        ((ratnum?   thing) st-fraction-behavior)
-        ((real?     thing) st-real-behavior)
-        ((complex?  thing) st-complex-behavior)
+       (cond  ;; coalesc into a single type?
+        ((ratnum?   thing) st-fraction-behavior) ;; tag=2
+        ((real?     thing) st-real-behavior)     ;; tag=2
+        ((complex?  thing) st-complex-behavior)  ;; tag=1
         ;; FIXME:: Scaled Decimal
         (else (error: "Unknown Scheme number representation" thing))
        ))
@@ -319,13 +325,20 @@
        (if (and (< 1 (vector-length thing))
                 (eq? %%st-object-tag%% (st-obj-tag thing)))
            (vector-ref thing st-obj-behavior-index)
-           st-array-behavior) ;; Scheme vector
+           st-array-behavior) ;; Scheme vector ;; tag=0
        )
-      ((char?   thing)     st-character-behavior)
-      ((string? thing)     st-string-behavior)
-      ((symbol? thing)     st-symbol-behavior)
-      ((procedure? thing)  st-blockClosure-behavior)
-      ((bytevector? thing) st-bytevector-behavior)
+      ((string? thing)     st-string-behavior) ;; tag=5
+      ((symbol? thing)     st-symbol-behavior) ;; tag=3
+      ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
+      ((bytevector? thing) st-bytevector-behavior)   ;; tag=0
+      ;; (pare? thing) ;; err
+      ;; list -> err
+      ;; input-file 4
+      ;; output-file 4
+      ;; output-string 4
+      ;; (current-*-port) 4
+      ;; output-bytevector 4
+      ;; hashtable; other records & record types 5
       ;; @@FIXME port -> FileStream
       ;; @@FIXME ...
       (else (error "#behavior can't deal with other Scheme types yet"
@@ -449,6 +462,22 @@
                self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
      )
+
+    (primAddSelector:withMethod:
+     behavior
+     'at:modify:
+     (lambda (self user-index aBlock)
+       ;; NB: ST 1-based, Scheme 0-based
+       (let ( (vec-index (+ start-index user-index -1)) )
+         (if (< pre-start vec-index (vector-length self))
+             (let ( (original-elt (vector-ref self vec-index)) )
+               (vector-set! self
+                            vec-index
+                            (aBlock original-elt))
+               self)
+             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+     )
+
     (primAddSelector:withMethod:
      behavior
      'basicSize
