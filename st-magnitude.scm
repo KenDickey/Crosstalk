@@ -34,23 +34,12 @@ Here are some example of my protocol:
      Magnitude
      'category: '|Kernel-Magnitude|)
 
-
-(define make-subclassResponsibility
-  (lambda (selector)
-    (let ( (selector-string (symbol->string selector)) )
-      (lambda (self)
-        (error (string-append "My subclass should have overridden "
-                              selector-string)
-               self
-               selector)))
-) )
-
 (for-each
    (lambda (selector)
        (addSelector:withMethod: 
         Magnitude
         selector
-        (make-subclassResponsibility selector)))
+        (make-subclassResponsibility selector))) ; in st-object
    '( < > = <= >= hash between:and: min: max: min:max: )
 )
 

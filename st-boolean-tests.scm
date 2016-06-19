@@ -43,6 +43,43 @@
      (lambda () 4))
   "nil ifNotNil: [3] ifNil: [4]")
 
+(add-eq-test 'st-boolean
+  3
+  (perform:with:with:
+     st-true
+     'ifTrue:ifFalse:
+     (lambda () 3)
+     (lambda () 4))
+  "true ifTrue: [3] ifFalse: [4]")
+
+(add-eq-test 'st-boolean
+  4
+  (perform:with:with:
+     st-true
+     'ifFalse:ifTrue:
+     (lambda () 3)
+     (lambda () 4))
+  "true ifFalse: [3] ifTrue: [4]")
+
+(add-eq-test 'st-boolean
+  4
+  (perform:with:with:
+     st-false
+     'ifTrue:ifFalse:
+     (lambda () 3)
+     (lambda () 4))
+  "false ifTrue: [3] ifFalse: [4]")
+
+(add-eq-test 'st-boolean
+  3
+  (perform:with:with:
+     st-false
+     'ifFalse:ifTrue:
+     (lambda () 3)
+     (lambda () 4))
+  "false ifFalse: [3] ifTrue: [4]")
+
+
 ;; (ensure-exception-raised 'st-boolean
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

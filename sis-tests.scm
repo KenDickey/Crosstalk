@@ -1,9 +1,9 @@
-;;; FILE: "sis-tests.sch"
+;;; FILE: "sis-tests.scm"
 ;;; IMPLEMENTS: SiS unit test admin
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016
 
-;; (require 'sis) ;; "sis.sch"
+;; (require 'sis) ;; "sis.scm"
 
 ;; Nota Bene: larceny -r7r6 ...
 
@@ -16,7 +16,7 @@
 
 (define (source-test-files)
   (map (lambda (file-name)
-         (string-append st-root-directory-prefix file-name "-tests.sch"))
+         (string-append st-root-directory-prefix file-name "-tests.scm"))
        st-bootstrap-files)
 )
 
@@ -40,8 +40,5 @@
 ;;   (for-each load (compiled-test-files))
 ;;   (run-all-tests)
 ;; )
-
-
-
 
 ;;;			--- E O F ---			;;;

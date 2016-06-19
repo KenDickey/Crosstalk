@@ -23,6 +23,9 @@
     (rnrs hashtables (6))
     (rnrs sorting (6))
     (rnrs io simple (6))
+    (scheme inexact)
+    (scheme file)
+    (scheme complex)
     (primitives
        load compile-file
        procedure-name
