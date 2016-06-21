@@ -72,7 +72,7 @@
      'grow ;; private
      (lambda (self)
        (let* ( (old-array  (perform: self 'array))
-               (array-size (perform: oldArray 'size))
+               (array-size (perform: old-array 'size))
                (new-size (+ array-size (max array-size 2)))
                (new-array
                   (perform:with: Array 'new: new-size))
@@ -92,7 +92,7 @@
      Set
      'noCheckAdd: ;; private -- obj not a duplicate
      (lambda (self elt)
-       (let ( (index (perform:with: self 'findElementOrNil elt)) )
+       (let ( (index (perform:with: self 'findElementOrNil: elt)) )
          (perform:with:with:
               (perform: self 'array)
               'at:put: index elt)
@@ -110,25 +110,28 @@
        (let* ( (array (perform: self 'array))
                (array-size (vector-length array))
                (start (modulo (equal-hash obj) ;; hash fn
-                              (+ 1 array-size)))
+                               array-size))
                (right-end (- array-size 1)) ;; Scheme index 0 based
              )
          (let right-loop ( (index start) ) ;; start to end
            (let ( (elt (vector-ref array index)) )
+;;             (newline) (display index)
              (cond
-              ((st-nil? elt) (+ 1 index)) ;; Scheme->ST
-              ((eq? obj elt) (+ 1 index)) ;; Scheme->ST
+              ((st-nil? elt)    (+ 1 index)) ;; Scheme->ST index
+              ((equal? obj elt) (+ 1 index)) ;; Scheme->ST index
               ((= index right-end)
                (let ( (mid-end (- start 1)) )
                  (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
                  ;; look 1 to start-1
-                   (cond
-                    ((st-nil? elt) index)
-                    ((eq? obj elt) index)
-                    ((= index mid-end)
-                     0) ;; failed
-                    (else (left-loop (+ 1 index))))))
-               )
+  ;;                 (newline) (display index)
+                   (let ( (elt (vector-ref array index)) )
+                     (cond
+                      ((st-nil? elt) (+ 1 index))
+                      ((eq? obj elt) (+ 1 index))
+                      ((= index mid-end)
+                       0) ;; failed
+                      (else (left-loop (+ 1 index))))))
+               ))
               (else (right-loop (+ 1 index)))))))))
 
 
@@ -161,7 +164,7 @@
      Set
      'do:
      (lambda (self aBlock)
-       (if (zero? (perform self 'tally))
+       (if (zero? (perform: self 'tally))
            self
            (perform:with: (perform: self 'array)
                           'do:
@@ -175,15 +178,16 @@
      Set
      '=
      (lambda (self otherSet)
-       (call/cc (return)
+       (call/cc
+        (lambda (return)
           (unless (perform:with: otherSet
-                                 'isKindOf
+                                 'isKindOf:
                                  Set)
             (return st-false))
-          (unless (equal? (perform self     'tally)
-                          (perform otherSet 'tally))
+          (unless (equal? (perform: self     'tally)
+                          (perform: otherSet 'tally))
             (return st-false))
-          (perfrom:with: self
+          (perform:with: self
                          'do:
                          (lambda (elt)
                            (unless (perform:with:
@@ -191,7 +195,7 @@
                                     'includes:
                                     elt)
                              (return st-false))))
-          (return st-true))))
+          (return st-true)))))
 
 (addSelector:withMethod:
      Set
@@ -207,7 +211,7 @@
      Set
      'keyAt:
      (lambda (self index)
-       (perform:With:
+       (perform:with:
           (perform: self 'array) 'at: index)))
 
 (addSelector:withMethod:
@@ -300,11 +304,11 @@
      Set
      'copy
      (lambda (self)
-       (let ( (copy (perform:with: (self class) 'new: 0)) )
-         (perfrom:with: copy 'tally: (perform: self 'tally))
-         (perform:with: copy 'array:
+       (let ( (the-copy (perform:with: (class self) 'new: 0)) )
+         (perform:with: the-copy 'tally: (perform: self 'tally))
+         (perform:with: the-copy 'array:
                         (vector-copy (perform: self 'array)))
-         copy)))
+         the-copy)))
 
 ;; (provides st-set)
 
