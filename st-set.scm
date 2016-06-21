@@ -56,7 +56,7 @@
      (class Set)
      'with:
      (lambda (self elt1)
-       (let ( (aSet (perform: Set 'new)) )
+       (let ( (aSet (perform:with: Set 'new: 1)) )
          (perform:with: aSet 'add: elt1)
          aSet)))
 
@@ -64,7 +64,7 @@
      (class Set)
      'with:with:
      (lambda (self elt1 elt2)
-       (let ( (aSet (perform: Set 'new)) )
+       (let ( (aSet (perform:with: Set 'new: 2)) )
          (perform:with: aSet 'add: elt1)
          (perform:with: aSet 'add: elt2)
          aSet)))
@@ -73,7 +73,7 @@
      (class Set)
      'with:with:with:
      (lambda (self elt1 elt2 elt3)
-       (let ( (aSet (perform: Set 'new)) )
+       (let ( (aSet (perform:with: Set 'new: 3)) )
          (perform:with: aSet 'add: elt1)
          (perform:with: aSet 'add: elt2)
          (perform:with: aSet 'add: elt3)
@@ -83,7 +83,7 @@
      (class Set)
      'with:with:with:with:
      (lambda (self elt1 elt2 elt3 elt4)
-       (let ( (aSet (perform: Set 'new)) )
+       (let ( (aSet (perform:with: Set 'new: 4)) )
          (perform:with: aSet 'add: elt1)
          (perform:with: aSet 'add: elt2)
          (perform:with: aSet 'add: elt3)
@@ -286,7 +286,7 @@
      Set
      'remove:ifAbsent:
      (lambda (self oldObj absentBlock)
-       (let ( (index (perfrom:with: self
+       (let ( (index (perform:with: self
                                     'findElementOrNil:
                                     oldObj))
               (array (perform: self 'array))
@@ -296,9 +296,9 @@
            (begin
              (perform:with:with:
               (perform: self 'array) 'at:put: index st-nil)
-             (perform:with self
+             (perform:with: self
                            'tally:
-                           (- (perform: self 'talley) 1))
+                           (- (perform: self 'tally) 1))
              (perform:with: self 'fixCollisionsFrom: index)
              oldObj)))))
                    
@@ -314,12 +314,12 @@
                  (if (= oldIndex length) 1 (+ 1 oldIndex)))
              )
          (let loop ( (oldIndex fixupIndex)
-                     (elt (perform:with: self keyAt: fixupIndex)) )
+                     (elt (perform:with: self 'keyAt: fixupIndex)) )
            (unless (st-nil? elt)
              (let ( (newIndex (perform:with: self 'findElementOrNil: elt)) )
                (unless (= newIndex oldIndex)
                  (perform:with:with: self 'swap:with: oldIndex newIndex))
-               (loop newIndex (perform:with: self keyAt: fixupIndex))))))     
+               (loop newIndex (perform:with: self 'keyAt: fixupIndex))))))     
 )    )
 
 (addSelector:withMethod:
