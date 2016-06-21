@@ -120,7 +120,7 @@
     (perform:with:with:with: Set 'with:with:with: 1 2 3)
     'collect: (lambda (elt) (* 2 elt)))
    'asArray)
-  "(Set(1 2 3) collect: [:e |2 * e]) asArray")
+  "(Set with: 1 with: 2 with: 3) collect: [:e |2 * e]) asArray")
 
 (add-equal-test 'st-set
   #(6 4 2)
@@ -128,6 +128,6 @@
     (perform:with: (perform: (vector 1 2 3) 'asSet)
                    'collect: (lambda (elt) (* 2 elt)))
     'asArray)
-  "(Set(1 2 3) collect: [:e |2 * e]) asArray")
+  "(#(1 2 3) asSet collect: [:e |2 * e]) asArray")
 
 ;;;			--- E O F ---			;;;
