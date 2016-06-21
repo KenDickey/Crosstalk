@@ -131,6 +131,12 @@
 
 (addSelector:withMethod: 
         Number
+        '|//|
+        (lambda (self aNumber)
+          (floor (/ self aNumber))))
+
+(addSelector:withMethod: 
+        Number
         '=
         (lambda (self aNumber)
           (= self aNumber)))

@@ -451,7 +451,8 @@
      (class Object)
      'new:    ;; initialized
      (lambda (self size)
-       (perform: (basicNew: self size) 'initialize)))
+       (perform: (perform:with: self 'basicNew: size)
+                 'initialize)))
 
 (addSelector:withMethod:
      (class Object)
