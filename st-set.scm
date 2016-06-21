@@ -71,7 +71,7 @@
      Set
      'grow ;; private
      (lambda (self)
-       (let* ( (old-array (perform: self 'array))
+       (let* ( (old-array  (perform: self 'array))
                (array-size (perform: oldArray 'size))
                (new-size (+ array-size (max array-size 2)))
                (new-array
@@ -90,7 +90,7 @@
 
 (addSelector:withMethod:
      Set
-     'noCheckAdd: ;; private
+     'noCheckAdd: ;; private -- obj not a duplicate
      (lambda (self elt)
        (let ( (index (perform:with: self 'findElementOrNil elt)) )
          (perform:with:with:
@@ -106,7 +106,7 @@
      (lambda (self obj)
        ; Scan key array for 1st slot containing nil
        ; or an element matching obj.  Answer index or zero.
-       ; Subclasses may override me for different match functions.
+       ; Subclasses may override me for different match predicates.
        (let* ( (array (perform: self 'array))
                (array-size (vector-length array))
                (start (modulo (equal-hash obj) ;; hash fn
@@ -116,8 +116,8 @@
          (let right-loop ( (index start) ) ;; start to end
            (let ( (elt (vector-ref array index)) )
              (cond
-              ((st-nil? elt) index)
-              ((eq? obj elt) index)
+              ((st-nil? elt) (+ 1 index)) ;; Scheme->ST
+              ((eq? obj elt) (+ 1 index)) ;; Scheme->ST
               ((= index right-end)
                (let ( (mid-end (- start 1)) )
                  (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
@@ -141,7 +141,7 @@
        ;; or 0.
        (let ( (index (perform:with: self 'scanFor: obj)) )
          (if (> index 0)
-             (+ index 1) ;; ST 1 based
+             index
              (error "Internal error: No free space in set!" self)))))
 
 (addSelector:withMethod:
@@ -177,7 +177,7 @@
      (lambda (self otherSet)
        (call/cc (return)
           (unless (perform:with: otherSet
-                                 'isKoneOf
+                                 'isKindOf
                                  Set)
             (return st-false))
           (unless (equal? (perform self     'tally)
@@ -188,7 +188,7 @@
                          (lambda (elt)
                            (unless (perform:with:
                                     otherSet
-                                    'includes
+                                    'includes:
                                     elt)
                              (return st-false))))
           (return st-true))))
@@ -197,18 +197,18 @@
      Set
      'includes:
      (lambda (self obj)
-       (let ( (index (perform:with: self
-                                    'findElementOrNil: obj))
+       (let ( (index
+                 (perform:with: self 'findElementOrNil: obj))
             )
-         (not (st-nil?
-                (perform:with: self 'key-at: index))))))
+         (not (st-nil? (perform:with: self 'keyAt: index))))
+)   )
 
 (addSelector:withMethod:
      Set
-     'key-at:
+     'keyAt:
      (lambda (self index)
-       (vector-ref (perform: self 'array)
-                           (- index 1))))
+       (perform:With:
+          (perform: self 'array) 'at: index)))
 
 (addSelector:withMethod:
      Set
@@ -221,17 +221,19 @@
                                     'findElementOrNil:
                                     newObj))
             )
-         (when (st-nil? (perform:with: self 'key-at: index))
+         (when (st-nil? (perform:with: self 'keyAt: index))
            (perform:with:with:
                self
                'atNewIndex:put: index newObj))
+         ;; else obj already present..
          newObj)))
 
 (addSelector:withMethod:
      Set
      'atNewIndex:put:
      (lambda (self index obj)
-       (vector-set! (perform: self 'array) (- index 1) obj)
+       (perform:with:with:
+          (perform: self 'array) 'at:put: index obj)
        (perform:with: self
                       'tally:
                       (+ 1 (perform: self 'tally)))
@@ -247,10 +249,11 @@
                                     oldObj))
               (array (perform: self 'array))
             )
-       (if (st-nil? (vector-ref array (- index 1)))
+       (if (st-nil? (perform:with: self 'keyAt: index))
            (absentBlock)
            (begin
-             (vector-set! array (- index 1) st-nil)
+             (perform:with:with:
+              (perform: self 'array) 'at:put: index st-nil)
              (perform:with self
                            'tally:
                            (- (perform: self 'talley) 1))
@@ -259,9 +262,29 @@
                    
 (addSelector:withMethod:
      Set
+     'fixCollisionsFrom:
+     (lambda (self oldIndex)
+       ;; Removed elt at (ST) index.
+       ;; Now relocate entries displaced by hash
+       ;; collision at this index
+       (let* ( (length (perform: (perform: self 'array) 'size))
+               (fixupIndex
+                 (if (= oldIndex length) 1 (+ 1 oldIndex)))
+             )
+         (let loop ( (oldIndex fixupIndex)
+                     (elt (perform:with: self keyAt: fixupIndex)) )
+           (unless (st-nil? elt)
+             (let ( (newIndex (perform:with: self 'findElementOrNil: elt)) )
+               (unless (= newIndex oldIndex)
+                 (perform:with:with: self 'swap:with: oldIndex newIndex))
+               (loop newIndex (perform:with: self keyAt: fixupIndex))))))     
+)    )
+
+(addSelector:withMethod:
+     Set
      'collect:
      (lambda (self aBlock)
-       (let ( (new-set (perform:with: (class self)
+       (let ( (new-set (perform:with: (class self) ;NB: subclass may invoke
                                       'new:
                                       (perform: self 'size)))
               (array (perform: self 'array))
