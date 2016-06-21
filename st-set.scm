@@ -26,6 +26,14 @@
 )
 
 (addSelector:withMethod:
+     (class Set)
+     'new:
+     (lambda (self size)
+       (let ( (newInst (perform: self 'new)) )
+         (perform:with: newInst 'init: size)
+         newInst)))
+
+(addSelector:withMethod:
      Set
      'initialize
      (let ( (defaultSize 4) )
@@ -334,7 +342,7 @@
          (vector-for-each
           (lambda (elt)
             (unless (st-nil? elt)
-              (perform:with: new-set 'add: elt)))
+              (perform:with: new-set 'add: (aBlock elt))))
           array)
          new-set)))
 
@@ -347,6 +355,34 @@
          (perform:with: the-copy 'array:
                         (vector-copy (perform: self 'array)))
          the-copy)))
+
+(addSelector:withMethod:
+     Set
+     'asArray
+     (lambda (self)
+       (let ( (elts '()) )
+         (vector-for-each
+          (lambda (elt)
+            (unless (st-nil? elt)
+              (set! elts (cons elt elts))))
+          (perform: self 'array))
+       (list->vector elts))))
+
+(addSelector:withMethod:
+     Array
+     'asSet
+     (lambda (self)
+       (let ( (newSet
+               (perform:with: Set
+                              'new: (vector-length self)))
+            )
+         (vector-for-each
+          (lambda (elt)
+            (unless (st-nil? elt)
+              (perform:with: newSet 'add: elt)))
+          self)
+         newSet)))
+
 
 ;; (provides st-set)
 
