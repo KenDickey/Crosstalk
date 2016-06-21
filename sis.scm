@@ -69,6 +69,7 @@
      "st-string"       ;; String
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
+     "st-set"          ;; Set
 ;;     @@@more to come...
     )
  )

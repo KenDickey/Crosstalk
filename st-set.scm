@@ -44,13 +44,51 @@
                    1
                    (floor (/ (* (+ size 1) 4) 3))))
             )
-;;       (superPerform: self 'initialize)
+         (superPerform: self 'initialize)
          (perform:with: self 'tally: 0)
          (perform:with: self
                         'array:
                         (perform:with: Array 'new: initialSize))
          self))
 )
+
+(addSelector:withMethod:
+     (class Set)
+     'with:
+     (lambda (self elt1)
+       (let ( (aSet (perform: Set 'new)) )
+         (perform:with: aSet 'add: elt1)
+         aSet)))
+
+(addSelector:withMethod:
+     (class Set)
+     'with:with:
+     (lambda (self elt1 elt2)
+       (let ( (aSet (perform: Set 'new)) )
+         (perform:with: aSet 'add: elt1)
+         (perform:with: aSet 'add: elt2)
+         aSet)))
+
+(addSelector:withMethod:
+     (class Set)
+     'with:with:with:
+     (lambda (self elt1 elt2 elt3)
+       (let ( (aSet (perform: Set 'new)) )
+         (perform:with: aSet 'add: elt1)
+         (perform:with: aSet 'add: elt2)
+         (perform:with: aSet 'add: elt3)
+         aSet)))
+
+(addSelector:withMethod:
+     (class Set)
+     'with:with:with:with:
+     (lambda (self elt1 elt2 elt3 elt4)
+       (let ( (aSet (perform: Set 'new)) )
+         (perform:with: aSet 'add: elt1)
+         (perform:with: aSet 'add: elt2)
+         (perform:with: aSet 'add: elt3)
+         (perform:with: aSet 'add: elt4)
+         aSet)))
 
 (addSelector:withMethod:
      Set
@@ -304,7 +342,7 @@
      Set
      'copy
      (lambda (self)
-       (let ( (the-copy (perform:with: (class self) 'new: 0)) )
+       (let ( (the-copy (perform: (class self) 'new)) )
          (perform:with: the-copy 'tally: (perform: self 'tally))
          (perform:with: the-copy 'array:
                         (vector-copy (perform: self 'array)))
