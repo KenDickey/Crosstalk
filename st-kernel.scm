@@ -351,7 +351,7 @@
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (let ( (mDict (behavior self)) )
     (if (st-nil? mDict)
-        (doesNotUnderstand: self selectorSym) ;; Broken Prototype
+        (error "Missing method dictionary for: " self selectorSym)
         (primLookup: mDict selectorSym)
 ) ) )
 
