@@ -1,5 +1,5 @@
 ;;; FILE: "st-array.scm"
-;;; IMPLEMENTS: Array Bytevector
+;;; IMPLEMENTS: Array, ByteArray
 ;;;             (Scheme vectors & bytevectors)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 17 June 2016
@@ -174,21 +174,18 @@
      'withAll:
      (lambda (self aCollection)
        (let* ( (size (perform: self 'size))
-               (limit (- size 1)) ;; Scheme 0 based
                (newByteArray (make-bytevector size 0))
              )
          (let loop ( (index 0) )
-           (cond
-            ((< index limit)
+           (when (< index size) ;; Scheme 0 based
              (bytevector-u8-set!
                   newByteArray
                   index
                   (perform:with aCollection
                                 'at:
-                                (+ 1 index)))
+                                (+ 1 index))) ;; ST 1 based
              (loop (+ index 1)))
-            (else
-             newByteArray))))))
+             newByteArray))))
 
 (addSelector:withMethod:
      ByteArray
@@ -211,6 +208,7 @@
      ByteArray
      'size 
      (lambda (self)
+    ;; (perform: self 'basicSize)
        (bytevector-length self)))
 
 (addSelector:withMethod:
@@ -219,6 +217,20 @@
      (lambda (self)
        (bytevector-length self)))
 
+(define (bytevector-for-each proc bvec)
+  (let ( (size (bytevector-size bvec)) )
+    (let loop ( (index 0) )
+      (when (< index size)
+        (proc (bytevector-u8-ref bvec))
+        (loop (+ 1 index)))
+) ) )
+
+(addSelector:withMethod:
+     Array
+     'do:
+     (lambda (self aBlock)
+       (bytevector-for-each aBlock self)
+       self))
 
 
 ;; (provide 'st-array)
