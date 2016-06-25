@@ -13,13 +13,15 @@
    )
 )
 
-(define upperCaseAlphaChars "abcdefghijklmnopqrstuvwxyz")
-(define lowerCaseAplhaChars "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-(define decimalDigitChars "0123456789")
+;; cahr -> any Unicode character
+(define upperCaseLetters "abcdefghijklmnopqrstuvwxyz")
+(define lowerCaseLetters "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+(define decimalDigitLetters "0123456789")
 (define nonCaseChar #\_) ; underscpre
 (define exponentLetters "edg")
 (define binaryCharacters "!%&*+,/<=>?@\~|-")
 (define commentCharacter #\")
+(define stringCharacter #\')
 (define returnOperatorChar #\^)
 (define assignmentString ":=")  ;; NB: 'foo:=' parses as #(foo :=) NOT #(foo: =)
 

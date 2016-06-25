@@ -1,4 +1,4 @@
-;;; FILE: "sis.sch"
+;;; FILE: "sis.scm"
 ;;; IMPLEMENTS: Smalltalk in Scheme -- kernel ST bootstrap
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 May 2016
@@ -23,16 +23,17 @@
     (rnrs hashtables (6))
     (rnrs sorting (6))
     (rnrs io simple (6))
+    (scheme char)
     (scheme inexact)
     (scheme file)
     (scheme complex)
+    (scheme time)
     (primitives
        load compile-file
        procedure-name
        procedure-name-set!
        procedure-arity
-       ratnum?
-       char-upper-case?)
+       ratnum?)
 )
 
 ;; Helpers

@@ -1,4 +1,4 @@
-;;; FILE: "st-number.sch"
+;;; FILE: "st-number.scm"
 ;;; IMPLEMENTS: Number abstract class
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016

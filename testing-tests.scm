@@ -1,5 +1,5 @@
 #!r6rs
-;; FILE: "testing-tests.ss"
+;; FILE: "testing-tests.scm"
 ;; IMPLEMENTS: Quick check for simple-regression-testing library
 ;; LANGUAGE: Larceny Scheme
 ;; AUTHOR: Ken [dot] Dickey [at] Whidbey [dot] Com

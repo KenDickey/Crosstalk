@@ -1,5 +1,5 @@
-;;; FILE: "st-string-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-string.sch
+;;; FILE: "st-string-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-string.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

@@ -1,4 +1,4 @@
-;;; FILE: "st-object.sch"
+;;; FILE: "st-object.scm"
 ;;; IMPLEMENTS: Basic Smalltalk object behavior
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 12 May 2016

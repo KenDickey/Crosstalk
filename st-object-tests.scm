@@ -1,5 +1,5 @@
-;;; FILE: "st-object-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-object.sch
+;;; FILE: "st-object-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-object.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016
 

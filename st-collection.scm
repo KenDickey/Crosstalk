@@ -1,4 +1,4 @@
-;;; FILE: "st-collection.sch"
+;;; FILE: "st-collection.scm"
 ;;; IMPLEMENTS: Collection, SequenceableCollection, ArrayedCollection
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016

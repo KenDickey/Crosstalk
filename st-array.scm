@@ -1,5 +1,6 @@
-;;; FILE: "st-array.sch"
-;;; IMPLEMENTS: Array (Scheme Vectors)
+;;; FILE: "st-array.scm"
+;;; IMPLEMENTS: Array Bytevector
+;;;             (Scheme vectors & bytevectors)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 17 June 2016
 
@@ -22,6 +23,7 @@
      Array
      'category: '|Collections-Arrayed|)
 
+
 ;; Scheme Vectors
 (set! st-array-behavior (perform: Array 'methodDict))
 
@@ -42,7 +44,7 @@
 
 (addSelector:withMethod:
      (class Array)
-     'new
+     'new:
      (lambda (self size)
        (perform: (perform:with: self 'basicNew: size)
                  'imitialize)))
@@ -89,10 +91,6 @@
                          (set! elts (cons elt elts))))
          (list->vector (reverse elts)))))
 
-(perform:with:
-     Array
-     'category: '|Collections-Arrayed|)
-
 
 (addSelector:withMethod:
      Array
@@ -129,6 +127,99 @@
          (vector-set! self index2 elt1)
          (vector-set! self index1 elt2)
          self)))
+
+
+;;; Bytevector
+
+
+(define ByteArray
+  (newSubclassName:iVars:cVars:
+   ArrayedCollection
+   'ByteArray '() '())
+)
+
+(perform:with:
+     ByteArray
+     'comment:
+"I present an ArrayedCollection whose elements are integers between 0 and 255."
+)
+
+(perform:with:
+     ByteArray
+     'category: '|Collections-Arrayed|)
+
+;; Scheme bytevectors
+(set! st-bytevector-behavior (perform: ByteArray 'methodDict))
+
+(addSelector:withMethod:
+     (class ByteArray)
+     'basicNew:
+     (lambda (self size)
+       (make-bytevector size 0)))
+
+(addSelector:withMethod:
+     (class ByteArray)
+     'new:
+     (lambda (self size)
+       (perform:with: self 'basicNew: size)))
+
+(addSelector:withMethod:
+     (class ByteArray)
+     'new 
+     (lambda (self)
+       (perform:with: self 'basicNew: 0)))
+
+(addSelector:withMethod:
+     (class Array)
+     'withAll:
+     (lambda (self aCollection)
+       (let* ( (size (perform: self 'size))
+               (limit (- size 1)) ;; Scheme 0 based
+               (newByteArray (make-bytevector size 0))
+             )
+         (let loop ( (index 0) )
+           (cond
+            ((< index limit)
+             (bytevector-u8-set!
+                  newByteArray
+                  index
+                  (perform:with aCollection
+                                'at:
+                                (+ 1 index)))
+             (loop (+ index 1)))
+            (else
+             newByteArray))))))
+
+(addSelector:withMethod:
+     ByteArray
+     'at:
+     (lambda (self index)
+       ;; NB: ST 1-based, Scheme 0-based
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-u8-ref self (- index 1))
+           (error "Index out of range" self index))))
+     
+(addSelector:withMethod:
+     ByteArray
+     'at:put:
+     (lambda (self index newVal)
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-u8-set! self (- index 1) newVal)
+           (error "Index out of range" self index))))
+
+(addSelector:withMethod:
+     ByteArray
+     'size 
+     (lambda (self)
+       (bytevector-length self)))
+
+(addSelector:withMethod:
+     ByteArray
+     'basicSize
+     (lambda (self)
+       (bytevector-length self)))
+
+
 
 ;; (provide 'st-array)
 

@@ -1,4 +1,4 @@
-;;; FILE: "st-kernel.sch"
+;;; FILE: "st-kernel.scm"
 ;;; IMPLEMENTS: Basic Smalltalk object mechanics
 ;;; LANGUAGE: Scheme (R7RS small)
 ;;; AUTHOR: Ken Dickey
@@ -96,26 +96,34 @@
     mDict
 ) )
 
-;; Behavior adds breains to structure
+;;; Behavior adds breains to structure
 
-(define st-nil-behavior        (make-mDict-placeholder 'UndefinedObject))
-(define st-true-behavior       (make-mDict-placeholder 'True))
-(define st-false-behavior      (make-mDict-placeholder 'False))
-(define st-integer-behavior    (make-mDict-placeholder 'Integer))
-(define st-real-behavior       (make-mDict-placeholder 'Float))
-(define st-complex-behavior    (make-mDict-placeholder 'Complex))
-(define st-fraction-behavior   (make-mDict-placeholder 'Fraction))
-;; @@FIXME: Scaled Decimal
-(define st-character-behavior  (make-mDict-placeholder 'Character))
-(define st-string-behavior     (make-mDict-placeholder 'String))
-(define st-symbol-behavior     (make-mDict-placeholder 'Symbol))
-(define st-array-behavior      (make-mDict-placeholder 'Array))
-(define st-bytevector-behavior (make-mDict-placeholder 'Bytevector))
-(define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
-(define st-object-behavior     (make-mDict-placeholder 'Object))
+;; Nota Bene: st-*-behavior's are assigned when corresponding classes are created.
+;;
+;; Behaviors (method dictionaries) map selectors (symbols) to methods (closures)
 
 ;;;  Smalltalk                      Scheme
 ;;; anArray at: 2 put: 'foo'       (at:put: anArray 2 "foo")
+
+(define st-nil-behavior          (make-mDict-placeholder 'UndefinedObject))
+(define st-true-behavior         (make-mDict-placeholder 'True))
+(define st-false-behavior        (make-mDict-placeholder 'False))
+(define st-integer-behavior      (make-mDict-placeholder 'Integer))
+(define st-real-behavior         (make-mDict-placeholder 'Float))
+(define st-complex-behavior      (make-mDict-placeholder 'Complex))
+(define st-fraction-behavior     (make-mDict-placeholder 'Fraction))
+;; @@FIXME: Scaled Decimal
+(define st-character-behavior    (make-mDict-placeholder 'Character))
+(define st-string-behavior       (make-mDict-placeholder 'String))
+(define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
+(define st-array-behavior        (make-mDict-placeholder 'Array))
+(define st-list-behavior         (make-mDict-placeholder 'List))
+(define st-bytevector-behavior   (make-mDict-placeholder 'Bytevector))
+(define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
+(define st-object-behavior       (make-mDict-placeholder 'Object))
+(define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
+(define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
+
 
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
@@ -123,20 +131,10 @@
     (perform:with: obj 'printOn: outport)
     (get-output-string outport)))
 
-;; (primAddSelector:withMethod: 
-;;  	st-nil-behavior
-;;         'printString
-;;         (lambda (self) "nil"))
-
-;; (primAddSelector:withMethod: 
-;;  	st-true-behavior
-;;         'printString
-;;         (lambda (self) "true"))
-
-;; (primAddSelector:withMethod: 
-;;  	st-false-behavior
-;;         'printString
-;;         (lambda (self) "false"))
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'printString
+        printString)
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
@@ -158,9 +156,19 @@
 
 (primAddSelector:withMethod: 
  	st-true-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-true-behavior
         'printOn:
         (lambda (self port)
           (display "true" port)))
+
+(primAddSelector:withMethod: 
+ 	st-false-behavior
+        'printString
+        printString)
 
 (primAddSelector:withMethod: 
  	st-false-behavior
@@ -168,10 +176,10 @@
         (lambda (self port)
           (display "false" port)))
 
-;; (primAddSelector:withMethod: 
-;;  	st-string-behavior
-;;         'printString
-;;         printString)
+(primAddSelector:withMethod: 
+ 	st-string-behavior
+        'printString
+        printString)
 
 (primAddSelector:withMethod: 
  	st-string-behavior
@@ -331,6 +339,13 @@
       ((symbol? thing)     st-symbol-behavior) ;; tag=3
       ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
       ((bytevector? thing) st-bytevector-behavior)   ;; tag=0
+      ((port? thing)
+       (cond
+        ((textual-port? thing) st-char-stream-behavior)
+        ((binary-port?  thing) st-byte-stream-behavior)
+        (else
+         (error "Wierd port: " thing)))
+      )
       ;; (pare? thing) ;; err
       ;; list -> err
       ;; input-file 4
@@ -543,35 +558,11 @@
 ;;  ST Arrays are Scheme vectors..
 (add-array-accessors st-array-behavior 0)
 
-;; (primAddSelector:withMethod:
-;;      st-array-behavior
-;;      'at:
-;;      (lambda (self index)
-;;        ;; NB: ST 1-based, Scheme 0-based
-;;        (if (<= 1 index (vector-length self))
-;;            (vector-ref self (- index 1))
-;;            (error "Index out of range" self index))))
-     
-;; (primAddSelector:withMethod:
-;;      st-array-behavior
-;;      'at:put:
-;;      (lambda (self index newVal)
-;;        (if (<= 1 index (vector-length self))
-;;            (vector-set! self (- index 1) newVal)
-;;            (error "Index out of range" self index))))
-
-;; (primAddSelector:withMethod:
-;;      st-array-behavior
-;;      'basicSize
-;;      (lambda (self)
-;;        (vector-length self)))
-
 (primAddSelector:withMethod:
      st-array-behavior
      'size 
      (lambda (self)
        (vector-length self)))
-
 
 (define list->st-array list->vector)
 

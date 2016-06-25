@@ -1,5 +1,5 @@
-;;; FILE: "st-blockClosure-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-blockClosure.sch
+;;; FILE: "st-blockClosure-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-blockClosure.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

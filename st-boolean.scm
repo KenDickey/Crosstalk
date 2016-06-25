@@ -1,4 +1,4 @@
-;;; FILE: "st-boolean.sch"
+;;; FILE: "st-boolean.scm"
 ;;; IMPLEMENTS: Boolean True False UndefinedObject (a.k.a. nil)
 ;;; LANGUAGE: Scheme R7RS
 ;;; AUTHOR: Ken Dickey

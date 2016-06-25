@@ -1,5 +1,5 @@
-;;; FILE: "st-character-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-character.sch
+;;; FILE: "st-character-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-character.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

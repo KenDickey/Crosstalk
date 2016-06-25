@@ -1,5 +1,5 @@
-;;; FILE: "st-boolean-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-boolean.sch
+;;; FILE: "st-boolean-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-boolean.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

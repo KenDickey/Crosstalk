@@ -1,4 +1,4 @@
-;;; FILE: "st-blockClosure.sch"
+;;; FILE: "st-blockClosure.scm"
 ;;; IMPLEMENTS: BlockClosure
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 July 2016

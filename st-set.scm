@@ -1,4 +1,4 @@
-;;; FILE: "st-set.sch"
+;;; FILE: "st-set.scm"
 ;;; IMPLEMENTS: Set
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 20 July 2016

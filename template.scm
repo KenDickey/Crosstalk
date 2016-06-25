@@ -1,4 +1,4 @@
-;;; FILE: "st-@@.sch"
+;;; FILE: "st-@@.scm"
 ;;; IMPLEMENTS: @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 July 2016

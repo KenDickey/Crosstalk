@@ -1,4 +1,4 @@
-;;; FILE: "st-string.sch"
+;;; FILE: "st-string.scm"
 ;;; IMPLEMENTS: Strings
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
@@ -45,10 +45,14 @@
 
 (addSelector:withMethod: 
     String
-    'asStymbol
+    'asSymbol
     (lambda (self) (string->symbol self)))
 
-
+(addSelector:withMethod: 
+    String
+    'do:
+    (lambda (self aBlock)
+      (string-for-each aBlock self)))
 
 
 ;; (provide 'st-string)

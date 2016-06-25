@@ -1,5 +1,5 @@
-;;; FILE: "st-kernal-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-kernel
+;;; FILE: "st-kernal-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-kernel.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016
 

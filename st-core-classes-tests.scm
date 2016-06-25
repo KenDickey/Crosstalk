@@ -1,5 +1,5 @@
-;;; FILE: "st-core-classes-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-core-classes.sch
+;;; FILE: "st-core-classes-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-core-classes.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016
 

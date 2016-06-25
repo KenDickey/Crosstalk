@@ -1,4 +1,4 @@
-;;; FILE: "st-core-classes.sch"
+;;; FILE: "st-core-classes.scm"
 ;;; IMPLEMENTS: Basic Class mechanics
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 7 June 2016

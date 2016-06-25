@@ -1,5 +1,5 @@
-;;; FILE: "st-array-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-array.sch
+;;; FILE: "st-array-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-array.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

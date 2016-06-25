@@ -1,5 +1,5 @@
 ;;; FILE: "st-set-tests.scm"
-;;; IMPLEMENTS: UNit tests for st-set
+;;; IMPLEMENTS: UNit tests for st-set.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 21 July 2016
 

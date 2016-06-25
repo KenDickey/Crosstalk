@@ -1,5 +1,5 @@
-;;; FILE: "st-number-tests.sch"
-;;; IMPLEMENTS: Unit tests for st-number.sch
+;;; FILE: "st-number-tests.scm"
+;;; IMPLEMENTS: Unit tests for st-number.scm
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 

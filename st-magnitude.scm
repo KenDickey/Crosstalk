@@ -1,4 +1,4 @@
-;;; FILE: "st-magnitude.sch"
+;;; FILE: "st-magnitude.scm"
 ;;; IMPLEMENTS: Magnitude abstract class
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016

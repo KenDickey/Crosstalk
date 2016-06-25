@@ -1,4 +1,4 @@
-;;; FILE: "st-character.sch"
+;;; FILE: "st-character.scm"
 ;;; IMPLEMENTS: Characters
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 12 June 2016
