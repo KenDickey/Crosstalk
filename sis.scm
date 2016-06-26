@@ -20,12 +20,14 @@
 ;;   (run-source-tests)
 
 (import
-    (rnrs hashtables (6))
-    (rnrs sorting (6))
-    (rnrs io simple (6))
+    (rnrs hashtables)
+    (rnrs sorting)
+    (rnrs io ports)
+    (rnrs io simple)
+    (rnrs files)
     (scheme char)
     (scheme inexact)
-    (scheme file)
+;;  (scheme file)
     (scheme complex)
     (scheme time)
     (primitives
@@ -33,6 +35,8 @@
        procedure-name
        procedure-name-set!
        procedure-arity
+       port-position
+       port-has-set-port-position!?
        ratnum?)
 )
 

@@ -47,7 +47,7 @@
      'new:
      (lambda (self size)
        (perform: (perform:with: self 'basicNew: size)
-                 'imitialize)))
+                 'initialize)))
 
 (addSelector:withMethod:
      (class Array)
@@ -170,20 +170,20 @@
        (perform:with: self 'basicNew: 0)))
 
 (addSelector:withMethod:
-     (class Array)
+     (class ByteArray)
      'withAll:
      (lambda (self aCollection)
        (let* ( (size (perform: self 'size))
                (newByteArray (make-bytevector size 0))
+               ;; cache constant method
+               (at: (primLookup: (behavior aCollection) 'at:))
              )
          (let loop ( (index 0) )
            (when (< index size) ;; Scheme 0 based
              (bytevector-u8-set!
                   newByteArray
                   index
-                  (perform:with aCollection
-                                'at:
-                                (+ 1 index))) ;; ST 1 based
+                  (at: aCollection (+ 1 index))) ;; ST 1 based
              (loop (+ index 1)))
              newByteArray))))
 
@@ -226,7 +226,7 @@
 ) ) )
 
 (addSelector:withMethod:
-     Array
+     ByteArray
      'do:
      (lambda (self aBlock)
        (bytevector-for-each aBlock self)

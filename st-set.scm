@@ -5,7 +5,8 @@
 
 ;; Code transliterated from PharoCandle "PCSet"
 
-;; (requires 'st-array)
+;; (require 'st-collection)
+;; (require 'st-array)
 
 
 (define Set
