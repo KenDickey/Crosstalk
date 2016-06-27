@@ -33,7 +33,8 @@
 ;;  ...
 
 (define token-kinds
-  '( carrot cascade badToken blockStart blockEnd comment eof keyword leftParen period rightParen string verticalBar whitespace )
+;; NB: never 'keyword ; see scan-id-or-keyword
+  '( assignment carrot cascade colon badToken blockArg blockStart blockEnd comment eof keyword leftParen period rightParen string verticalBar whitespace )
 )
 
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
@@ -145,16 +146,49 @@
               (char-numeric? next-char))
           (next-char-keep)
           (loop))))
-      ; id or keydword?
+;;; Keywords are recognized by caller (parser).
 ;;  (if (char=? #\: next-char)
-      ;; keyword or id:= assignment
       ;; DO NOT READ the $:
       ;; -- let parser deal with it
       ;;  'foo:= 3'
       ;; is    'foo := 3'
       ;; NEVER 'foo: = 3'
       (new-token 'identifier)) ;; NB: NEVER keyword
-      
+
+    (define (scan-number) ;;@@FIXME: NYI
+      )
+
+    (define (consume-comment);;@@FIXME: NYI
+      )
+
+    (define (scan-sharp-literal);;@@FIXME: NYI
+      )
+
+    (define (scan-string) ;;@@FIXME: NYI
+      )
+
+    (define (scan-colon)
+      ;; colon, assignment, blockArg
+      (cond
+       ((char=? #\= next-char)
+        (next-char-keep) ;; read $=
+        (new-token 'assignment)
+        )
+       ((char-alphabetic? next-char)
+        (let loop ()
+          (cond
+           ((or (char-alphabetic? next-char)
+              (char-numeric? next-char))
+            (scan-char-keep))
+           (else
+            (new-token 'blockArg))))
+        )
+       (else
+        (new-token 'colon))
+     ) )
+
+     (define (scan-binary-selector-or-unexpected) ;; @@NYI
+       )
 
   next-token ;; return the access function
 ) )
