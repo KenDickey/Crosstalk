@@ -43,7 +43,8 @@
 ;; to resolve this, but the parser only needs
 ;; one token (<colon> vs <whitespace> ..)
   '( assignment
-     badToken blockArg blockStart blockEnd braceBegin braceEnd
+     badToken
+     binarySelector blockArg blockStart blockEnd braceBegin braceEnd
      carrot cascade characterLiteral colon comment
      dynamicDictStart
      eof
@@ -66,8 +67,8 @@
 
 (define (tokenizer-for-file-named fileNameString)
   (token-parser-for-port
-     (open-input-file aString)
-     aString ;; source
+     (open-input-file fileNameString)
+     (vector 'file fileNameString) ;; source
      0
      0))
 
@@ -103,8 +104,6 @@
 
       (cond
        ((eof-object? first-char)
-        ;; (close-port port)
-        ;; (set! port-closed #t)
         (new-token 'eof)
         )
        ((whitespace? first-char)
@@ -115,6 +114,9 @@
         )
        ((digit? first-char)
         (scan-number)
+        )
+       ((binary-operator-char? first-char)
+        (scan-binary-operator)
         )
        (else
         (case first-char
@@ -187,8 +189,8 @@
 
     (define (scan-identifier token-kind)
       (let loop ()
-        (if (or (alphabetic? next-char)
-                (numeric?    next-char))
+        (if (or (letter? next-char)
+                (digit?  next-char))
             (begin
               (next-char-keep)
               (loop))))
@@ -197,8 +199,8 @@
     (define (scan-symbol)
       (let loop ()
         (if ;; identifier plus $:
-         (or (alphabetic? next-char)
-             (numeric?    next-char)
+         (or (letter? next-char)
+             (digit?  next-char)
              (and (char? next-char) ;; eof protect
                   (char=? #\: next-char)))
          (begin
@@ -207,7 +209,7 @@
       (new-token 'symbol))
 
     (define (scan-number)
-      (error "NYI: scan-number")
+v      (error "NYI: scan-number")
       )
 
     (define (consume-comment)
@@ -255,7 +257,7 @@
        ((eof-object? next-char)
         (new-token 'sharp) ;; probable error
        )
-       ((char-alphabetic? next-char)
+       ((letter? next-char)
         (scan-symbol)
         )
        ((char=? #\' next-char)
@@ -288,7 +290,7 @@
         (next-char-keep) ;; read $=
         (new-token 'assignment)
         )
-       ((char-alphabetic? next-char)
+       ((letter? next-char)
         (scan-identifier 'blockArg)
         )
        (else
@@ -301,6 +303,15 @@
       (new-token 'characterLiteral)
       )
 
+    (define (scan-binary-operator)
+      (let loop ()
+        (if (binary-operator-char? next-char)
+            (begin
+              (next-char-keep)
+              (loop))
+            (new-token 'binarySelector))
+      ) )
+    
     (define (scan-binary-selector-or-unexpected) 
       (error "NYI: scan-binary-selector-or-unexpected")
       )
@@ -323,27 +334,63 @@
 
 ;; char -> any Unicode character
 
-(define (letter? char) ;; Note char-alphabetic?
+(define (ascii-letter? char)
   (if (char? char) ;; eof protect
       (let ( (charcode (char->integer char)) )
         (or (<= 97 charcode 122)  ;; a..z
             (<= 65 charcode  90))) ;; A..Z
-      #false)
-)
+      #false))
 
-(define (digit? char) ;; Note: char-numeric?
+(define (unicode-letter? char)
+  (if (char? char)
+      (char-alphabetic? char)
+      #false))
+
+(define (ascii-digit? char)
+  (if (char? char) ;; eof protect
+      (char-numeric? char)
+      #false))
+
+(define (unicode-digit? char) ;; Note: char-numeric?
   (if (char? char)
       (<= 48 (char->integer char) 57) ;; 0..9
       #false))
 
+(define ascii-binop-chars (string->list "!%&*+,/<=>?@\~|-"))
+(define (ascii-binop-char? char)
+  (cond
+   ((member char ascii-binop-chars) #t)
+   (else #f)))
+
+(define (unicode-binop-char? char)
+  (error "Need to implement test for Unicode math symbol chars"))
+
+;; Default is ASCII (portable)
+(define unicode-in-identifiers #false)
+(define letter? ascii-letter?)
+(define digit?  ascii-digit?)
+(define binary-operator-char? ascii-binop-char?)
+
+(define (use-unicode-in-identifiers aBool)
+  (set! unicode-in-identifiers aBool)
+  (cond
+   (aBool
+    (set! letter? unicode-letter?)
+    (set! digit?  unicode-digit?)
+    (set! binary-operator-char? unicode-binop-char?)
+    )
+   (else
+    (set! letter? ascii-letter?)
+    (set! digit?  ascii-digit?)
+    (set! binary-operator-char? ascii-binop-char?)
+    )
+   )
+)
+
+
 (define (whitespace? char)
   (if (char? char)
       (char-whitespace? char)
-      #false))
-
-(define (alphabetic? char)
-  (if (char? char)
-      (char-alphabetic? char)
       #false))
 
 (define (numeric? char)
