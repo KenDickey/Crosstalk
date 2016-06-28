@@ -35,12 +35,11 @@
 (define token-kinds
 ;; NB: token-kind is never 'keyword
 ;; Keywords are recognized by caller (parser).
-;; Let parser deal with <identifier> <colon>
 ;;  'foo:= 3'
 ;; is    'foo := 3'
 ;; NEVER 'foo: = 3'
 ;; The scanner would need to look 2 chars ahead
-;; to resolve this, but the parser only needs
+;; to resolve this, but an LL(1) parser only needs
 ;; one token (<colon> vs <whitespace> ..)
   '( assignment
      badToken
@@ -48,12 +47,14 @@
      carrot cascade characterLiteral colon comment
      dynamicDictStart
      eof
+     float
+     integer
      keyword
      leftParen litArrayStart litByteArrayStart
-     minus
+     ;; [minus] -> binarySelector
      period
      rightParen
-     sharp string symbol
+     scaledDecimal sharp string symbol
      verticalBar
      whitespace )
 )
@@ -133,10 +134,11 @@
           ((#\;) (new-token 'cascade))
           ((#\.) (new-token 'period))
           ((#\^) (new-token 'carrot))
-          ((#\-) (new-token 'minus))
-          (else  (scan-binary-selector-or-unexpected))
+          ((#\-) (new-token 'minus)) ;; binaryOperatorChar
+          (else
+           (error "Unexpected input" (new-token 'badToken))
           )
-        )))
+        ))))
 
     ;; read a char and add to buffer
     (define (next-char-keep)
@@ -251,6 +253,10 @@
           (next-char-keep)
           (scan-exponent)
           )
+         ((char=? #\s next-char)
+          (next-char-keep)
+          (scan-scaled-decimal)
+          )
          (else
           (new-token 'float)))
       ) )
@@ -295,7 +301,17 @@
       )
     
     (define (scan-scaled-decimal)
-      (error "Scaled Decimal is NOT YET SUPPORTED")
+      ;; Seen: digit+ ['.' digit+] 's'
+      (let loop ()
+        (cond
+         ((eof-object? next-char)
+          (new-token 'scaledDecimal)
+          )
+         ((digit? next-char)
+          (next-char-keep)
+          (loop))
+         (else
+          (new-token 'scaledDecimal))))
       )
 
     (define (consume-comment)
