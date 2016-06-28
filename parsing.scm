@@ -190,7 +190,8 @@
     (define (scan-identifier token-kind)
       (let loop ()
         (if (or (letter? next-char)
-                (digit?  next-char))
+                (digit?  next-char)
+                (char=? #\_ next-char))
             (begin
               (next-char-keep)
               (loop))))
@@ -208,8 +209,93 @@
            (loop))))
       (new-token 'symbol))
 
+
     (define (scan-number)
-v      (error "NYI: scan-number")
+      (let loop ()
+        (cond
+         ((digit? next-char)
+          (next-char-keep)
+          (loop)
+          )
+         ((eof-object? next-char)
+          (new-token 'integer)
+          )
+         ((char=? #\. next-char)
+          (next-char-keep)
+          (scan-float)
+          )
+         ((char=? #\r next-char)
+          (next-char-keep)
+          (scan-radix)
+          )
+         ((char=? #\s next-char)
+          (next-char-keep)
+          (scan-scaled-decimal)
+          )
+         (else
+          (new-token 'integer)))
+        ) )
+
+    (define (scan-float)
+      ;; digit+ '.' digit+ [(e|d|g) [-] digit+
+      (let loop ()
+        (cond
+         ((digit? next-char)
+          (next-char-keep)
+          (loop)
+          )
+         ((eof-object? next-char)
+          (new-token 'float)
+          )
+         ((member next-char '(#\e #\d #\g))
+          (next-char-keep)
+          (scan-exponent)
+          )
+         (else
+          (new-token 'float)))
+      ) )
+
+    (define (scan-exponent)
+      ;; seen: digit+ '.' digit+ (e|d|g)
+      ;; want: [-] digit+
+      (when (char=? #\- next-char)
+        (next-char-keep))
+      (if (digit? next-char)
+          (next-char-keep)
+          (error "badly formed exponent" (new-token 'badToken)))
+      (let loop ()
+        (cond
+         ((eof-object? next-char)
+          (new-token 'float)
+          )
+         ((digit? next-char)
+          (next-char-keep)
+          (loop))
+         (else
+          (new-token 'float))))
+      )
+
+    (define (scan-radix)
+      ;; seen digit+ 'r'
+      ;; want: radixDigit++
+      (if (radixDigit? next-char)
+          (next-char-keep)
+          (error "badly formed radix" (new-token 'badToken)))
+      (let loop ()
+        (cond
+         ((eof-object? next-char)
+          (new-token 'integer) ;; @@?IntegerWithRadix??@@
+          )
+         ((radixDigit? next-char)
+          (next-char-keep)
+          (loop))
+         (else
+          (new-token 'integer) ;; @@?IntegerWithRadix??@@
+          )))
+      )
+    
+    (define (scan-scaled-decimal)
+      (error "Scaled Decimal is NOT YET SUPPORTED")
       )
 
     (define (consume-comment)
@@ -397,6 +483,23 @@ v      (error "NYI: scan-number")
   (if (char? char)
       (char-numeric? char)
       #false))
+
+(define (radixDigit? char)
+  (cond
+   ((eof-object? char)
+    #false)
+   ((digit? char)
+    #true)
+   ((upcaseLetter? char)
+    #true)
+   (else
+    #false)))
+
+(define (upcaseLetter? char)
+  (if (char? char) ;; eof protect
+      (<= 65 (char->integer char) 90) ;; A..Z
+      #false))
+
 
 ;;;
 
