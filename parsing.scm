@@ -235,11 +235,13 @@
           )
          ((char=? #\' next-char)
           (next-char-keep)
-          (if (char=? #\' next-char) ;; "...''... "
-              (begin
-                (next-char-keep)
-                (loop))
-              (new-token token-kind))
+          (cond
+           ((and (char? next-char) ;; eof protect
+                 (char=? #\' next-char))
+            ;; '...''... '
+            (next-char-keep)
+            (loop))
+           (else (new-token token-kind)))
           )
          (else
           (next-char-keep)
@@ -257,6 +259,7 @@
         (scan-symbol)
         )
        ((char=? #\' next-char)
+        (next-char-keep)
         (scan-string 'symbol)
         )
        ((char=? #\( next-char)
