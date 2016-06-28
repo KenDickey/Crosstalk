@@ -187,8 +187,8 @@
 
     (define (scan-identifier token-kind)
       (let loop ()
-        (if (or (char-alphabetic? next-char)
-                (char-numeric? next-char))
+        (if (or (alphabetic? next-char)
+                (numeric?    next-char))
             (begin
               (next-char-keep)
               (loop))))
@@ -197,22 +197,26 @@
     (define (scan-symbol)
       (let loop ()
         (if ;; identifier plus $:
-         (or (char-alphabetic? next-char)
-             (char-numeric?    next-char)
-             (char=?      #\:  next-char))
+         (or (alphabetic? next-char)
+             (numeric?    next-char)
+             (and (char? next-char) ;; eof protect
+                  (char=? #\: next-char)))
          (begin
            (next-char-keep)
            (loop))))
       (new-token 'symbol))
 
     (define (scan-number)
-      ;;@@FIXME: NYI
-      #false
+      (error "NYI: scan-number")
       )
 
     (define (consume-comment)
       (let loop ()
         (cond
+         ((eof-object? next-char)
+          (error "fell off end of input in comment"
+                 (new-token 'badToken))
+          )
          ((char=? #\" next-char)
           (new-token 'comment)
          )
@@ -224,6 +228,10 @@
     (define (scan-string token-kind)
       (let loop ()
         (cond
+         ((eof-object? next-char)
+          (error "fell off end of input in string"
+                 (new-token 'badToken))
+          )
          ((char=? #\' next-char)
           (next-char-keep)
           (if (char=? #\' next-char) ;; "...''... "
@@ -241,6 +249,9 @@
       ;; Symbol, Literal Array or ByteArray,
       ;; Dynamic Dictionary
       (cond
+       ((eof-object? next-char)
+        (new-token 'sharp) ;; probable error
+       )
        ((char-alphabetic? next-char)
         (scan-symbol)
         )
@@ -266,6 +277,9 @@
     (define (scan-colon)
       ;; colon, assignment, blockArg
       (cond
+       ((eof-object? next-char)
+        (new-token 'colon)
+       )
        ((char=? #\= next-char)
         (next-char-keep) ;; read $=
         (new-token 'assignment)
@@ -283,8 +297,8 @@
       (new-token 'characterLiteral)
       )
 
-    (define (scan-binary-selector-or-unexpected) ;; @@NYI
-      #false
+    (define (scan-binary-selector-or-unexpected) 
+      (error "NYI: scan-binary-selector-or-unexpected")
       )
 
   next-token ;; return the access function
@@ -306,16 +320,32 @@
 ;; char -> any Unicode character
 
 (define (letter? char) ;; Note char-alphabetic?
-  (let ( (charcode (char->integer char)) )
-    (or (<= 97 charcode 122)  ;; a..z
-        (<= 65 charcode  90)) ;; A..Z
-        
-) )
+  (if (char? char) ;; eof protect
+      (let ( (charcode (char->integer char)) )
+        (or (<= 97 charcode 122)  ;; a..z
+            (<= 65 charcode  90))) ;; A..Z
+      #false)
+)
 
 (define (digit? char) ;; Note: char-numeric?
-  (<= 48 (char->integer char) 57)) ;; 0..9
+  (if (char? char)
+      (<= 48 (char->integer char) 57) ;; 0..9
+      #false))
 
-(define whitespace? char-whitespace?)
+(define (whitespace? char)
+  (if (char? char)
+      (char-whitespace? char)
+      #false))
+
+(define (alphabetic? char)
+  (if (char? char)
+      (char-alphabetic? char)
+      #false))
+
+(define (numeric? char)
+  (if (char? char)
+      (char-numeric? char)
+      #false))
 
 ;;;
 
