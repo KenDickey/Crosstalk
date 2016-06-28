@@ -218,6 +218,7 @@
                  (new-token 'badToken))
           )
          ((char=? #\" next-char)
+          (next-char-skip)
           (new-token 'comment)
          )
          (else
