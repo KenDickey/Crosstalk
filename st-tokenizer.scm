@@ -47,14 +47,14 @@
      carrot cascade characterLiteral colon comment
      dynamicDictStart
      eof
-     float
-     integer
+     float floatWithExponent
+     integer integerWithRadix
      keyword
      leftParen litArrayStart litByteArrayStart
      ;; [minus] -> binarySelector
      period
      rightParen
-     scaledDecimal sharp string symbol
+     scaledDecimal scaledDecimalWithFract sharp string symbol
      verticalBar
      whitespace )
 )
@@ -239,7 +239,8 @@
         ) )
 
     (define (scan-float)
-      ;; digit+ '.' digit+ [(e|d|g) [-] digit+
+      ;; seen: digit+ '.'
+      ;; want: digit+ [(e|d|g) [-] digit+]
       (let loop ()
         (cond
          ((digit? next-char)
@@ -272,13 +273,13 @@
       (let loop ()
         (cond
          ((eof-object? next-char)
-          (new-token 'float)
+          (new-token 'floatWithExponent)
           )
          ((digit? next-char)
           (next-char-keep)
           (loop))
          (else
-          (new-token 'float))))
+          (new-token 'floatWithExponent))))
       )
 
     (define (scan-radix)
@@ -290,13 +291,13 @@
       (let loop ()
         (cond
          ((eof-object? next-char)
-          (new-token 'integer) ;; @@?IntegerWithRadix??@@
+          (new-token 'integerWithRadix)
           )
          ((radixDigit? next-char)
           (next-char-keep)
           (loop))
          (else
-          (new-token 'integer) ;; @@?IntegerWithRadix??@@
+          (new-token 'integerWithRadix)
           )))
       )
     
@@ -305,13 +306,13 @@
       (let loop ()
         (cond
          ((eof-object? next-char)
-          (new-token 'scaledDecimal)
+          (new-token 'scaledDecimalWithFract)
           )
          ((digit? next-char)
           (next-char-keep)
           (loop))
          (else
-          (new-token 'scaledDecimal))))
+          (new-token 'scaledDecimalWithFract))))
       )
 
     (define (consume-comment)
@@ -514,5 +515,44 @@
       #false))
 
 
+;;;
+
+(define (token->native token)
+  (let* ( (tok-str (token-string  token))
+          (str-len (string-length tok-str))
+        )
+    (case (token-kind token)
+      ((string) ; "'strval'"
+       (if (zero? str-len)
+           ""
+           (substring
+               tok-str
+               1
+               (- (string-length tok-str) 1)))
+      )
+    ((symbol) ; #'sym' or #sym
+     (if (zero? str-len)
+         (string->symbol "")
+         (let* ( (start-index
+                  (if (char=? #\' (string-ref tok-str 1))
+                      2
+                      1))
+                 (end-index (- str-len start-index -1))
+               )
+           (string->symbol (substring tok-str
+                                      start-index
+                                      end-index))))
+     )
+    ((characterLiteral)
+     (string-ref tok-str 1)
+     )
+    ((integer float) ;; 'simple' numbers
+     (string->number tok-str)
+     )
+    ;; @@ OTHER CASES @@
+    (else
+     (error "unhandled token kind" token))
+     )
+  ) )
 
 ;;;			--- E O F ---			;;;
