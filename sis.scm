@@ -31,6 +31,7 @@
     (scheme complex)
     (scheme time)
     (primitives
+       vector-like-ref
        load compile-file
        procedure-name
        procedure-name-set!
@@ -59,6 +60,16 @@
 (define bytevector-ref  bytevector-u8-ref)
 (define bytevector-set! bytevector-u8-set!)
 
+(define port.iodata 7)    ; ouch
+
+(define (string-output-port? port)
+  (and (output-port? port)
+       (let ((d (vector-like-ref port port.iodata)))
+         (and (vector? d)
+              (> (vector-length d) 0)
+              (eq? (vector-ref d 0) 'string-output-port)))))
+
+;;;
 
 (define st-root-directory-prefix "/home/kend/SiS/")
 
