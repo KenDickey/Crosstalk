@@ -50,6 +50,56 @@
 
 (addSelector:withMethod: 
     String
+    'asLowercase
+    (lambda (self) (string-downcase self)))
+
+(addSelector:withMethod: 
+    String
+    'asUppercase
+    (lambda (self) (string-upcase self)))
+
+(addSelector:withMethod: 
+    String
+    'asFoldcase ;; Unicode foldcase
+    (lambda (self) (string-foldcase self)))
+
+(addSelector:withMethod: 
+    String
+    'at:
+    (lambda (self index)
+      ;; Scheme 0 based; ST 1-based
+      (if (<= 1 index (string-length self))
+          (string-ref self (- index 1))
+          (error "Index out of range" self index))))
+
+(addSelector:withMethod: 
+    String
+    'at:put:
+    (lambda (self index aChar)
+      ;; Scheme 0 based; ST 1-based
+      (cond
+       ((not (<= 1 index (string-length self)))
+        (error "Index out of range" self index)
+        )
+       ((not (char? aChar))
+        (error "Strings only contain characters" aChar self index)
+        )
+       (else
+        (string-set! self (- index 1) aChar)
+        self))))
+
+(addSelector:withMethod:
+     String
+     'size ;; self basicSize
+     (lambda (self) (string-length self)))
+
+(addSelector:withMethod:
+     String
+     'basicSize 
+     (lambda (self) (string-length self)))
+
+(addSelector:withMethod: 
+    String
     'do:
     (lambda (self aBlock)
       (string-for-each aBlock self)))
@@ -67,6 +117,53 @@
       (let ( (stream (open-output-string)) )
         (blockWithArg stream)
         (get-output-string stream))))
+
+(addSelector:withMethod: 
+    (class String)
+    'new  ;; empty string
+    (lambda (self) ""))
+
+(addSelector:withMethod:
+     (class String)
+     'basicNew:
+     (lambda (self size)
+       (make-string size #\space)))
+
+(addSelector:withMethod: 
+    (class String)
+    'value:
+    (lambda (self anInteger)
+      ;; String with: (Character value: anInteger)
+      (string (integer->char anInteger))))
+
+(addSelector:withMethod: 
+    (class String)
+    'with:
+    (lambda (self char1)
+      (string char1)))
+
+(addSelector:withMethod: 
+    (class String)
+    'with:with:
+    (lambda (self char1 char2)
+      (string char1 char2)))
+
+(addSelector:withMethod: 
+    (class String)
+    'with:with:with:
+    (lambda (self char1 char2 char3)
+      (string char1 char2 char3)))
+
+(addSelector:withMethod: 
+    (class String)
+    'withAll:
+    (lambda (self aCollection)
+      (let ( (result '()) )
+        (perform:with:
+           aCollection
+           'do:
+           (lambda (c) (set! result (cons c result))))
+        (list->string (reverse result)))))
 
 (addSelector:withMethod: 
     String
