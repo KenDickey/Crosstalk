@@ -13,7 +13,7 @@
    'Character '() '())
 )
 
-(set! st-character-behavior  (perform: Character 'methodDict))
+(set! st-character-behavior (perform: Character 'methodDict))
 
 
 (perform:with:
@@ -110,7 +110,7 @@
         Character
         'isLetter
         (lambda (self)
-          (char-alphbetic? self)))
+          (char-alphabetic? self)))
 
 (addSelector:withMethod:
         Character
@@ -128,7 +128,7 @@
         Character
         'isAlphaNumeric
         (lambda (self)
-          (or (char-alphbetic? self)
+          (or (char-alphabetic? self)
               (char-numeric? self))))
 
 (addSelector:withMethod:
