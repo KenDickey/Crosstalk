@@ -54,6 +54,51 @@
     (lambda (self aBlock)
       (string-for-each aBlock self)))
 
+(addSelector:withMethod: 
+    String
+    '|,|
+    (lambda (self aString)
+      (string-append self aString)))
+
+(addSelector:withMethod: 
+    (class String)
+    'streamContents:
+    (lambda (self blockWithArg)
+      (let ( (stream (open-output-string)) )
+        (blockWithArg stream)
+        (get-output-string stream))))
+
+(addSelector:withMethod: 
+    String
+    'asCamalCase
+    (lambda (self)
+      (perform:with:
+         String
+         'streamContents:
+         (lambda (outport)
+           (let ( (length (string-length self))
+                  (after-first-char #false)
+                )
+             (let loop ( (index 0) (upcaseMe #false) )
+               (when (< index length)
+                 (let ( (char (string-ref self index)) )
+                   (cond
+                    ((char-whitespace? char)
+                      (loop (+ index 1) #true)
+                      )
+                    ((and upcaseMe after-first-char)
+                     (write-char (char-upcase char) outport)
+                     (loop (+ index 1) #false)
+                     )
+                    (else
+                     (write-char char outport)
+                     (unless after-first-char
+                       (set! after-first-char #true))
+                     (loop (+ index 1) #false)
+                     )))))))
+  ) ) )
+
+                    
 
 ;; (provide 'st-string)
 
