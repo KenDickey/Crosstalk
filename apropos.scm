@@ -10,7 +10,7 @@
 ;; (apropos 'cons)
 ;; (apropos "char")
 
-(import (primitives interaction-environment environment-variables interaction-environment)
+(import (primitives interaction-environment environment-variables)
         (srfi :13) ;; string library -- for  string-contains
 	(rnrs sorting)
         )
@@ -25,11 +25,20 @@
     (let loop ( (results '()) (syms env-syms) )
       (cond
        ((null? syms)
-        (list-sort symbol<? results))
+        (list-sort symbol<? results)
+        )
        ((funky-symbol? (car syms))
-        (loop results (cdr syms)))
+        (let ( (str (symbol->string (car syms))) )
+          (if (char=? #\x1 (string-ref str 0))
+              (loop (cons
+                       (string->symbol (substring str 1 (string-length str)))
+                       results)
+                     (cdr syms))
+              (loop results (cdr syms))))
+        )
        ((string-contains (symbol->string (car syms)) target)
-        (loop (cons (car syms) results) (cdr syms)))
+        (loop (cons (car syms) results) (cdr syms))
+        )
        (else (loop results (cdr syms)))))))
 
 (define (funky-symbol? s)
