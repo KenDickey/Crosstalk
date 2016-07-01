@@ -10,8 +10,8 @@
 ;; (apropos 'cons)
 ;; (apropos "char")
 
-(import (primitives interaction-environment environment-variables)
-        (srfi :13) ;; string library
+(import (primitives interaction-environment environment-variables interaction-environment)
+        (srfi :13) ;; string library -- for  string-contains
 	(rnrs sorting)
         )
 
