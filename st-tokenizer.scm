@@ -455,7 +455,8 @@
       (<= 48 (char->integer char) 57) ;; 0..9
       #false))
 
-(define ascii-binop-chars (string->list "!%&*+,/<=>?@\~|-"))
+(define ascii-binop-chars
+  (string->list "!%&*+,/<=>?@\~-")) ;; NB: without $|
 (define (ascii-binop-char? char)
   (cond
    ((member char ascii-binop-chars) #t)

@@ -1,0 +1,11 @@
+(display-ivars st-obj)
+(class obj)
+(superclass obj)
+(display-allSupers obj)
+(display-subs obj) ;; direct subclasses
+(allInstVarNames st-obj)
+(allSuperclasses st-obj)
+(selectors obj)
+(describe obj)
+
+(define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))

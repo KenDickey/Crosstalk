@@ -14,7 +14,7 @@
 ;; Run from command line via "larceny -r7rs", then
 ;;   (import (scheme load))
 ;;   (load "sis.scm")
-;;   (load-sourec-bootstrap)
+;;   (load-source-bootstrap)
 ;; Optional:
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
@@ -86,6 +86,7 @@
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
      "st-set"          ;; Set
+     "st-tokenizer"    ;; Stream -> tokens (Scheme)
 ;;     @@@more to come...
     )
  )

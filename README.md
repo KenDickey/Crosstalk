@@ -24,6 +24,7 @@ This is very much a work in progress.
   - Can Larceny Scheme's *Environments* be leveraged to provide cleanly separated Scheme and Smalltalk namespaces?
   - #thisContext: How to introduce decent debugging?
   - What kinds of caching would make significant performance difference?
+      + Cache single assignment multiple use (behavior, method)
       - Symbol property-list
       - PIC at call sites
       - Hashtable cache
@@ -41,9 +42,11 @@ This is very much a work in progress.
 
 ## Upcoming
   - Fill in the class structure (approx ANSI)
+    + Present Scheme native objects
   - Parsing Smalltalk with location/position info
   - Transliteration into Scheme
   - Read and execute Smalltalk code directly
+    + Fill in bootstrap by transliterating Smalltalk runtime
   - Look at runtime issues
   - _Bootstrap Morphic_
     
