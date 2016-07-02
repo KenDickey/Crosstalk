@@ -27,7 +27,6 @@
     (rnrs files)
     (scheme char)
     (scheme inexact)
-;;  (scheme file)
     (scheme complex)
     (scheme time)
     (primitives
@@ -38,8 +37,15 @@
        procedure-arity
        port-position
        port-has-set-port-position!?
-       ratnum?)
+       ratnum?
+       ;; r5rs:require
+       ;; apropos
+       )
 )
+
+;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
+
+(load "apropos.scm")
 
 ;; Helpers
 
