@@ -4,7 +4,7 @@
 ;;; DATE: 21 June 2016
 
 
-(define token-tag (cons 'token '())) ;; not eq? to anyhthing else
+(define token-tag (cons 'token '())) ;; not eq? to anything else
 
 (define (token? thing)
   (and (vector? thing)
@@ -33,14 +33,6 @@
 ;;  ...
 
 (define token-kinds
-;; NB: token-kind is never 'keyword
-;; Keywords are recognized by caller (parser).
-;;  'foo:= 3'
-;; is    'foo := 3'
-;; NEVER 'foo: = 3'
-;; The scanner would need to look 2 chars ahead
-;; to resolve this, but an LL(1) parser only needs
-;; one token (<colon> vs <whitespace> ..)
   '( assignment
      badToken
      binarySelector blockArg blockStart blockEnd braceBegin braceEnd
@@ -73,6 +65,16 @@
      0
      0))
 
+;; Keywords are recognized in scan-identifier
+;;  'foo:= 3'
+;; is    'foo := 3'
+;; NEVER 'foo: = 3'
+;; This scanner needs to look 2 chars ahead
+;; to decide this.
+
+(define saved-char #false) ;; false or a character
+
+
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
 ;;; which returns tokens
 ;; Note that token-strings are returned, NOT objects.
@@ -98,7 +100,11 @@
       (set! token-len 0)
       ;; location is start of scanned token
       (set! token-location (vector source line column))
-      (set! first-char (read-next-char))
+      (if saved-char
+          (begin
+            (set! first-char saved-char)
+            (set! saved-char #false))
+          (set! first-char (read-next-char)))
       (unless (eof-object? first-char)
         ;; Can't store eof in a string.
         (add-to-buffer first-char)) 
@@ -190,14 +196,26 @@
             (new-token 'whitespace))))
 
     (define (scan-identifier token-kind)
-      (let loop ()
+      (let loop () ;; pick off identifier chars
         (if (or (letter? next-char)
                 (digit?  next-char)
                 (char=? #\_ next-char))
             (begin
               (next-char-keep)
               (loop))))
-      (new-token token-kind))
+      ;; Check for keyword
+      (if (char=? #\: next-char)
+          (begin
+            (set! saved-char next-char)
+            (read-next-char)
+            (if (char=? #\= next-char) ;; ":="
+                (new-token token-kind)
+                (begin ;; foud a keyword
+                  (add-to-buffer saved-char)
+                  (set! saved-char #false)
+                  (new-token 'keyword))))
+          (new-token token-kind)))
+              
 
     (define (scan-symbol)
       (let loop ()
