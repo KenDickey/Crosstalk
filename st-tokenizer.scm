@@ -48,7 +48,7 @@
      dynamicDictStart
      eof
      float floatWithExponent
-     integer integerWithRadix
+     identifier integer integerWithRadix
      keyword
      leftParen litArrayStart litByteArrayStart
      ;; [minus] -> binarySelector
