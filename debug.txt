@@ -8,4 +8,10 @@
 (selectors obj)
 (describe obj)
 
+(define $     perform:)
+(define $:    perform:with:)
+(define $::   perform:with:with:)
+(define $:::  perform:with:with:with:)
+(define $:::: perform:with:with:with:with:)
+
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
