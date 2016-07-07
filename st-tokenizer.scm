@@ -3,26 +3,28 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 21 June 2016
 
+(define-structure (token kind string location))
+(define make-token token)
 
-(define token-tag (cons 'token '())) ;; not eq? to anything else
+;; (define token-tag (cons 'token '())) ;; not eq? to anything else
 
-(define (token? thing)
-  (and (vector? thing)
-       (= 4 (vector-length thing))
-       (eq? token-tag
-            (vector-ref thing 0))))
+;; (define (token? thing)
+;;   (and (vector? thing)
+;;        (= 4 (vector-length thing))
+;;        (eq? token-tag
+;;             (vector-ref thing 0))))
 
-(define (make-token kind string location)
-  (vector token-tag kind string location))
+;; (define (make-token kind string location)
+;;   (vector token-tag kind string location))
 
-(define (token-kind token)
-  (vector-ref token 1))
+;; (define (token-kind token)
+;;   (vector-ref token 1))
 
-(define (token-string token)
-  (vector-ref token 2))
+;; (define (token-string token)
+;;   (vector-ref token 2))
 
-(define (token-location token)
-  (vector-ref token 3))
+;; (define (token-location token)
+;;   (vector-ref token 3))
 
 ;; location is (source, line, col)
 ;; Where source may be

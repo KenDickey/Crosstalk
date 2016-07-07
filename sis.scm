@@ -25,6 +25,7 @@
     (rnrs io ports)
     (rnrs io simple)
     (rnrs files)
+    (rnrs syntax-case)
     (scheme char)
     (scheme inexact)
     (scheme complex)
@@ -46,6 +47,7 @@
 ;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
 
 (load "apropos.scm")
+(load "define-record.scm")
 
 ;; Helpers
 

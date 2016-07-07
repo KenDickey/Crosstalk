@@ -34,7 +34,7 @@
 
 
 ;;; The Smalltalk Global Environment
-(define smalltalk-dictionary (make-eq-hashtable))
+(define Smalltalk (make-eq-hashtable))
 
 (define combined-classDescription-var-names
   '(superclass methodDict format
@@ -297,7 +297,7 @@
 ;;; Ask a class to create a new subclass
 (define (newSubclassName:iVars:cVars:
          selfClass nameSym instanceVarsList classVarsList)
-   ;; (when (hashtable-ref smalltalk-dictionary nameSym #f)
+   ;; (when (hashtable-ref Smalltalk nameSym #f)
    ;;  (error "Class already exists" nameSym))
   (unless (and (symbol? nameSym)
                (let ( (name (symbol->string nameSym)) )
@@ -327,7 +327,7 @@
                 instanceVarsList))
         )
     (perform:with: newMetaClass 'thisClass: newSubclass)
-    (primSet:toValue: smalltalk-dictionary nameSym newSubclass)
+    (primSet:toValue: Smalltalk nameSym newSubclass)
     newSubclass		;; @@??@@ move initialize to here?
 ) )
 

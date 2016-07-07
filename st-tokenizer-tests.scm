@@ -143,7 +143,47 @@
   12.3
   (token->native ((tokenizer-for-string "12.3")))
   "12.3")
-                
+
+(add-equal-test 'st-tokenizer
+   #((identifier . "True")
+     (whitespace . " ")
+     (methDef . "~>")
+     (whitespace . " ")
+     (identifier . "printString")
+     (whitespace . " ")
+     (blockStart . "[")
+     (string . "'true'")
+     (blockEnd . "]")
+     (period . "."))
+   (tokens-from (tokenizer-for-string "True ~> printString ['true']."))
+   "True ~> printString ['true'].")
+
+(add-equal-test 'st-tokenizer
+   #((blockStart . "[")
+     (blockArg . ":a")
+     (whitespace . " ")
+     (blockArg . ":b")
+     (verticalBar . "|")
+     (whitespace . " ")
+     (identifier . "c")
+     (assignment . ":=")
+     (identifier . "a")
+     (whitespace . " ")
+     (binarySelector . "+")
+     (whitespace . " ")
+     (identifier . "b")
+     (period . ".")
+     (whitespace . " ")
+     (identifier . "d")
+     (whitespace . " ")
+     (keyword . "foo:")
+     (identifier . "e")
+     (period . ".")
+     (blockEnd . "]"))
+   (tokens-from
+      (tokenizer-for-string  "[:a :b| c:=a + b. d foo:e.]"))
+   "True ~> printString ['true'].")
+
 ;; (ensure-exception-raised 'st-tokenizer
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)
