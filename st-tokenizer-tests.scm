@@ -106,6 +106,28 @@
    (tokens-from get-token3)
    "block := [:a :b| ^(a foo: b bar: c + 7)].")
 
+(add-equal-test 'st-tokenizer
+  #((identifier . "Class")
+    (whitespace . " ")
+    (methDef . "~>")
+    (whitespace . " ")
+    (identifier . "foo")
+    (whitespace . " ")
+    (blockStart . "[")
+    (whitespace . " ")
+    (identifier . "x")
+    (whitespace . " ")
+    (assignment . ":=")
+    (whitespace . " ")
+    (float . "3.")
+    (whitespace . " ")
+    (identifier . "x")
+    (whitespace . " ")
+    (blockEnd . "]")
+    (period . "."))
+  (tokens-from (tokenizer-for-string "Class ~> foo [ x := 3. x ]."))
+  "Class ~> foo [ x := 3. x ].")
+
 
 (add-equal-test 'st-tokenizer
   "Joe''s string"

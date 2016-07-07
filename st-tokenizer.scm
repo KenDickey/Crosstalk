@@ -43,6 +43,7 @@
      identifier integer integerWithRadix
      keyword
      leftParen litArrayStart litByteArrayStart
+     methDef
      ;; [minus] -> binarySelector
      period
      rightParen
@@ -430,7 +431,10 @@
             (begin
               (next-char-keep)
               (loop))
-            (new-token 'binarySelector))
+            (if (string=? "~>"
+                      (substring buffer 0 token-len))
+                (new-token 'methDef)
+                (new-token 'binarySelector)))
       ) )
     
   next-token ;; return the access function
