@@ -145,6 +145,30 @@
   "12.3")
 
 (add-equal-test 'st-tokenizer
+   #((leftParen . "(")
+     (litArrayStart . "#(")
+     (blockStart . "[")
+     (litByteArrayStart . "#[")
+     (blockEnd . "]")
+     (blockEnd . "]")
+     (dynArrayStart . "{")
+     (dynArrayEnd . "}"))
+  (tokens-from (tokenizer-for-string "(\#([\#[]]{}" ))
+  "(\#([\#[]]{}" )
+
+(add-equal-test 'st-tokenizer
+   #((colon . ":")
+     (verticalBar . "|")
+     (cascade . ";")
+     (binarySelector . "-")
+     (period . ".")
+     (carrot . "^")
+     (minus . "-")
+     (integer . "3"))
+  (tokens-from (tokenizer-for-string ":|;-.^-3" ))
+  ":|;-.^-3" )
+
+(add-equal-test 'st-tokenizer
    #((identifier . "True")
      (whitespace . " ")
      (methDef . "~>")

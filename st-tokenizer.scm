@@ -44,11 +44,11 @@
      float floatWithExponent
      identifier integer integerWithRadix
      keyword
-     leftParen litArrayStart litByteArrayStart
+     leftBrace leftParen litArrayStart litByteArrayStart
      methDef
-     ;; [minus] -> binarySelector
+     minus
      period
-     rightParen
+     rightBrace rightParen
      scaledDecimal scaledDecimalWithFract sharp string symbol
      verticalBar
      whitespace )
@@ -137,6 +137,8 @@
           ((#\$) (scan-character-literal))
           ((#\[) (new-token 'blockStart))
           ((#\]) (new-token 'blockEnd))
+          ((#\{) (new-token 'dynArrayStart))
+          ((#\}) (new-token 'dynArrayEnd))
           ((#\() (new-token 'leftParen))
           ((#\)) (new-token 'rightParen))
           ((#\|) (new-token 'verticalBar))
@@ -428,16 +430,19 @@
       )
 
     (define (scan-binary-operator)
-      (let loop ()
-        (if (binary-operator-char? next-char)
-            (begin
-              (next-char-keep)
-              (loop))
-            (if (string=? "~>"
-                      (substring buffer 0 token-len))
-                (new-token 'methDef)
-                (new-token 'binarySelector)))
-      ) )
+      (if (and (char=? #\- first-char)
+               (digit? next-char))
+          (new-token 'minus)
+          (let loop ()
+            (if (binary-operator-char? next-char)
+                (begin
+                  (next-char-keep)
+                  (loop))
+                (if (string=? "~>"
+                              (substring buffer 0 token-len))
+                    (new-token 'methDef)
+                    (new-token 'binarySelector)))
+      ) ) )
     
   next-token ;; return the access function
 ) )
