@@ -47,7 +47,7 @@
 ;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
 
 (load "apropos.scm")
-(load "define-record.scm")
+(load "define-structure.scm")
 
 ;; Helpers
 
