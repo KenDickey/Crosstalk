@@ -17,6 +17,7 @@
 (define-structure (Sequence statements))
 (define-structure (Temporaries identifiers))
 (define-structure (LetTemps temps statements))
+(define-structure (Subexpression expression))
 
 ;;; Token parsing
 
@@ -95,22 +96,21 @@
 (define (parse-st-code)
   (next-st-token) ;; get 1st token
   (skip-whitespace)
+  (case (curr-token-kind)
     ((verticalBar)
      (let* ( (temps      (parse-temps))
              (statements (parse-statements))
            )
        (LetTemps temps statements))
      )
-    ((identifier)
-     (Sequence (parse-statements))
-     )
     ((eof)
      (Sequence '()) ;; no action!?!
      )
     (else
-     (parse-error "parse-st-code: expected smalltalk code!" curr-token))
-    )
-  )
+     (Sequence (parse-statements))
+     )
+   )
+) 
 
 ;; <temporaries> ::= '|' <temporary-variable-list> '|'
 ;; <temporary-variable-list> ::= identifier*
@@ -193,6 +193,17 @@
   (unless (every? Message? c-tail)
     (parse-error "make-cascade: bad cascade tail" c-tail))
   (Cascade (receiver c-head) (cons c-head ctail))
+)
+
+(define (parse-subexpression)
+  (unless (eq? 'leftParen (curr-token-kind))
+    (parse-error "parse-subexpression: expected $(" curr-token))
+  (consume-token!)
+  (let ( (subexpression (parse-expression)) )
+    (skip-whitespace)
+    (if (eq? 'rightParen (curr-token-kind))
+        (Subexpression subexpression)
+        (parse-error "parse-subexpression: expected $)" curr-token)))
 )
 
 (define (parse-expression)
