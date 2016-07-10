@@ -163,7 +163,7 @@
       ((carrot)
        (consume-token!)
        (let ( (return-exp (parse-expression)) )
-         (loop (curr-token-kind) (cons (Return return-exp) statements)))
+         (loop (cons (Return return-exp) statements)))
        )
       ((semicolon)
        (when (null? statements)
@@ -171,18 +171,19 @@
        (let ( (cascade-head (car statements))
               (cascade-tail (parse-cascade-tail))
               )
-         (loop (curr-token-kind) (cons (make-cascade cascade-head cascade-tail)
+         (loop (cons (make-cascade cascade-head cascade-tail)
                                        (cdr statements))))
        )
       ((left-paren)
        (let ( (subexpression (parse-subexpression)) )
-         (loop (curr-token-kind) (cons subexpression statements)))
+         (loop (cons subexpression statements)))
        )
-      ((eof) (Sequence (reverse starements))
+      ((eof)
+       (Sequence (reverse starements))
        )
       (else
        (let ( (statement (parse-expression)) )
-         (loop (curr-token-kind) (cons statement statements)))
+         (loop (cons statement statements)))
        )
       ) ; end-case
 ) )
@@ -194,6 +195,9 @@
     (parse-error "make-cascade: bad cascade tail" c-tail))
   (Cascade (receiver c-head) (cons c-head ctail))
 )
+
+(define (parse-cascade-tail)
+  @@@)
 
 (define (parse-subexpression)
   (unless (eq? 'leftParen (curr-token-kind))
@@ -222,15 +226,20 @@
                literal)
              )
             ((minus)
-             (parse-negative-number))
+             (parse-negative-number)
+             )
             ((litArrayStart)
-             (parse-literal-array))
+             (parse-literal-array)
+             )
             ((litByteArrayStart)
-             (parse-literal-byte-array))
+             (parse-literal-byte-array)
+             )
             ((dynArrayStart)
-             (parse-dynamic-array))
+             (parse-dynamic-array)
+             )
             ((blockStart)
-             (parse-block))
+             (parse-block)
+             )
             ((identifier)
              (let ( (identifier
                      (Identifier curr-token (token->native curr-token)))
@@ -245,13 +254,13 @@
     (skip-whitespace)
     (case (curr-token-kind)
       ((identifier)
-       (parse-unary-send recevier)
-       )
-      ((keyword)
-       (parse-keyword-send recevier)
+       (parse-unary-send receiver)
        )
       ((binarySelector)
        (parse-binary-send recevier)
+       )
+      ((keyword)
+       (parse-keyword-send recevier)
        )
       ((assignment)
        (parse-assignment recevier)
@@ -259,10 +268,64 @@
       ((methDef)
        (parse-method-definition receiver)
        )
-      (else receiver) ;; simple expression
+      (else receiver) ;; simple expression (ignore following)
       )
 ) )
 
+(define (parse-negative-number)
+  (unless (eq? 'minus (curr-token-kind))
+    (error "parse-negative-number: expected $-" curr-token))
+  (let ( (minus-token curr-token) )
+    (consume-token!)
+    (unless (st-number-token? current-token)
+      (error "parse-negative-number: expected a number to follow $-"
+             current-token))
+    (let ( (new-token  ;; @@REVISIT: could recognize neg numbers in tokenizer
+            (token (token-kind current-token)
+                   (string-append "-" (token-string current-token))
+                   (token-location minus-token)))
+         )
+      (Literal new-token (- (token->native current-token)))))
+)
+
+(define (st-number-token? tok)
+  (if (member (token-kind token)
+              '(integer integerWithRadix
+                scaledDecimal scaledDecimalWithFract
+                float floatWithExponent))
+      #true
+      #false))
+
+(define (parse-literal-array)
+  @@@)
+
+(define (parse-literal-byte-array)
+  @@@)
+
+(define (parse-dynamic-array)
+  @@@)
+
+(define (parse-block)
+  @@@)
+
+(define (parse-unary-send receiver)
+  @@@)
+
+(define (parse-keyword-send recevier)
+  @@@)
+
+(define (parse-binary-send recevier)
+  @@@)
+
+(define (parse-assignment recevier)
+  @@@)
+
+(define (parse-method-definition receiver)
+  @@@)
+
+
+
+  
 ;; <block constructor> ::= '[' <block body> ']'
 ;; <block body> ::= [<block-argument>* '|'] [<temporaries>] [<statements>]
 ;; <block-argument> ::= ':' identifier
