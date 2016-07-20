@@ -42,14 +42,18 @@
   ;;    whitespace )
 
 (define debug-parser (make-parameter #true))
+(define trace-parse-methods (make-parameter #true))
 
+;; Quick Test
 (define next-st-token (tokenizer-for-string " anArray at: 3 put: 37 "))
 
 (define curr-token #false)
 (define prev-token #false)
 
 (define (curr-token-kind)
-  (token-kind curr-token))
+  (if curr-token
+      (token-kind curr-token)
+      'whitespace)) ;; unset
 
 (define (consume-token!)
   (when (debug-parser)
@@ -82,6 +86,9 @@
 ;; separator ::= (whitespace | comment)*
 
 (define (skip-whitespace)
+  (when trace-parse-methods
+    (newline)
+    (display " (skip-whitespace)"))
   (case (curr-token-kind)
     ((whitespace comment)
      (consume-token!)
@@ -94,7 +101,10 @@
 ;; 	     eof
 
 (define (parse-st-code)
-  (next-st-token) ;; get 1st token
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-st-code)"))
+  (set! curr-token (next-st-token)) ;; get 1st token
   (skip-whitespace)
   (case (curr-token-kind)
     ((verticalBar)
@@ -116,10 +126,14 @@
 ;; <temporary-variable-list> ::= identifier*
 
 (define (parse-temps) ;; #\| seen (but not consumed)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-temps)"))
   (unless (eq? 'verticalBar (curr-token-kind))
     (parse-error "parse-temps: expected $|" curr-token))
   (consume-token!)
   (let loop ( (temps '()) )
+    (skip-whitespace)
     (case (curr-token-kind)
       ((identifier)
        (consume-token!)
@@ -152,13 +166,16 @@
 ;; 	   ( '(' <expression> ')' )
 
 (define (parse-statements)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-statements)"))
   (let loop ( (statements '()) )
     (skip-whitespace)
     (case (curr-token-kind)
       ((period)
        (consume-token!)
-       (let ( (statement (parse-expression)) )
-         (loop (curr-token-kind) (cons statement statements)))
+       (let ( (statement (parse-statement)) )
+         (loop (cons statement statements)))
        )
       ((carrot)
        (consume-token!)
@@ -179,7 +196,7 @@
          (loop (cons subexpression statements)))
        )
       ((eof)
-       (Sequence (reverse starements))
+       (Sequence (reverse statements))
        )
       (else
        (let ( (statement (parse-expression)) )
@@ -188,7 +205,17 @@
       ) ; end-case
 ) )
 
+(define (parse-statement)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-statement)"))
+  (error "@@NYI: (parse-statement)")
+)
+
 (define (make-cascade c-head c-tail)
+  (when trace-parse-methods
+    (newline)
+    (display " (make-cascade c-head c-tail)"))
   (unless (Message? c-head)
     (parse-error "make-cascade: expected receiver!!" c-head))
   (unless (every? Message? c-tail)
@@ -197,9 +224,15 @@
 )
 
 (define (parse-cascade-tail)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-cascade-tail)"))
+  (error "@@NYI:  (parse-cascade-tail)"))
 
 (define (parse-subexpression)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-subexpression)"))
   (unless (eq? 'leftParen (curr-token-kind))
     (parse-error "parse-subexpression: expected $(" curr-token))
   (consume-token!)
@@ -211,6 +244,9 @@
 )
 
 (define (parse-expression)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-expression)"))
   (skip-whitespace)
   (let ( (receiver
           (case (curr-token-kind)
@@ -257,13 +293,13 @@
        (parse-unary-send receiver)
        )
       ((binarySelector)
-       (parse-binary-send recevier)
+       (parse-binary-send receiver)
        )
       ((keyword)
-       (parse-keyword-send recevier)
+       (parse-keyword-send receiver)
        )
       ((assignment)
-       (parse-assignment recevier)
+       (parse-assignment receiver)
        )
       ((methDef)
        (parse-method-definition receiver)
@@ -273,10 +309,15 @@
 ) )
 
 (define (parse-negative-number)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-negative-number)"))
   (unless (eq? 'minus (curr-token-kind))
     (error "parse-negative-number: expected $-" curr-token))
   (let ( (minus-token curr-token) )
     (consume-token!)
+    ;; numeric digit MUST immediately follow $-
+    ;; So no use of (skip-whitespace)
     (unless (st-number-token? current-token)
       (error "parse-negative-number: expected a number to follow $-"
              current-token))
@@ -289,6 +330,9 @@
 )
 
 (define (st-number-token? tok)
+  (when trace-parse-methods
+    (newline)
+    (display " (st-number-token? tok)"))
   (if (member (token-kind token)
               '(integer integerWithRadix
                 scaledDecimal scaledDecimalWithFract
@@ -297,31 +341,101 @@
       #false))
 
 (define (parse-literal-array)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-literal-array)"))
+  (error "@@NYI:  (parse-literal-array)"))
 
 (define (parse-literal-byte-array)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-literal-byte-array)"))
+  (error "@@NYI:  (parse-literal-byte-array)"))
 
 (define (parse-dynamic-array)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-dynamic-array)"))
+  (error "@@NYI:  (parse-dynamic-array)"))
 
 (define (parse-block)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-block)"))
+  (error "@@NYI:  (parse-block)"))
 
 (define (parse-unary-send receiver)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-unary-send receiver)"))
+  (unless (eq? 'identifier (curr-token-kind))
+    (error "parse-unary-send: expected a unary selector" curr-token))
+  (let ( (unary-message (Message receiver curr-token st-nil 1)) )
+    (consume-token!)
+    (skip-whitespace)
+    (case (curr-token-kind)
+      ((identifier) ;; followed by another unary selector
+       (parse-unary-send unary-message)
+       )
+      (else unary-message)
+      )
+) )
 
-(define (parse-keyword-send recevier)
-  @@@)
+(define (parse-binary-send receiver)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-binary-send receiver)"))
+  (unless (eq? 'binarySelector (curr-token-kind))
+    (error "parse-binary-send: expected a binary selector" curr-token))
+  (let ( (binarySelector (token->native curr-token)) )
+    (consume-token!)
+    (let ( (arg (parse-expression)) )
+      (Message receiver binarySelector arg 2)
+) ) )
 
-(define (parse-binary-send recevier)
-  @@@)
+(define (parse-keyword-send receiver)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-keyword-send receiver)"))
+  (unless (eq? 'keyword (curr-token-kind))
+    (error "parse-keyword-send: expected a keyword" curr-token))
+  ;; parse one or more <keyword, expression> pairs
+  (let loop ( (results '()) )
+    (skip-whitespace)
+    (case (curr-token-kind)
+      ((keyword)
+       (let ( (key (token->native curr-token)) )
+         (consume-token!)
+         (let ( (arg-exp (parse-expression)) ) ;; @@@parse-key-pairs@@@
+           (loop (cons (cons key arg-exp) results))))
+       )
+      (else
+       (when (debug-parser)
+         (newline)
+         (display (reverse results)))
+       (let* ( (keys-and-args (reverse results))
+               (selector
+                (apply string-append
+                 (map (lambda (pair) (symbol->string (car pair)))
+                      keys-and-args)))
+               (args (map cdr keys-and-args))
+             )
+         (when (null? keys-and-args)
+           (error "parse-keyword-send: expected a keyword" curr-token))
+         (Message receiver selector args 3)))
+) ) )
 
-(define (parse-assignment recevier)
-  @@@)
+(define (parse-assignment receiver)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-assignment receiver)"))
+  (error "@@NYI:  (parse-assignment receiver)"))
 
 (define (parse-method-definition receiver)
-  @@@)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-method-definition receiver)"))
+  (error "@@NYI:  (parse-method-definition receiver)"))
 
 
 

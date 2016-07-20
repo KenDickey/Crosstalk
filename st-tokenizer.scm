@@ -39,14 +39,13 @@
      badToken
      binarySelector blockArg blockStart blockEnd braceBegin braceEnd
      carrot cascade characterLiteral colon comment
-     dynamicDictStart
+     dynArrayStart dynArrayEnd
      eof
      float floatWithExponent
      identifier integer integerWithRadix
      keyword
-     leftBrace leftParen litArrayStart litByteArrayStart
-     methDef
-     minus
+     leftParen litArrayStart litByteArrayStart
+     methDef minus
      period
      rightBrace rightParen
      scaledDecimal scaledDecimalWithFract sharp string symbol
@@ -307,7 +306,7 @@
 
     (define (scan-radix)
       ;; seen digit+ 'r'
-      ;; want: radixDigit++
+      ;; want: radixDigit+
       (if (radixDigit? next-char)
           (next-char-keep)
           (error "badly formed radix" (new-token 'badToken)))
@@ -552,6 +551,9 @@
           (str-len (string-length tok-str))
         )
     (case (token-kind token)
+      ((identifier binarySelector keyword) ; a symbol
+       (string->symbol tok-str)
+      )
       ((string) ; "'strval'"
        (if (zero? str-len)
            ""
@@ -559,6 +561,7 @@
                tok-str
                1
                (- (string-length tok-str) 1)))
+       ;;@@Fixme: fold '' and clean #\space et al
       )
     ((symbol) ; #'sym' or #sym
      (if (zero? str-len)
@@ -581,7 +584,7 @@
      )
     ;; @@ OTHER CASES @@
     (else
-     (error "unhandled token kind" token))
+     (error "token->native: unhandled token kind" token))
      )
   ) )
 
