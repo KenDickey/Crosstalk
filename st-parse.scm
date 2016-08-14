@@ -10,7 +10,9 @@
 (define-structure (Identifier token symbol))
 (define-structure (Literal token value)) ;; elide token
 (define-structure (Selector value))
-(define-structure (Message receiver selector arguments precedence)) ; [0=subExp 1=unary 2=binary 3=keyword 4=other]
+(define-structure (UnarySend   receiver selector))
+(define-structure (BinarySend  receiver selector argument))
+(define-structure (KeywordSend receiver selector arguments))
 (define-structure (Array    elements))
 (define-structure (ByteArry elements))
 (define-structure (Method   selector block))
@@ -41,14 +43,24 @@
   ;;    verticalBar
   ;;    whitespace )
 
-(define debug-parser (make-parameter #true))
+(define debug-parser        (make-parameter #true))
 (define trace-parse-methods (make-parameter #true))
 
 ;; Quick Test
-(define next-st-token (tokenizer-for-string " anArray at: 3 put: 37 "))
-
+(define next-st-token
+  (lambda ignored (error "next-st-token: input not defined !!")))
 (define curr-token #false)
 (define prev-token #false)
+
+(define (parse-test input-string)
+  (set! next-st-token (tokenizer-for-string input-string))
+  (set! curr-token #false)
+  (set! prev-token #false)
+
+)
+
+(parse-test " anArray at: 3 put: 37 ") ;; quick check
+;; Invoke (parse-st-code) in REPL to test.
 
 (define (curr-token-kind)
   (if curr-token
@@ -203,7 +215,7 @@
        )
       (else
        (let ( (statement (parse-expression)) )
-         (loop (cons statement statements)))
+         (reverse (cons statement statements)))
        )
       ) ; end-case
 ) )
@@ -373,7 +385,8 @@
     (display " (parse-unary-send receiver)"))
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-send: expected a unary selector" curr-token))
-  (let ( (unary-message (Message receiver curr-token st-nil 1)) )
+  (let ( (unary-message
+          (Unary-send receiver (token->native curr-token))) )
     (consume-token!)
     (skip-whitespace)
     (case (curr-token-kind)
@@ -392,8 +405,8 @@
     (error "parse-binary-send: expected a binary selector" curr-token))
   (let ( (binarySelector (token->native curr-token)) )
     (consume-token!)
-    (let ( (arg (parse-expression)) )
-      (Message receiver binarySelector arg 2)
+    (let ( (arg (parse-binary-argument)) )
+      (BinarySend receiver binarySelector arg)
 ) ) )
 
 (define (parse-keyword-send receiver)
@@ -409,7 +422,7 @@
       ((keyword)
        (let ( (key (token->native curr-token)) )
          (consume-token!)
-         (let ( (arg-exp (parse-expression)) ) ;; @@@parse-key-pairs@@@
+         (let ( (arg-exp (parse-keyword-argument)) )
            (loop (cons (cons key arg-exp) results))))
        )
       (else
@@ -425,8 +438,81 @@
              )
          (when (null? keys-and-args)
            (error "parse-keyword-send: expected a keyword" curr-token))
-         (Message receiver selector args 3)))
+         (KeywordSend receiver selector args)))
 ) ) )
+
+; <keyword-argument> ::= <primary> <unary-message>* <binary-message>*
+(define (parse-keyword-argument)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-keyword-argument)"))
+
+    (skip-whitespace)
+    (let ( (result
+            (let uloop ( (arg (parse-primary)) )
+              (skip-whitespace)
+              (if (eq? 'identifier (curr-token-kind))
+                  (uloop (parse-unary-send arg))
+                  arg)))
+         )
+      (let bloop ( (final-result result) )
+        (skip-whitespace)
+        (if (eq? 'binarySelector (curr-token-kind))
+            (bloop (parse-binary-send final-result))
+            final-result)))
+)
+
+;; <primary> ::=
+;; 	  identifier |
+;; 	   <literal> |
+;; 	   <block-constructor> |
+;; 	   ( '(' <expression> ')' )
+(define (parse-primary)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-primary)"))
+  (skip-whitespace)
+  (case (curr-token-kind)
+    ((identifier)
+     (consume!+return
+      (Identifier curr-token (token->native curr-token)))
+     )
+    ((integer integerWithRadix
+              scaledDecimal scaledDecimalWithFract
+              float floatWithExponent
+              string
+              symbol)
+     (consume!+return
+      (Literal curr-token (token->native curr-token)))
+     )
+    ((minus)
+     (parse-negative-number)
+     )
+    ((litArrayStart)
+     (parse-literal-array)
+     )
+    ((litByteArrayStart)
+     (parse-literal-byte-array)
+     )
+    ((dynArrayStart)
+     (parse-dynamic-array)
+     )
+    ((blockStart)
+     (parse-block)
+     )
+    ((leftParen)
+     (parse-subexpression)
+     )
+    (else
+     (parse-error "parse-primary: unexpected token"
+                  curr-token)
+     )
+) )
+
+;; avoid (let ( (result value) ) (consume-token!) value)
+(define (consume!+return value)
+  (consume-token!)
+  value)
 
 (define (parse-assignment receiver)
   (when trace-parse-methods
@@ -448,14 +534,13 @@
 ;; <block-argument> ::= ':' identifier
 
 ;; <messages> ::=
-;; 	   (<unary-message>+ <binary-message>* [<keyword-message>] ) |
-;; 	   (<binary-message>+ [<keyword-message>] ) |
-;; 	   <keyword-message>
+;;    (<unary-message>+ <binary-message>* [<keyword-message>] ) |
+;;    (<binary-message>+ [<keyword-message>] ) |
+;;    <keyword-message>
 ;; <unary-message> ::= unarySelector
 ;; <binary-message> ::= binarySelector <binary-argument>
 ;; <binary-argument> ::= <primary> <unary-message>*
 ;; <keyword-message> ::= (keyword <keyword-argument> )+
-;; <keyword-argument> ::= <primary> <unary-message>* <binary-message>*
 ;; <cascaded-messages> ::= (';' <messages>)*
 
 ;; <method-definition> ::= <class-name> '~>' <message-pattern> <methBody>
