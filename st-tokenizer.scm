@@ -77,10 +77,9 @@
 (define saved-char #false) ;; false or a character
 
 (define (safe-char=? one another)
-  (cond
-   ((eof-object? one)     #false)
-   ((eof-object? another) #false)
-   (else (char=? one another))))
+  (and (char? one)
+       (char? another)
+       (char=? one another)))
 
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
 ;;; which returns tokens
