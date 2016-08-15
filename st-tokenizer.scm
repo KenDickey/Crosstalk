@@ -76,6 +76,11 @@
 
 (define saved-char #false) ;; false or a character
 
+(define (safe-char=? one another)
+  (cond
+   ((eof-object? one)     #false)
+   ((eof-object? another) #false)
+   (else (char=? one another))))
 
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
 ;;; which returns tokens
@@ -168,18 +173,23 @@
       (if port-closed
           (eof-object)
           (let ( (char (read-char inport)) )
-            (if (eof-object? char)
-                (begin
-                  (close-port inport)
-                  (set! port-closed #true))
-                (begin
-                  (if (char=? char #\newline)
-                      (begin
-                        (set! line (+ 1 line))
-                        (set! column 0))
-                      (set! column (+ 1 column)))
-                  (set! next-char (peek-char inport))))
-            char)))
+            (cond
+             ((eof-object? char)
+              (close-port inport)
+              (set! port-closed #true)
+              (set! next-char (eof-object))
+              )
+             ((safe-char=? char #\newline)
+              (set! line (+ 1 line))
+              (set! column 0)
+              (set! next-char (peek-char inport))
+              )
+             (else
+              (set! column (+ 1 column))
+              (set! next-char (peek-char inport)
+              )))
+            char)
+    ) )
 
     ;; make a new token using buffer for string
     (define (new-token kind)
@@ -203,16 +213,16 @@
       (let loop () ;; pick off identifier chars
         (if (or (letter? next-char)
                 (digit?  next-char)
-                (char=? #\_ next-char))
+                (safe-char=? #\_ next-char))
             (begin
               (next-char-keep)
               (loop))))
       ;; Check for keyword
-      (if (char=? #\: next-char)
+      (if (safe-char=? #\: next-char)
           (begin
             (set! saved-char next-char)
             (read-next-char)
-            (if (char=? #\= next-char) ;; ":="
+            (if (safe-char=? #\= next-char) ;; ":="
                 (new-token token-kind)
                 (begin ;; foud a keyword
                   (add-to-buffer saved-char)
@@ -227,7 +237,7 @@
          (or (letter? next-char)
              (digit?  next-char)
              (and (char? next-char) ;; eof protect
-                  (char=? #\: next-char)))
+                  (safe-char=? #\: next-char)))
          (begin
            (next-char-keep)
            (loop))))
@@ -244,15 +254,15 @@
          ((eof-object? next-char)
           (new-token 'integer)
           )
-         ((char=? #\. next-char)
+         ((safe-char=? #\. next-char)
           (next-char-keep)
           (scan-float)
           )
-         ((char=? #\r next-char)
+         ((safe-char=? #\r next-char)
           (next-char-keep)
           (scan-radix)
           )
-         ((char=? #\s next-char)
+         ((safe-char=? #\s next-char)
           (next-char-keep)
           (scan-scaled-decimal)
           )
@@ -276,7 +286,7 @@
           (next-char-keep)
           (scan-exponent)
           )
-         ((char=? #\s next-char)
+         ((safe-char=? #\s next-char)
           (next-char-keep)
           (scan-scaled-decimal)
           )
@@ -287,7 +297,7 @@
     (define (scan-exponent)
       ;; seen: digit+ '.' digit+ (e|d|g)
       ;; want: [-] digit+
-      (when (char=? #\- next-char)
+      (when (safe-char=? #\- next-char)
         (next-char-keep))
       (if (digit? next-char)
           (next-char-keep)
@@ -344,7 +354,7 @@
           (error "fell off end of input in comment"
                  (new-token 'badToken))
           )
-         ((char=? #\" next-char)
+         ((safe-char=? #\" next-char)
           (next-char-skip)
           (new-token 'comment)
          )
@@ -360,7 +370,7 @@
           (error "fell off end of input in string"
                  (new-token 'badToken))
           )
-         ((char=? #\' next-char)
+         ((safe-char=? #\' next-char)
           (next-char-keep)
           (cond
            ((and (char? next-char) ;; eof protect
@@ -411,7 +421,7 @@
        ((eof-object? next-char)
         (new-token 'colon)
        )
-       ((char=? #\= next-char)
+       ((safe-char=? #\= next-char)
         (next-char-keep) ;; read $=
         (new-token 'assignment)
         )
@@ -429,7 +439,7 @@
       )
 
     (define (scan-binary-operator)
-      (if (and (char=? #\- first-char)
+      (if (and (safe-char=? #\- first-char)
                (digit? next-char))
           (new-token 'minus)
           (let loop ()
@@ -445,7 +455,6 @@
     
   next-token ;; return the access function
 ) )
-
 
 ;;@@@
 

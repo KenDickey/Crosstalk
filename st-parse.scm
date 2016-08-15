@@ -386,7 +386,7 @@
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-send: expected a unary selector" curr-token))
   (let ( (unary-message
-          (Unary-send receiver (token->native curr-token))) )
+          (UnarySend receiver (token->native curr-token))) )
     (consume-token!)
     (skip-whitespace)
     (case (curr-token-kind)
@@ -409,6 +409,19 @@
       (BinarySend receiver binarySelector arg)
 ) ) )
 
+;; <binary-argument> ::= <primary> <unary-message>*
+(define (parse-binary-argument)
+  (when trace-parse-methods
+    (newline)
+    (display " (parse-binary-argument)"))
+  (skip-whitespace)
+  (let loop ( (arg (parse-primary)) )
+    (skip-whitespace)
+    (if (eq? 'identifier (curr-token-kind))
+        (loop (parse-unary-send arg))
+        arg))
+)
+
 (define (parse-keyword-send receiver)
   (when trace-parse-methods
     (newline)
@@ -420,7 +433,7 @@
     (skip-whitespace)
     (case (curr-token-kind)
       ((keyword)
-       (let ( (key (token->native curr-token)) )
+       (let ( (key (token-string curr-token)) )
          (consume-token!)
          (let ( (arg-exp (parse-keyword-argument)) )
            (loop (cons (cons key arg-exp) results))))
@@ -431,9 +444,9 @@
          (display (reverse results)))
        (let* ( (keys-and-args (reverse results))
                (selector
-                (apply string-append
-                 (map (lambda (pair) (symbol->string (car pair)))
-                      keys-and-args)))
+                (string->symbol
+                 (apply string-append
+                        (map car keys-and-args))))
                (args (map cdr keys-and-args))
              )
          (when (null? keys-and-args)
