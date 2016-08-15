@@ -3,23 +3,23 @@
 
 ;;; AST Nodes
 
-(define-structure (Assignment var val))
-(define-structure (Block arguments temporaries statements returns))
-(define-structure (Brace elements))
-(define-structure (Cascade receiver messages))
-(define-structure (Identifier token symbol))
-(define-structure (Literal token value)) ;; elide token
-(define-structure (Selector value))
-(define-structure (UnarySend   receiver selector))
-(define-structure (BinarySend  receiver selector argument))
-(define-structure (KeywordSend receiver selector arguments))
-(define-structure (Array    elements))
-(define-structure (ByteArry elements))
-(define-structure (Method   selector block))
-(define-structure (Sequence statements))
-(define-structure (Temporaries identifiers))
-(define-structure (LetTemps temps statements))
-(define-structure (Subexpression expression))
+(define-structure (astAssignment var val))
+(define-structure (astBlock arguments temporaries statements returns))
+(define-structure (astBrace elements))
+(define-structure (astCascade receiver messages))
+(define-structure (astIdentifier token symbol))
+(define-structure (astLiteral token value)) ;; elide token
+(define-structure (astSelector value))
+(define-structure (astUnarySend   receiver selector))
+(define-structure (astBinarySend  receiver selector argument))
+(define-structure (astKeywordSend receiver selector arguments))
+(define-structure (astArray    elements))
+(define-structure (astByteArry elements))
+(define-structure (astMethod   selector block))
+(define-structure (astSequence statements))
+(define-structure (astTemporaries identifiers))
+(define-structure (astLetTemps temps statements))
+(define-structure (astSubexpression expression))
 
 ;;; Token parsing
 
@@ -43,8 +43,9 @@
   ;;    verticalBar
   ;;    whitespace )
 
-(define debug-parser        (make-parameter #true))
-(define trace-parse-methods (make-parameter #true))
+(define debug-parser          (make-parameter #true))
+(define trace-parse-methods   (make-parameter #true))
+(define trace-skip-whitespace (make-parameter #false))
 
 ;; Quick Test
 (define next-st-token
@@ -98,7 +99,7 @@
 ;; separator ::= (whitespace | comment)*
 
 (define (skip-whitespace)
-  (when trace-parse-methods
+  (when (trace-skip-whitespace)
     (newline)
     (display " (skip-whitespace)"))
   (case (curr-token-kind)
@@ -113,7 +114,7 @@
 ;; 	     eof
 
 (define (parse-st-code)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-st-code)"))
   (set! curr-token (next-st-token)) ;; get 1st token
@@ -123,13 +124,13 @@
      (let* ( (temps      (parse-temps))
              (statements (parse-statements))
            )
-       (LetTemps temps statements))
+       (astLetTemps temps statements))
      )
     ((eof)
-     (Sequence '()) ;; no action!?!
+     (astSequence '()) ;; no action!?!
      )
     (else
-     (Sequence (parse-statements))
+     (astSequence (parse-statements))
      )
    )
 ) 
@@ -138,7 +139,7 @@
 ;; <temporary-variable-list> ::= identifier*
 
 (define (parse-temps) ;; #\| seen (but not consumed)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-temps)"))
   (unless (eq? 'verticalBar (curr-token-kind))
@@ -152,11 +153,12 @@
        (loop (cons prev-token temps))
        )
       ((verticalBar)
-       ;;(LetTemps (reverse temps) '()))
        (reverse temps)
        )
       (else
-       (parse-error "parse-temps: expected identifier or $|" curr-token (reverse temps))))
+       (parse-error "parse-temps: expected identifier or $|"
+                    curr-token
+                    (reverse temps))))
 ) )
 
 ;; <statements> ::=
@@ -181,7 +183,7 @@
 ;; 	   ( '(' <expression> ')' )
 
 (define (parse-statements)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-statements)"))
   (let loop ( (statements '()) )
@@ -211,7 +213,7 @@
          (loop (cons subexpression statements)))
        )
       ((eof)
-       (Sequence (reverse statements))
+       (astSequence (reverse statements))
        )
       (else
        (let ( (statement (parse-expression)) )
@@ -221,31 +223,31 @@
 ) )
 
 (define (parse-statement)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-statement)"))
   (error "@@NYI: (parse-statement)")
 )
 
 (define (make-cascade c-head c-tail)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (make-cascade c-head c-tail)"))
   (unless (Message? c-head)
     (parse-error "make-cascade: expected receiver!!" c-head))
   (unless (every? Message? c-tail)
     (parse-error "make-cascade: bad cascade tail" c-tail))
-  (Cascade (receiver c-head) (cons c-head ctail))
+  (astCascade (receiver c-head) (cons c-head ctail))
 )
 
 (define (parse-cascade-tail)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-cascade-tail)"))
   (error "@@NYI:  (parse-cascade-tail)"))
 
 (define (parse-subexpression)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-subexpression)"))
   (unless (eq? 'leftParen (curr-token-kind))
@@ -254,12 +256,12 @@
   (let ( (subexpression (parse-expression)) )
     (skip-whitespace)
     (if (eq? 'rightParen (curr-token-kind))
-        (Subexpression subexpression)
+        (astSubexpression subexpression)
         (parse-error "parse-subexpression: expected $)" curr-token)))
 )
 
 (define (parse-expression)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-expression)"))
   (skip-whitespace)
@@ -271,7 +273,7 @@
               string
               symbol)
              (let ( (literal
-                     (Literal curr-token (token->native curr-token)))
+                     (astLiteral curr-token (token->native curr-token)))
                   )
                (consume-token!)
                literal)
@@ -293,7 +295,7 @@
              )
             ((identifier)
              (let ( (identifier
-                     (Identifier curr-token (token->native curr-token)))
+                     (astIdentifier curr-token (token->native curr-token)))
                   )
                (consume-token!)
                identifier)
@@ -324,7 +326,7 @@
 ) )
 
 (define (parse-negative-number)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-negative-number)"))
   (unless (eq? 'minus (curr-token-kind))
@@ -341,11 +343,11 @@
                    (string-append "-" (token-string current-token))
                    (token-location minus-token)))
          )
-      (Literal new-token (- (token->native current-token)))))
+      (astLiteral new-token (- (token->native current-token)))))
 )
 
 (define (st-number-token? tok)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (st-number-token? tok)"))
   (if (member (token-kind token)
@@ -356,37 +358,37 @@
       #false))
 
 (define (parse-literal-array)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-literal-array)"))
   (error "@@NYI:  (parse-literal-array)"))
 
 (define (parse-literal-byte-array)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-literal-byte-array)"))
   (error "@@NYI:  (parse-literal-byte-array)"))
 
 (define (parse-dynamic-array)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-dynamic-array)"))
   (error "@@NYI:  (parse-dynamic-array)"))
 
 (define (parse-block)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-block)"))
   (error "@@NYI:  (parse-block)"))
 
 (define (parse-unary-send receiver)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-unary-send receiver)"))
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-send: expected a unary selector" curr-token))
   (let ( (unary-message
-          (UnarySend receiver (token->native curr-token))) )
+          (astUnarySend receiver (token->native curr-token))) )
     (consume-token!)
     (skip-whitespace)
     (case (curr-token-kind)
@@ -398,7 +400,7 @@
 ) )
 
 (define (parse-binary-send receiver)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-binary-send receiver)"))
   (unless (eq? 'binarySelector (curr-token-kind))
@@ -406,12 +408,12 @@
   (let ( (binarySelector (token->native curr-token)) )
     (consume-token!)
     (let ( (arg (parse-binary-argument)) )
-      (BinarySend receiver binarySelector arg)
+      (astBinarySend receiver binarySelector arg)
 ) ) )
 
 ;; <binary-argument> ::= <primary> <unary-message>*
 (define (parse-binary-argument)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-binary-argument)"))
   (skip-whitespace)
@@ -423,7 +425,7 @@
 )
 
 (define (parse-keyword-send receiver)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-keyword-send receiver)"))
   (unless (eq? 'keyword (curr-token-kind))
@@ -451,12 +453,12 @@
              )
          (when (null? keys-and-args)
            (error "parse-keyword-send: expected a keyword" curr-token))
-         (KeywordSend receiver selector args)))
+         (astKeywordSend receiver selector args)))
 ) ) )
 
 ; <keyword-argument> ::= <primary> <unary-message>* <binary-message>*
 (define (parse-keyword-argument)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-keyword-argument)"))
 
@@ -481,14 +483,14 @@
 ;; 	   <block-constructor> |
 ;; 	   ( '(' <expression> ')' )
 (define (parse-primary)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-primary)"))
   (skip-whitespace)
   (case (curr-token-kind)
     ((identifier)
      (consume!+return
-      (Identifier curr-token (token->native curr-token)))
+      (astIdentifier curr-token (token->native curr-token)))
      )
     ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
@@ -496,7 +498,7 @@
               string
               symbol)
      (consume!+return
-      (Literal curr-token (token->native curr-token)))
+      (astLiteral curr-token (token->native curr-token)))
      )
     ((minus)
      (parse-negative-number)
@@ -528,13 +530,13 @@
   value)
 
 (define (parse-assignment receiver)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-assignment receiver)"))
   (error "@@NYI:  (parse-assignment receiver)"))
 
 (define (parse-method-definition receiver)
-  (when trace-parse-methods
+  (when (trace-parse-methods)
     (newline)
     (display " (parse-method-definition receiver)"))
   (error "@@NYI:  (parse-method-definition receiver)"))
