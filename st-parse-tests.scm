@@ -159,6 +159,80 @@
     (parse-st-code))
   " #[2 3 45 6 75 234 7] ")
 
+(add-equal-test 'st-parse
+  '#(astSequence
+  (#(astArray
+     (#(astLiteral
+        #(token
+          integer
+          "1"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            4))
+        1)
+      #(astLiteral
+        #(token
+          characterLiteral
+          "$c"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            6))
+        #\c)
+      #(astArray
+        (#(astLiteral
+           #(token
+             string
+             "'b'"
+             #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+               0
+               14))
+           "b")
+         #(astLiteral
+           #(token
+             integer
+             "3"
+             #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+               0
+               18))
+           3)))
+      #(astLiteral
+        #(token
+          byteArrayLiteral
+          "#[...]"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            21))
+        #u8(1 22 33))
+      #(astLiteral
+        #(token
+          string
+          "'five'"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            33))
+        "five")
+      #(astLiteral
+        #(token
+          integer
+          "7"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            40))
+        7)
+      #(astLiteral
+        #(token
+          symbol
+          "#foo"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            42))
+        foo)))))
+  (begin
+    (parse-test
+     " #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) ")
+    (parse-st-code))
+  " #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) ")
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

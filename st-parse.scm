@@ -356,7 +356,55 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-literal-array)"))
-  (error "@@NYI:  (parse-literal-array)"))
+  (unless (eq? 'litArrayStart (curr-token-kind))
+    (parse-error "parse-literal-array: expected '#('"
+                 curr-token))
+  (consume-token!)
+  (let ( (start-location (token-location curr-token)) )
+    (consume-token!)
+    (let loop ( (elts '()) )
+      (skip-whitespace)
+      (case (curr-token-kind)
+        ((integer integerWithRadix
+          float floatWithExponent
+          scaledDecimal scaledDecimalWithFract
+          characterLiteral string symbol
+          )
+         (let ( (literal
+                 (astLiteral curr-token
+                             (token->native curr-token)))
+              )
+           (consume-token!)
+           (loop (cons literal elts)))
+         )
+        ((identifier)
+         (let ( (identifier
+                 (astIdentifier curr-token
+                             (token->native curr-token)))
+              )
+           (consume-token!)
+           (loop (cons identifier elts)))
+         )
+        ((litArrayStart)
+         (let ( (array (parse-literal-array)) )
+           (consume-token!)
+           (loop (cons array elts)))
+         )
+        ((litByteArrayStart)
+         (let ( (byte-array (parse-literal-byte-array)) )
+           (consume-token!)
+           (loop (cons byte-array elts)))
+         )
+        ((rightParen)
+         (consume-token!)
+         (astArray (reverse elts))
+         )
+        (else
+         (parse-error
+          "parse-literal-array: expected literal value or ')'"
+          curr-token)))
+      ) ;; loop
+) )
 
 (define (parse-literal-byte-array)
   (when (trace-parse-methods)
@@ -394,13 +442,13 @@
     ) )
 )
 
-(define (byte-value-token? tok)
-  (and (eq? 'integer (token-kind tok))
-       (<= 0 (token->native (astLiteral-token t)) 256)))
+;; (define (byte-value-token? tok)
+;;   (and (eq? 'integer (token-kind tok))
+;;        (<= 0 (token->native (astLiteral-token t)) 256)))
 
-(define (byte-value-literal? ast)
-  (and (astLiteral? ast)
-       (<= 0 (astLiteral-value ast) 256)))
+;; (define (byte-value-literal? ast)
+;;   (and (astLiteral? ast)
+;;        (<= 0 (astLiteral-value ast) 256)))
 
 (define (parse-dynamic-array)
   (when (trace-parse-methods)
