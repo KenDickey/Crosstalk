@@ -94,7 +94,8 @@
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
      "st-set"          ;; Set
-     "st-tokenizer"    ;; Stream -> tokens (Scheme)
+     "st-tokenizer"    ;; Stream -> tokens
+     "st-parse"        ;; tokens -> AST
 ;;     @@@more to come...
     )
  )
