@@ -37,7 +37,8 @@
 (define token-kinds
   '( assignment
      badToken
-     binarySelector blockArg blockStart blockEnd braceBegin braceEnd
+     binarySelector blockArg blockStart blockEnd
+     braceBegin braceEnd 
      carrot cascade characterLiteral colon comment
      dynArrayStart dynArrayEnd
      eof

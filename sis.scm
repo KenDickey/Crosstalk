@@ -68,6 +68,24 @@
 (define bytevector-ref  bytevector-u8-ref)
 (define bytevector-set! bytevector-u8-set!)
 
+(define (list->bytevector list-of-bytes)
+  (unless (list? list-of-bytes)
+    (error "list->bytevector requires a list of bytes"
+           list-of-bytes))
+  (unless (every? (lambda (b) (<= 0 b 256)) list-of-bytes)
+    (error "list->bytevector requires a list of bytes"
+           list-of-bytes))
+  (let* ( (bvec-len (length list-of-bytes))
+          (bvec (make-bytevector bvec-len 0))
+        )
+    (let loop ( (index 0) (byte-list list-of-bytes) )
+      (if (>= index bvec-len)
+          bvec
+          (begin
+            (bytevector-set! bvec index (car byte-list))
+            (loop (+ index 1) (cdr byte-list))))))
+)
+
 (define port.iodata 7)    ; ouch
 
 (define (string-output-port? port)

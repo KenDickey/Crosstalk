@@ -121,6 +121,44 @@
     (parse-st-code))
    "a := 5. a + 23.")
 
+
+(add-equal-test 'st-parse
+  '#(astSequence
+     (#(astAssignment
+        #(astIdentifier
+          #(token identifier "x" #("x := 5. ^x + 3." 0 0))
+          x)
+        #(astLiteral
+          #(token integer "5" #("x := 5. ^x + 3." 0 5))
+          5))
+      #(astReturn
+        #(astBinarySend
+          #(astIdentifier
+            #(token identifier "x" #("x := 5. ^x + 3." 0 9))
+            x)
+          +
+          #(astLiteral
+            #(token integer "3" #("x := 5. ^x + 3." 0 13))
+            3)))))
+  (begin
+    (parse-test "x := 5. ^x + 3.")
+    (parse-st-code))
+  "x := 5. ^x + 3."
+)
+
+(add-equal-test 'st-parse
+  '#(astSequence
+     (#(astLiteral
+        #(token
+          byteArrayLiteral
+          "#[...]"
+          #(" #[2 3 45 6 75 234 7] " 0 1))
+        #u8(2 3 45 6 75 234 7))))
+  (begin
+    (parse-test " #[2 3 45 6 75 234 7] ")
+    (parse-st-code))
+  " #[2 3 45 6 75 234 7] ")
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

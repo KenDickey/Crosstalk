@@ -5,21 +5,21 @@
 
 (define-structure (astAssignment var val))
 (define-structure (astBlock arguments temporaries statements returns))
-(define-structure (astBrace elements))
-(define-structure (astCascade receiver messages))
-(define-structure (astIdentifier token symbol))
-(define-structure (astLiteral token value)) ;; elide token
-(define-structure (astSelector value))
+(define-structure (astBrace       elements))
+(define-structure (astCascade     receiver messages))
+(define-structure (astIdentifier  token symbol))
+(define-structure (astLiteral     token value)) ;; elide token
+(define-structure (astSelector    value))
 (define-structure (astUnarySend   receiver selector))
 (define-structure (astBinarySend  receiver selector argument))
 (define-structure (astKeywordSend receiver selector arguments))
-(define-structure (astArray    elements))
-(define-structure (astByteArry elements))
-(define-structure (astMethod   selector block))
-(define-structure (astSequence statements))
+(define-structure (astArray       elements)) ;; ??astLiteral
+(define-structure (astMethod      selector block))
+(define-structure (astSequence    statements))
 (define-structure (astTemporaries identifiers))
-(define-structure (astLetTemps temps statements))
+(define-structure (astLetTemps    temps statements))
 (define-structure (astSubexpression expression))
+(define-structure (astReturn        expression))
 
 ;;; Token parsing
 
@@ -28,7 +28,8 @@
 ;; token-kind is one of:
   ;; '( assignment
   ;;    badToken
-  ;;    binarySelector blockArg blockStart blockEnd braceBegin braceEnd
+  ;;    binarySelector blockArg blockStart blockEnd
+  ;;    braceBegin braceEnd
   ;;    carrot cascade characterLiteral colon comment
   ;;    dynArrayStart dynArrayEnd
   ;;    eof
@@ -73,8 +74,8 @@
     (newline)
     (display "consumed ")
     (display (token-kind curr-token))
-    (newline)
-    (display "  ")
+;;  (newline)
+    (display "\t\t")
     (display (token-string curr-token)))
   (set! prev-token curr-token)
   (set! curr-token (next-st-token))
@@ -119,21 +120,25 @@
     (display " (parse-st-code)"))
   (set! curr-token (next-st-token)) ;; get 1st token
   (skip-whitespace)
-  (case (curr-token-kind)
-    ((verticalBar)
-     (let* ( (temps      (parse-temps))
-             (statements (parse-statements))
-           )
-       (astLetTemps temps statements))
-     )
-    ((eof)
-     (astSequence '()) ;; no action!?!
-     )
-    (else
-     (astSequence (parse-statements))
-     )
-   )
-) 
+  (let ( (result
+          (case (curr-token-kind)
+            ((verticalBar)
+             (let* ( (temps      (parse-temps))
+                     (statements (parse-statements))
+                     )
+               (astLetTemps temps statements))
+             )
+            ((eof)
+             (astSequence '()) ;; no action!?!
+             )
+            (else
+             (astSequence (parse-statements))
+             )))
+       )
+    (when (debug-parser)
+      (newline))
+    result)
+)
 
 ;; <temporaries> ::= '|' <temporary-variable-list> '|'
 ;; <temporary-variable-list> ::= identifier*
@@ -196,7 +201,7 @@
       ((carrot)
        (consume-token!)
        (let ( (return-exp (parse-expression)) )
-         (loop (cons (Return return-exp) statements)))
+         (loop (cons (astReturn return-exp) statements)))
        )
       ((semicolon)
        (when (null? statements)
@@ -220,12 +225,6 @@
       ) ; end-case
 ) )
 
-(define (parse-statement)
-  (when (trace-parse-methods)
-    (newline)
-    (display " (parse-statement)"))
-  (error "@@NYI: (parse-statement)")
-)
 
 (define (make-cascade c-head c-tail)
   (when (trace-parse-methods)
@@ -243,6 +242,7 @@
     (newline)
     (display " (parse-cascade-tail)"))
   (error "@@NYI:  (parse-cascade-tail)"))
+
 
 (define (parse-subexpression)
   (when (trace-parse-methods)
@@ -345,9 +345,6 @@
 )
 
 (define (st-number-token? tok)
-  (when (trace-parse-methods)
-    (newline)
-    (display " (st-number-token? tok)"))
   (if (member (token-kind token)
               '(integer integerWithRadix
                 scaledDecimal scaledDecimalWithFract
@@ -365,7 +362,45 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-literal-byte-array)"))
-  (error "@@NYI:  (parse-literal-byte-array)"))
+  (unless (eq? 'litByteArrayStart (curr-token-kind))
+    (parse-error "parse-literal-byte-array: expected '#['"
+                 curr-token))
+  (let ( (start-location (token-location curr-token)) )
+    (consume-token!)
+    (let loop ( (elts '()) )
+      (skip-whitespace)
+      (case (curr-token-kind)
+        ((integer)
+         (let ( (byteval (token->native curr-token)) )
+           (if (<= 0 byteval 256)
+               (begin
+                 (consume-token!)
+                 (loop (cons byteval elts)))
+               (parse-error
+                "parse-literal-byte-array: expected byte or ']'"
+                curr-token)))
+         )
+        ((blockEnd)
+         (consume-token!)
+         (astLiteral (make-token 'byteArrayLiteral
+                                 "#[...]"
+                                 start-location)
+                     (list->bytevector (reverse elts)))
+         )
+        (else
+         (parse-error
+          "parse-literal-byte-array: expected byte or ']'"
+          curr-token)))
+    ) )
+)
+
+(define (byte-value-token? tok)
+  (and (eq? 'integer (token-kind tok))
+       (<= 0 (token->native (astLiteral-token t)) 256)))
+
+(define (byte-value-literal? ast)
+  (and (astLiteral? ast)
+       (<= 0 (astLiteral-value ast) 256)))
 
 (define (parse-dynamic-array)
   (when (trace-parse-methods)
@@ -439,9 +474,9 @@
            (loop (cons (cons key arg-exp) results))))
        )
       (else
-       (when (debug-parser)
-         (newline)
-         (display (reverse results)))
+       ;; (when (debug-parser)
+       ;;   (newline)
+       ;;   (display (reverse results)))
        (let* ( (keys-and-args (reverse results))
                (selector
                 (string->symbol
