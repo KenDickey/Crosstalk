@@ -53,6 +53,48 @@
     (parse-st-code))
   "3 perform: #between:and: with: 1 with: 5")
 
+(add-equal-test 'st-parse
+   '#(astSequence
+      (#(astKeywordSend
+         #(astIdentifier
+           #(token identifier "a" #("a max:b" 0 0))
+           a)
+         max:
+         (#(astIdentifier
+            #(token identifier "b" #("a max:b" 0 6))
+            b)))))
+   (begin
+    (parse-test "a max:b")
+    (parse-st-code))
+   "a max:b")
+
+(add-equal-test 'st-parse
+  '#(astSequence
+     (#(astKeywordSend
+        #(astIdentifier
+          #(token
+            identifier
+            "self"
+            #("self perform: #add: with: anObject" 0 0))
+          self)
+        perform:with:
+        (#(astLiteral
+           #(token
+             symbol
+             "#add:"
+             #("self perform: #add: with: anObject" 0 14))
+           add:)
+         #(astIdentifier
+           #(token
+             identifier
+             "anObject"
+             #("self perform: #add: with: anObject" 0 26))
+           anObject)))))
+   (begin
+    (parse-test "self perform: #add: with: anObject")
+    (parse-st-code))
+   "self perform: #add: with: anObject")
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)
