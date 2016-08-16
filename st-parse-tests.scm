@@ -95,6 +95,32 @@
     (parse-st-code))
    "self perform: #add: with: anObject")
 
+
+(add-equal-test 'st-parse
+  '#(astSequence
+     (
+      #(astAssignment
+        #(astIdentifier
+          #(token identifier "a" #("a := 5. a + 23." 0 0))
+          a)
+        #(astLiteral
+          #(token integer "5" #("a := 5. a + 23." 0 5))
+          5))
+
+      #(astBinarySend
+        #(astIdentifier
+          #(token identifier "a" #("a := 5. a + 23." 0 8))
+          a)
+        +
+        #(astLiteral
+          #(token integer "23" #("a := 5. a + 23." 0 12))
+          23))
+    ) )
+   (begin
+    (parse-test "a := 5. a + 23.")
+    (parse-st-code))
+   "a := 5. a + 23.")
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

@@ -182,7 +182,7 @@
 ;; 	   <block-constructor> |
 ;; 	   ( '(' <expression> ')' )
 
-(define (parse-statements)
+(define (parse-statements) ;; answer a list of ASTs
   (when (trace-parse-methods)
     (newline)
     (display " (parse-statements)"))
@@ -191,8 +191,7 @@
     (case (curr-token-kind)
       ((period)
        (consume-token!)
-       (let ( (statement (parse-statement)) )
-         (loop (cons statement statements)))
+       (loop (append (parse-statements) statements))
        )
       ((carrot)
        (consume-token!)
@@ -213,11 +212,10 @@
          (loop (cons subexpression statements)))
        )
       ((eof)
-       (astSequence (reverse statements))
+       (reverse statements)
        )
       (else
-       (let ( (statement (parse-expression)) )
-         (reverse (cons statement statements)))
+       (loop (cons (parse-expression) statements))
        )
       ) ; end-case
 ) )
@@ -524,7 +522,8 @@
      )
 ) )
 
-;; avoid (let ( (result value) ) (consume-token!) value)
+;; elide
+;;  (let ( (result value) ) (consume-token!) result)
 (define (consume!+return value)
   (consume-token!)
   value)
@@ -533,7 +532,13 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-assignment receiver)"))
-  (error "@@NYI:  (parse-assignment receiver)"))
+  (unless (eq? 'assignment (curr-token-kind))
+    (parse-error "parse-assignment: expected #:="
+                 curr-token))
+  (consume-token!) ;; ":="
+  (let ( (right-hand-side (parse-expression)) )
+    (astAssignment receiver right-hand-side))
+)
 
 (define (parse-method-definition receiver)
   (when (trace-parse-methods)

@@ -67,19 +67,26 @@
      0
      0))
 
-;; Keywords are recognized in scan-identifier
-;;  'foo:= 3'
-;; is    'foo := 3'
-;; NEVER 'foo: = 3'
-;; This scanner needs to look 2 chars ahead
-;; to decide this.
-
-(define saved-char #false) ;; false or a character
-
 (define (safe-char=? one another)
   (and (char? one)
        (char? another)
        (char=? one another)))
+
+;; Keywords are recognized in scan-identifier
+;;  'foo:= 3'
+;; is    'foo := 3'
+;; NEVER 'foo: = 3'
+
+;; Integer vs float in scan-float:
+;;  '3. ' is integer 3 followed by period and whitespace
+;; NOT float 3.0
+;; E.g. in "x := 3. ^x + 5"
+
+;; This scanner needs to look 2 chars ahead
+;; to decide these cases.
+
+(define saved-char #false) ;; false or a character
+
 
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
 ;;; which returns tokens
@@ -223,7 +230,7 @@
             (read-next-char)
             (if (safe-char=? #\= next-char) ;; ":="
                 (new-token token-kind)
-                (begin ;; foud a keyword
+                (begin ;; found a keyword
                   (add-to-buffer saved-char)
                   (set! saved-char #false)
                   (new-token 'keyword))))
@@ -254,7 +261,6 @@
           (new-token 'integer)
           )
          ((safe-char=? #\. next-char)
-          (next-char-keep)
           (scan-float)
           )
          ((safe-char=? #\r next-char)
@@ -272,25 +278,34 @@
     (define (scan-float)
       ;; seen: digit+ '.'
       ;; want: digit+ [(e|d|g) [-] digit+]
-      (let loop ()
-        (cond
-         ((digit? next-char)
-          (next-char-keep)
-          (loop)
-          )
-         ((eof-object? next-char)
-          (new-token 'float)
-          )
-         ((member next-char '(#\e #\d #\g))
-          (next-char-keep)
-          (scan-exponent)
-          )
-         ((safe-char=? #\s next-char)
-          (next-char-keep)
-          (scan-scaled-decimal)
-          )
-         (else
-          (new-token 'float)))
+      ;; avoid: digit+ '.' non-digit
+      ;; Look ahead
+      (set! saved-char #\.)
+      (read-next-char)
+      (if (not (digit? next-char))
+          (new-token 'integer)	;; e.g. "3. " int period white
+          (begin		;; e.g. "3.0" float
+            (add-to-buffer #\.)
+            (set! saved-char #false)
+            (let loop ()
+              (cond
+               ((digit? next-char)
+                (next-char-keep)
+                (loop)
+                )
+               ((eof-object? next-char)
+                (new-token 'float)
+                )
+               ((member next-char '(#\e #\d #\g))
+                (next-char-keep)
+                (scan-exponent)
+                )
+               ((safe-char=? #\s next-char)
+                (next-char-keep)
+                (scan-scaled-decimal)
+                )
+               (else
+                (new-token 'float)))))
       ) )
 
     (define (scan-exponent)
