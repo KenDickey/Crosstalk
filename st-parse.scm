@@ -201,7 +201,7 @@
       ((carrot)
        (consume-token!)
        (let ( (return-exp (parse-expression)) )
-         (loop (cons (astReturn return-exp) statements)))
+         (reverse (cons (astReturn return-exp) statements)))
        )
       ((semicolon)
        (when (null? statements)
@@ -351,6 +351,10 @@
                 float floatWithExponent))
       #true
       #false))
+
+
+;; <array literal> ::= '#(' <array element>* ')'
+;; <array element> ::= <literal> | identifier
 
 (define (parse-literal-array)
   (when (trace-parse-methods)
