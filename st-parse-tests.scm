@@ -433,6 +433,34 @@
   "[|a| a := 3. a+a] value.")
 
 
+(add-equal-test 'st-parse
+ '#(astSequence
+  (#(astKeywordSend
+     #(astIdentifier
+       #(token
+         identifier
+         "self"
+         #("self do: [:i | ] separatedBy: [] " 0 0))
+       self)
+     do:separatedBy:
+     (#(astBlock
+        (#(astIdentifier
+           #(token
+             blockArg
+             ":i"
+             #("self do: [:i | ] separatedBy: [] " 0 10))
+           i))
+        ()
+        ()
+        #f)
+      #(astBlock () () () #f)))))
+  (begin
+    (parse-test
+     "self do: [:i | ] separatedBy: [] ")
+    (parse-st-code))
+  "self do: [:i | ] separatedBy: [] ")
+
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

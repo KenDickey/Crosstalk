@@ -446,13 +446,20 @@
   (skip-whitespace)
   (when (eq? 'verticalBar (curr-token-kind))
     (set! temps (parse-block-temps)))
-  (let ( (statements (parse-statements)) )
-    (skip-whitespace)
-    (unless (eq? 'blockEnd (curr-token-kind))
-       (error "parse-block: expected $]" curr-token))
-    (consume-token!)
-    (astBlock args temps statements (any? astReturn? statements))))
-)
+  (skip-whitespace)
+  (if (eq? 'blockEnd (curr-token-kind))
+      (begin ;; no statements
+        (consume-token!)
+        (astBlock args temps '() #false)) ;; use literal st-nil ?
+      (let ( (statements (parse-statements)) )
+        (unless (eq? 'blockEnd (curr-token-kind))
+          (error "parse-block: expected $]" curr-token))
+        (consume-token!)
+        (astBlock args
+                  temps
+                  statements
+                  (any? astReturn? statements))))
+) )
 
 
 (define parse-block-temps parse-temps) ;; just an alias
