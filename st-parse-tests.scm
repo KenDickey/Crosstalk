@@ -233,6 +233,121 @@
     (parse-st-code))
   " #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) ")
 
+
+(add-equal-test 'st-parse
+  '#(astSequence
+  (#(astAssignment
+     #(astIdentifier
+       #(token
+         identifier
+         "block"
+         #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+           0
+           0))
+       block)
+     #(astBlock
+       (#(astIdentifier
+          #(token
+            blockArg
+            ":a"
+            #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+              0
+              10))
+          a)
+        #(astIdentifier
+          #(token
+            blockArg
+            ":b"
+            #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+              0
+              13))
+          b))
+       ()
+       (#(astReturn
+          #(astSubexpression
+            #(astKeywordSend
+              #(astIdentifier
+                #(token
+                  identifier
+                  "a"
+                  #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+                    0
+                    19))
+                a)
+              foo:bar:
+              (#(astIdentifier
+                 #(token
+                   identifier
+                   "b"
+                   #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+                     0
+                     26))
+                 b)
+               #(astBinarySend
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "c"
+                     #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+                       0
+                       33))
+                   c)
+                 +
+                 #(astLiteral
+                   #(token
+                     integer
+                     "7"
+                     #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+                       0
+                       37))
+                   7)))))))
+       #t))))
+  (begin
+    (parse-test
+     "block := [:a :b| ^(a foo: b bar: c + 7)].")
+    (parse-st-code))
+  "block := [:a :b| ^(a foo: b bar: c + 7)].")
+
+(add-equal-test 'st-parse
+   '#(astSequence
+  (#(astBinarySend
+     #(astSubexpression
+       #(astBinarySend
+         #(astIdentifier
+           #(token identifier "a" #("(a + b) + 3." 0 1))
+           a)
+         +
+         #(astIdentifier
+           #(token identifier "b" #("(a + b) + 3." 0 5))
+           b)))
+     +
+     #(astLiteral
+       #(token integer "3" #("(a + b) + 3." 0 10))
+       3))))
+  (begin
+    (parse-test
+     "(a + b) + 3.")
+    (parse-st-code))
+  "(a + b) + 3.")
+
+
+(add-equal-test 'st-parse
+   '#()
+  (begin
+    (parse-test
+     "([:a| [:b| a + b]] value: 2) value: 3.")
+    (parse-st-code))
+  "([:a| [:b| a + b]] value: 2) value: 3.")
+
+(add-equal-test 'st-parse
+   '#()
+  (begin
+    (parse-test
+     "[|a| a := 3. a+a] value.")
+    (parse-st-code))
+  "[|a| a := 3. a+a] value.")
+
+
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

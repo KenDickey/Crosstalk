@@ -606,6 +606,12 @@
     ((integer float) ;; 'simple' numbers
      (string->number tok-str)
      )
+
+    ((blockArg)
+     ;; answer symbol name for argument
+     (string->symbol
+        (substring tok-str 1 (string-length tok-str)))
+     )
     ;; @@ OTHER CASES @@
     (else
      (error "token->native: unhandled token kind" token))

@@ -3,8 +3,8 @@
 
 ;;; AST Nodes
 
-(define-structure (astAssignment var val))
-(define-structure (astBlock arguments temporaries statements returns))
+(define-structure (astAssignment  var val))
+(define-structure (astBlock arguments temporaries statements hasReturn?))
 (define-structure (astBrace       elements))
 (define-structure (astCascade     receiver messages))
 (define-structure (astIdentifier  token symbol))
@@ -158,6 +158,7 @@
        (loop (cons prev-token temps))
        )
       ((verticalBar)
+       (consume-token!)
        (reverse temps)
        )
       (else
@@ -254,7 +255,9 @@
   (let ( (subexpression (parse-expression)) )
     (skip-whitespace)
     (if (eq? 'rightParen (curr-token-kind))
-        (astSubexpression subexpression)
+        (begin
+          (consume-token!)
+          (astSubexpression subexpression))
         (parse-error "parse-subexpression: expected $)" curr-token)))
 )
 
@@ -265,6 +268,9 @@
   (skip-whitespace)
   (let ( (receiver
           (case (curr-token-kind)
+            ((leftParen)
+             (parse-subexpression)
+             )
             ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
               float floatWithExponent
@@ -333,15 +339,15 @@
     (consume-token!)
     ;; numeric digit MUST immediately follow $-
     ;; So no use of (skip-whitespace)
-    (unless (st-number-token? current-token)
+    (unless (st-number-token? curr-token)
       (error "parse-negative-number: expected a number to follow $-"
-             current-token))
+             curr-token))
     (let ( (new-token  ;; @@REVISIT: could recognize neg numbers in tokenizer
-            (token (token-kind current-token)
-                   (string-append "-" (token-string current-token))
+            (token (token-kind curr-token)
+                   (string-append "-" (token-string curr-token))
                    (token-location minus-token)))
          )
-      (astLiteral new-token (- (token->native current-token)))))
+      (astLiteral new-token (- (token->native curr-token)))))
 )
 
 (define (st-number-token? tok)
@@ -460,11 +466,61 @@
     (display " (parse-dynamic-array)"))
   (error "@@NYI:  (parse-dynamic-array)"))
 
+;; <block constructor> ::= '[' <block body> ']'
+;; <block body> ::= [<block-argument>* '|'] [<temporaries>] [<statements>]
+;; <block-argument> ::= ':' identifier
+;; <temporaries> ::= '|' <temporary-variable-list> '|'
+;; <temporary-variable-list> ::= identifier*
+
 (define (parse-block)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-block)"))
-  (error "@@NYI:  (parse-block)"))
+   (unless (eq? 'blockStart (curr-token-kind))
+    (error "parse-block: expected $[" curr-token))
+  (consume-token!)
+  (skip-whitespace)
+  (let ( (args '())
+         (temps '())
+       )
+  (when (eq? 'blockArg (curr-token-kind))
+    (set! args (parse-block-args)))
+  (skip-whitespace)
+  (when (eq? 'verticalBar (curr-token-kind))
+    (set! temps (parse-block-temps)))
+  (let ( (statements (parse-statements)) )
+    (skip-whitespace)
+    (unless (eq? 'blockEnd (curr-token-kind))
+       (error "parse-block: expected $]" curr-token))
+    (consume-token!)
+    (astBlock args temps statements (any? astReturn? statements))))
+)
+
+(define parse-block-temps parse-temps) ;; just an alias
+
+(define (parse-block-args) ;; blockArg seen (but not consumed)
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-block-args)"))
+  (let loop ( (args '()) )
+    (skip-whitespace)
+    (case (curr-token-kind)
+      ((blockArg)
+       (consume-token!)
+       (loop (cons (astIdentifier prev-token
+                                  (token->native prev-token))
+                   args))
+       )
+      ((verticalBar)
+       (consume-token!)
+       (reverse args)
+       )
+      (else
+       (parse-error "parse-block-args: expected :identifier or $|"
+                    curr-token
+                    (reverse temps))))
+) )
+
 
 (define (parse-unary-send receiver)
   (when (trace-parse-methods)
@@ -574,16 +630,16 @@
   (skip-whitespace)
   (case (curr-token-kind)
     ((identifier)
-     (consume!+return
-      (astIdentifier curr-token (token->native curr-token)))
+     (consume-token!)
+     (astIdentifier prev-token (token->native prev-token))
      )
     ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
               float floatWithExponent
               string
               symbol)
-     (consume!+return
-      (astLiteral curr-token (token->native curr-token)))
+     (consume-token!)
+     (astLiteral prev-token (token->native prev-token))
      )
     ((minus)
      (parse-negative-number)
@@ -608,12 +664,6 @@
                   curr-token)
      )
 ) )
-
-;; elide
-;;  (let ( (result value) ) (consume-token!) result)
-(define (consume!+return value)
-  (consume-token!)
-  value)
 
 (define (parse-assignment receiver)
   (when (trace-parse-methods)
