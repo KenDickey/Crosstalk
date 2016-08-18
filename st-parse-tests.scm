@@ -332,7 +332,56 @@
 
 
 (add-equal-test 'st-parse
-   '#()
+   '#(astSequence
+  (#(astKeywordSend
+     #(astSubexpression
+       #(astKeywordSend
+         #(astBlock
+           (#(astIdentifier
+              #(token
+                blockArg
+                ":a"
+                #("([:a| [:b| a + b]] value: 2) value: 3." 0 2))
+              a))
+           ()
+           (#(astBlock
+              (#(astIdentifier
+                 #(token
+                   blockArg
+                   ":b"
+                   #("([:a| [:b| a + b]] value: 2) value: 3." 0 7))
+                 b))
+              ()
+              (#(astBinarySend
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "a"
+                     #("([:a| [:b| a + b]] value: 2) value: 3." 0 11))
+                   a)
+                 +
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "b"
+                     #("([:a| [:b| a + b]] value: 2) value: 3." 0 15))
+                   b)))
+              #f))
+           #f)
+         value:
+         (#(astLiteral
+            #(token
+              integer
+              "2"
+              #("([:a| [:b| a + b]] value: 2) value: 3." 0 26))
+            2))))
+     value:
+     (#(astLiteral
+        #(token
+          integer
+          "3"
+          #("([:a| [:b| a + b]] value: 2) value: 3." 0 36))
+        3)))))
   (begin
     (parse-test
      "([:a| [:b| a + b]] value: 2) value: 3.")
@@ -340,7 +389,43 @@
   "([:a| [:b| a + b]] value: 2) value: 3.")
 
 (add-equal-test 'st-parse
-   '#()
+   '#(astSequence
+  (#(astUnarySend
+     #(astBlock
+       ()
+       (#(token
+          identifier
+          "a"
+          #("[|a| a := 3. a+a] value." 0 2)))
+       (#(astAssignment
+          #(astIdentifier
+            #(token
+              identifier
+              "a"
+              #("[|a| a := 3. a+a] value." 0 5))
+            a)
+          #(astLiteral
+            #(token
+              integer
+              "3"
+              #("[|a| a := 3. a+a] value." 0 10))
+            3))
+        #(astBinarySend
+          #(astIdentifier
+            #(token
+              identifier
+              "a"
+              #("[|a| a := 3. a+a] value." 0 13))
+            a)
+          +
+          #(astIdentifier
+            #(token
+              identifier
+              "a"
+              #("[|a| a := 3. a+a] value." 0 15))
+            a)))
+       #f)
+     value)))
   (begin
     (parse-test
      "[|a| a := 3. a+a] value.")

@@ -173,58 +173,35 @@
 
 ;; <return statement> ::= '^' <expression>
 
-;; <expression> ::=
-;; 	     <assignment> |
-;; 	     <method-definition> |
-;; 	     <basic-expression>
-;; <assignment> ::= <assignment-target> ':=' <expression>
-;; <method-definition> ::= <class-name> '~>' <message-pattern> <methBody>
-;; <basic-expression> ::=
-;;        <primary> [<messages> <cascaded-messages>]
-;;        <assignment-target> := identifier
-;; <primary> ::=
-;; 	  identifier |
-;; 	   <literal> |
-;; 	   <block-constructor> |
-;; 	   ( '(' <expression> ')' )
-
 (define (parse-statements) ;; answer a list of ASTs
   (when (trace-parse-methods)
     (newline)
     (display " (parse-statements)"))
-  (let loop ( (statements '()) )
-    (skip-whitespace)
-    (case (curr-token-kind)
-      ((period)
-       (consume-token!)
-       (loop (append (parse-statements) statements))
-       )
-      ((carrot)
-       (consume-token!)
-       (let ( (return-exp (parse-expression)) )
-         (reverse (cons (astReturn return-exp) statements)))
-       )
-      ((semicolon)
-       (when (null? statements)
-         (parse-error "parse-statements: cascade without reciever" curr-token))
-       (let ( (cascade-head (car statements))
-              (cascade-tail (parse-cascade-tail))
-              )
-         (loop (cons (make-cascade cascade-head cascade-tail)
-                                       (cdr statements))))
-       )
-      ((left-paren)
-       (let ( (subexpression (parse-subexpression)) )
-         (loop (cons subexpression statements)))
-       )
-      ((eof)
-       (reverse statements)
-       )
-      (else
-       (loop (cons (parse-expression) statements))
-       )
-      ) ; end-case
-) )
+  (skip-whitespace)
+  (case (curr-token-kind)
+    ((eof) '())
+    ((carrot)
+     (consume-token!)
+     (let ( (return-exp (parse-expression)) )
+        (when (eq? 'period (curr-token-kind))
+          (consume-token!))
+        (list (astReturn return-exp)))
+     )
+    (else
+     (let ( (exp (parse-expression)) )
+       (skip-whitespace)
+       (if (eq? 'period (curr-token-kind))
+           (begin
+             (consume-token!)
+             (skip-whitespace)
+             (if (eq? 'eof (curr-token-kind))
+                 (list exp)
+                 (cons exp (parse-statements)))
+             )
+           (list exp)))
+     )
+    )
+)
 
 
 (define (make-cascade c-head c-tail)
@@ -258,56 +235,33 @@
         (begin
           (consume-token!)
           (astSubexpression subexpression))
-        (parse-error "parse-subexpression: expected $)" curr-token)))
+        (parse-error "parse-subexpression: expected $)"
+                     curr-token)))
 )
+
+
+;; <expression> ::=
+;; 	     <assignment> |
+;; 	     <method-definition> |
+;; 	     <basic-expression>
+;; <assignment> ::= <assignment-target> ':=' <expression>
+;; <method-definition> ::=
+;;        <class-name> '~>' <message-pattern> <methBody>
+;; <basic-expression> ::=
+;;        <primary> [<messages> <cascaded-messages>]
+;;        <assignment-target> := identifier
+;; <primary> ::=
+;; 	  identifier |
+;; 	   <literal> |
+;; 	   <block-constructor> |
+;; 	   ( '(' <expression> ')' )
 
 (define (parse-expression)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-expression)"))
   (skip-whitespace)
-  (let ( (receiver
-          (case (curr-token-kind)
-            ((leftParen)
-             (parse-subexpression)
-             )
-            ((integer integerWithRadix
-              scaledDecimal scaledDecimalWithFract
-              float floatWithExponent
-              string
-              symbol)
-             (let ( (literal
-                     (astLiteral curr-token (token->native curr-token)))
-                  )
-               (consume-token!)
-               literal)
-             )
-            ((minus)
-             (parse-negative-number)
-             )
-            ((litArrayStart)
-             (parse-literal-array)
-             )
-            ((litByteArrayStart)
-             (parse-literal-byte-array)
-             )
-            ((dynArrayStart)
-             (parse-dynamic-array)
-             )
-            ((blockStart)
-             (parse-block)
-             )
-            ((identifier)
-             (let ( (identifier
-                     (astIdentifier curr-token (token->native curr-token)))
-                  )
-               (consume-token!)
-               identifier)
-             )
-            (else
-             (parse-error "parse-expression: unexpected input" curr-token))
-            ))
-          )
+  (let ( (receiver (parse-primary)) )
     (skip-whitespace)
     (case (curr-token-kind)
       ((identifier)
@@ -329,6 +283,7 @@
       )
 ) )
 
+
 (define (parse-negative-number)
   (when (trace-parse-methods)
     (newline)
@@ -349,6 +304,7 @@
          )
       (astLiteral new-token (- (token->native curr-token)))))
 )
+
 
 (define (st-number-token? tok)
   (if (member (token-kind token)
@@ -416,6 +372,7 @@
       ) ;; loop
 ) )
 
+
 (define (parse-literal-byte-array)
   (when (trace-parse-methods)
     (newline)
@@ -466,6 +423,7 @@
     (display " (parse-dynamic-array)"))
   (error "@@NYI:  (parse-dynamic-array)"))
 
+
 ;; <block constructor> ::= '[' <block body> ']'
 ;; <block body> ::= [<block-argument>* '|'] [<temporaries>] [<statements>]
 ;; <block-argument> ::= ':' identifier
@@ -496,7 +454,9 @@
     (astBlock args temps statements (any? astReturn? statements))))
 )
 
+
 (define parse-block-temps parse-temps) ;; just an alias
+
 
 (define (parse-block-args) ;; blockArg seen (but not consumed)
   (when (trace-parse-methods)
@@ -540,6 +500,7 @@
       )
 ) )
 
+
 (define (parse-binary-send receiver)
   (when (trace-parse-methods)
     (newline)
@@ -551,6 +512,7 @@
     (let ( (arg (parse-binary-argument)) )
       (astBinarySend receiver binarySelector arg)
 ) ) )
+
 
 ;; <binary-argument> ::= <primary> <unary-message>*
 (define (parse-binary-argument)
@@ -564,6 +526,7 @@
         (loop (parse-unary-send arg))
         arg))
 )
+
 
 (define (parse-keyword-send receiver)
   (when (trace-parse-methods)
@@ -597,6 +560,7 @@
          (astKeywordSend receiver selector args)))
 ) ) )
 
+
 ; <keyword-argument> ::= <primary> <unary-message>* <binary-message>*
 (define (parse-keyword-argument)
   (when (trace-parse-methods)
@@ -617,6 +581,7 @@
             (bloop (parse-binary-send final-result))
             final-result)))
 )
+
 
 ;; <primary> ::=
 ;; 	  identifier |
@@ -665,6 +630,7 @@
      )
 ) )
 
+
 (define (parse-assignment receiver)
   (when (trace-parse-methods)
     (newline)
@@ -676,6 +642,7 @@
   (let ( (right-hand-side (parse-expression)) )
     (astAssignment receiver right-hand-side))
 )
+
 
 (define (parse-method-definition receiver)
   (when (trace-parse-methods)
