@@ -460,6 +460,120 @@
     (parse-st-code))
   "self do: [:i | ] separatedBy: [] ")
 
+(add-equal-test 'st-parse
+ '#(astSequence
+  (#(astKeywordSend
+     #(astIdentifier
+       #(token
+         identifier
+         "self"
+         #("self do: [:i | i do: [ :each | ] ] separatedBy: [] "
+           0
+           0))
+       self)
+     do:separatedBy:
+     (#(astBlock
+        (#(astIdentifier
+           #(token
+             blockArg
+             ":i"
+             #("self do: [:i | i do: [ :each | ] ] separatedBy: [] "
+               0
+               10))
+           i))
+        ()
+        (#(astKeywordSend
+           #(astIdentifier
+             #(token
+               identifier
+               "i"
+               #("self do: [:i | i do: [ :each | ] ] separatedBy: [] "
+                 0
+                 15))
+             i)
+           do:
+           (#(astBlock
+              (#(astIdentifier
+                 #(token
+                   blockArg
+                   ":each"
+                   #("self do: [:i | i do: [ :each | ] ] separatedBy: [] "
+                     0
+                     23))
+                 each))
+              ()
+              ()
+              #f))))
+        #f)
+      #(astBlock () () () #f)))))
+  (begin
+    (parse-test
+     "self do: [:i | i do: [ :each | ] ] separatedBy: [] ")
+    (parse-st-code))
+  "self do: [:i | i do: [ :each | ] ] separatedBy: [] ")
+
+(add-equal-test 'st-parse
+  '#(astSequence
+  (#(astBlock
+     (#(astIdentifier
+        #(token blockArg ":a" #("[ :a||| a] " 0 2))
+        a))
+     ()
+     (#(astIdentifier
+        #(token identifier "a" #("[ :a||| a] " 0 8))
+        a))
+     #f)))
+  (begin
+    (parse-test "[ :a||| a] ")
+    (parse-st-code))
+  "[ :a||| a] ")
+
+(add-equal-test 'st-parse
+  '#(astSequence
+  (#(astBlock
+     (#(astIdentifier
+        #(token
+          blockArg
+          ":a"
+          #("[:a||b| b := a. a+b] " 0 1))
+        a))
+     (#(token
+        identifier
+        "b"
+        #("[:a||b| b := a. a+b] " 0 5)))
+     (#(astAssignment
+        #(astIdentifier
+          #(token
+            identifier
+            "b"
+            #("[:a||b| b := a. a+b] " 0 8))
+          b)
+        #(astIdentifier
+          #(token
+            identifier
+            "a"
+            #("[:a||b| b := a. a+b] " 0 13))
+          a))
+      #(astBinarySend
+        #(astIdentifier
+          #(token
+            identifier
+            "a"
+            #("[:a||b| b := a. a+b] " 0 16))
+          a)
+        +
+        #(astIdentifier
+          #(token
+            identifier
+            "b"
+            #("[:a||b| b := a. a+b] " 0 18))
+          b)))
+     #f)))
+  (begin
+    (parse-test "[:a||b| b := a. a+b] ")
+    (parse-st-code))
+  "[:a||b| b := a. a+b] ")
+
 
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
