@@ -21,6 +21,21 @@
 (define-structure (astSubexpression expression))
 (define-structure (astReturn        expression))
 
+(define (ident-token->astLiteral ident-tok)
+  (astLiteral ident-tok (token->native ident-tok)))
+
+(define (ident-token->astIdentifier ident-tok)
+  (astIdentifier ident-tok (token->native ident-tok)))
+
+(define (ident-token->astBlockArg ident-tok)
+  (let ( (ident-sym (token->native ident-tok)) )
+    (astIdentifier
+     (token 'blockArg
+            (string-append ":" (token-string ident-tok))
+            (token-location ident-tok))
+     ident-sym)
+) )
+  
 (define (astTag ast)
   (if (and (vector? ast)
            (> (vector-length ast) 0))
@@ -351,8 +366,7 @@
          )
         ((identifier)
          (let ( (identifier
-                 (astIdentifier curr-token
-                             (token->native curr-token)))
+                 (ident-token->astIdentifier curr-token))
               )
            (consume-token!)
            (loop (cons identifier elts)))
@@ -431,7 +445,9 @@
 
 
 ;; <block constructor> ::= '[' <block body> ']'
-;; <block body> ::= [<block-argument>* '|'] [<temporaries>] [<statements>]
+;; <block body> ::= [<block-argument>* '|']
+;;                  [<temporaries>]
+;;                  [<statements>]
 ;; <block-argument> ::= ':' identifier
 ;; <temporaries> ::= '|' <temporary-variable-list> '|'
 ;; <temporary-variable-list> ::= identifier*
@@ -480,8 +496,7 @@
     (case (curr-token-kind)
       ((blockArg)
        (consume-token!)
-       (loop (cons (astIdentifier prev-token
-                                  (token->native prev-token))
+       (loop (cons (ident-token->astIdentifier prev-token)
                    args))
        )
       ((verticalBar)
@@ -491,7 +506,7 @@
       (else
        (parse-error "parse-block-args: expected :identifier or $|"
                     curr-token
-                    (reverse temps))))
+                    (reverse args))))
 ) )
 
 
@@ -609,7 +624,7 @@
   (case (curr-token-kind)
     ((identifier)
      (consume-token!)
-     (astIdentifier prev-token (token->native prev-token))
+     (ident-token->astIdentifier prev-token)
      )
     ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
@@ -656,21 +671,132 @@
     (astAssignment receiver right-hand-side))
 )
 
+;; <method-definition>
+;;       ::= <class> '~>' <message-pattern> <methBody>
+;; <methBody> := '[' [<temporaries>] [<statements>] ']'
+
+
+;; 'String ~> contains: aChar
+;;    [ self detect: [ :c | c = aChar ]].'
+
+;;  logically rewrites to:
+
+;; 'String
+;;    addSelector: #contains:
+;;    withMethod: [:self :aChar| self detect: [:c|c = aChar]].'
 
 (define (parse-method-definition receiver)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-method-definition receiver)"))
-  (unless (eq? 'methodDef (curr-token-kind))
+  (unless (eq? 'methDef (curr-token-kind))
     (parse-error "parse-method-definition: expected #~>"
                  curr-token))
   (consume-token!)
   (skip-whitespace)
-  
-;;  (case (current-token-kind)
-;;  @@
-  (error "@@NYI:  (parse-method-definition receiver)"))
 
+  (let-values ( ((selector args) (parse-message-pattern)) ) 
+    (skip-whitespace)
+    (unless (eq? 'blockStart (curr-token-kind))
+      (parse-error "parse-method-definition: expected $["
+                   curr-token))
+    (let* ( (method-block (parse-block))
+            (method-args ;; Prepend #:self block-arg
+             (cons
+              (astIdentifier
+                 (token 'blockArg ":self" #(":self" 0 0))
+                 'self)
+              args))
+          )
+      ;; (astBlock arguments temporaries statements hasReturn?)
+      (vector-set! method-block 1 method-args) 
+      (astKeywordSend receiver
+                      'addSelector:withMethod:
+                      (list selector method-block))
+) ) )
+                          
+
+;; <message-pattern>
+;;       ::= <unary-pattern> | <binary-pattern> | <keyword-pattern>
+;; <unary-pattern> ::= unarySelector
+;; <binary-pattern> ::= binarySelector <method-argument>
+;; <keyword-pattern> ::= (keyword <method-argument>)+
+
+(define (parse-message-pattern) ;; Answer (selector args)
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-message-pattern)"))
+  (skip-whitespace)
+  (case (curr-token-kind)
+    ((identifier) ;; unarySelector
+     (consume-token!)
+     (values (ident-token->astIdentifier prev-token) '())
+     )
+    ((binarySelector)
+     (let ( (selector-tok curr-token) )
+       (consume-token!)
+       (unless (eq? 'identifier (curr-token-kind))
+         (parse-error
+          "parse-message-pattern: expected binarySelector identifier"
+          selector
+          curr-token))
+       (consume-token!)
+       (values (ident-token->astIdentifier selector-tok)
+               (list (ident-token->astIdentifier prev-token))))
+     )
+    ((keyword)
+     (parse-keyword-pattern)
+     )
+    (else
+     (parse-error
+      "parse-message-pattern: expected a send-pattern"
+      curr-token))
+    )
+)
+
+(define (parse-keyword-pattern)
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-keyword-pattern)"))
+  (unless (eq? 'keyword (curr-token-kind))
+    (error "parse-keyword-pattern: expected a keyword" curr-token))
+  ;; parse one or more <keyword, identifier> pairs
+  (let ( (start-token-location
+          (token-location curr-token))
+       )
+    (let loop ( (results '()) )
+      (skip-whitespace)
+      (case (curr-token-kind)
+        ((keyword)
+         (let ( (key (token-string curr-token)) )
+           (consume-token!) ; keyword
+           (skip-whitespace)
+           (unless (eq? 'identifier (curr-token-kind))
+             (parse-error
+              "parse-keyword-pattern: expected an identifier"
+              key
+              curr-token))
+           (consume-token!) ; identifier
+           (loop (cons (cons key prev-token) results)))
+         )
+        (else
+         ;; (when (debug-parser)
+         ;;   (newline)
+         ;;   (display (reverse results)))
+         (let* ( (keys-and-args (reverse results))
+                 (selector-string
+                  (apply string-append
+                         (map car keys-and-args)))
+                 (args (map cdr keys-and-args))
+              )
+           (values (astLiteral
+                    (token 'symbol
+                           (string-append "#" selector-string)
+                           start-token-location)
+                    (string->symbol selector-string))
+                   (map ident-token->astBlockArg args)))
+      ) )
+) ) )
 
 
   
@@ -688,13 +814,7 @@
 ;; <keyword-message> ::= (keyword <keyword-argument> )+
 ;; <cascaded-messages> ::= (';' <messages>)*
 
-;; <method-definition> ::= <class-name> '~>' <message-pattern> <methBody>
-;; <methBody> := '[' [<temporaries>] [<statements>] ']'
 
-;; <message-pattern> ::= <unary-pattern> | <binary-pattern> | <keyword-pattern>
-;; <unary-pattern> ::= unarySelector
-;; <binary-pattern> ::= binarySelector <method-argument>
-;; <keyword-pattern> ::= (keyword <method-argument>)+
 
 ;;; below here, recognition is largely done by the st-tokenizer
 
