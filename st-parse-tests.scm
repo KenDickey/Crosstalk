@@ -574,6 +574,93 @@
     (parse-st-code))
   "[:a||b| b := a. a+b] ")
 
+(add-equal-test 'st-parse
+ '#(astSequence
+  (#(astKeywordSend
+     #(astIdentifier
+       #(token
+         identifier
+         "String"
+         #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+           0
+           0))
+       String)
+     addSelector:withMethod:
+     (#(astLiteral
+        #(token
+          symbol
+          "#contains:"
+          #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+            0
+            20))
+        contains:)
+      #(astBlock
+        (#(astIdentifier
+           #(token
+             blockArg
+             ":self"
+             #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+               1
+               20))
+           self)
+         #(astIdentifier
+           #(token
+             blockArg
+             ":aChar"
+             #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+               1
+               26))
+           aChar))
+        ()
+        (#(astKeywordSend
+           #(astIdentifier
+             #(token
+               identifier
+               "self"
+               #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+                 2
+                 20))
+             self)
+           detect:
+           (#(astBlock
+              (#(astIdentifier
+                 #(token
+                   blockArg
+                   ":c"
+                   #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+                     2
+                     35))
+                 c))
+              ()
+              (#(astBinarySend
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "c"
+                     #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+                       2
+                       40))
+                   c)
+                 =
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "aChar"
+                     #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
+                       2
+                       44))
+                   aChar)))
+              #f))))
+        #f)))))
+   (begin
+    (parse-test
+     "String addSelector: #contains:
+	     withMethod: [ :self :aChar |
+	                   self detect: [ :c | c = aChar] ].")
+    (parse-st-code))
+   "String addSelector: #contains:
+	     withMethod: [ :self :aChar |
+	                   self detect: [ :c | c = aChar] ].")
 
 ;; (ensure-exception-raised 'st-*
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

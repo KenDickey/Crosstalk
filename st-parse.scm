@@ -21,6 +21,12 @@
 (define-structure (astSubexpression expression))
 (define-structure (astReturn        expression))
 
+(define (astTag ast)
+  (if (and (vector? ast)
+           (> (vector-length ast) 0))
+      (vector-ref ast 0)
+      'bogus))
+
 ;;; Token parsing
 
 ;; (define-structure (token kind string location))
@@ -655,6 +661,14 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-method-definition receiver)"))
+  (unless (eq? 'methodDef (curr-token-kind))
+    (parse-error "parse-method-definition: expected #~>"
+                 curr-token))
+  (consume-token!)
+  (skip-whitespace)
+  
+;;  (case (current-token-kind)
+;;  @@
   (error "@@NYI:  (parse-method-definition receiver)"))
 
 
