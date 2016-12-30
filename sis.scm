@@ -41,6 +41,7 @@
        ratnum?
        ;; r5rs:require
        ;; apropos
+       current-directory
        )
 )
 
@@ -97,7 +98,7 @@
 
 ;;;
 
-(define st-root-directory-prefix "/home/kend/SiS/")
+(define st-root-directory-prefix "/home/chip/SiS/")
 
 (define st-bootstrap-files
   '( "st-kernel"       ;; message mechanics
