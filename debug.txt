@@ -15,3 +15,5 @@
 (define $:::: perform:with:with:with:with:)
 
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
+
+(current-directory "/home/chip/SiS")
