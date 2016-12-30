@@ -10,12 +10,17 @@
 (define-structure (astIdentifier  token symbol))
 (define-structure (astLiteral     token value)) ;; elide token
 (define-structure (astSelector    value))
+(define-structure (astPrimary     receiver))
 (define-structure (astUnarySend   receiver selector))
 (define-structure (astBinarySend  receiver selector argument))
 (define-structure (astKeywordSend receiver selector arguments))
+(define-structure (astUnaryMessage   selector))
+(define-structure (astBinaryMessage  selector argument))
+(define-structure (astKeywordMessage selector arguments))
 (define-structure (astArray       elements)) ;; ??astLiteral
 (define-structure (astMethod      selector block))
 (define-structure (astSequence    statements))
+(define-structure (astMessageSequence messages))
 (define-structure (astTemporaries identifiers))
 (define-structure (astLetTemps    temps statements))
 (define-structure (astSubexpression expression))
@@ -225,24 +230,6 @@
 )
 
 
-(define (make-cascade c-head c-tail)
-  (when (trace-parse-methods)
-    (newline)
-    (display " (make-cascade c-head c-tail)"))
-  (unless (Message? c-head)
-    (parse-error "make-cascade: expected receiver!!" c-head))
-  (unless (every? Message? c-tail)
-    (parse-error "make-cascade: bad cascade tail" c-tail))
-  (astCascade (receiver c-head) (cons c-head ctail))
-)
-
-(define (parse-cascade-tail)
-  (when (trace-parse-methods)
-    (newline)
-    (display " (parse-cascade-tail)"))
-  (error "@@NYI:  (parse-cascade-tail)"))
-
-
 (define (parse-subexpression)
   (when (trace-parse-methods)
     (newline)
@@ -285,24 +272,197 @@
   (let ( (receiver (parse-primary)) )
     (skip-whitespace)
     (case (curr-token-kind)
-      ((identifier)
-       (parse-unary-send receiver)
-       )
-      ((binarySelector)
-       (parse-binary-send receiver)
-       )
-      ((keyword)
-       (parse-keyword-send receiver)
-       )
       ((assignment)
        (parse-assignment receiver)
        )
       ((methDef)
        (parse-method-definition receiver)
        )
-      (else receiver) ;; simple expression (ignore following)
+      (else (parse-basic-expression receiver))
       )
 ) )
+
+(define (parse-basic-expression receiver)
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-basic-expression)"))
+  (when (eq? (curr-token-kind) 'cascade)
+    (parse-error "parse-basic-expression: cascade without message "
+                 curr-token))
+  (let ( (message
+          (case (curr-token-kind)
+            ((identifier)
+             (parse-unary-send receiver)
+             )
+           ((binarySelector)
+            (parse-binary-send receiver)
+            )
+           ((keyword)
+            (parse-keyword-send receiver)
+            )
+           (else receiver)))
+       )
+    (if (eq? 'cascade (curr-token-kind))
+        (parse-cascade message)
+        message)
+) )
+
+
+(define (parse-cascade receiver-expression)
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-cascade)"))
+  (unless (eq? 'cascade (curr-token-kind))
+    (parse-error "parse-cascade: expected $;" curr-token))
+  (consume-token!)
+  (let loop ( (reversed-messages '()) )
+    (let ( (message (parse-messages)) )
+       (if (eq? 'cascade (curr-token-kind))
+           (begin
+             (consume-token!)
+             (loop (cons message reversed-messages)))
+           (astCascade receiver-expression
+                       (reverse reversed-messages)))
+     )
+  )
+)
+
+(define (pattern->ast selector args)
+  (case (token-kind selector)
+    ((unarySelector)
+     (astUnaryMessage selector)
+     )
+    ((binarySelector)
+     (astBinaryMessage selector (car args))
+     )
+    ((keywordSelector)
+     (astKeywordMessage selector args)
+     )
+    (else (parse-error
+           "pattern->ast: expected message send"
+           selector
+           args))
+  )
+)
+
+
+;; <messages> ::=
+;;    (<unary-message>+ <binary-message>* [<keyword-message>] ) |
+;;    (<binary-message>+ [<keyword-message>] ) |
+;;    <keyword-message>
+;; <unary-message> ::= unarySelector
+;; <binary-message> ::= binarySelector <binary-argument>
+;; <binary-argument> ::= <primary> <unary-message>*
+;; <keyword-message> ::= (keyword <keyword-argument> )+
+
+(define (parse-messages)
+  (case (curr-token-kind)
+    ((identifier)
+     (parse-unary-message)
+     )
+    ((binarySelector)
+     (parse-binary-message)
+     )
+    ((keyword)
+     (parse-keyword-message)
+     )
+    (else (parse-error
+           "parse-message: expected a message send here"
+           curr-token)
+    )
+  )
+)
+    
+
+(define (parse-unary-message)
+;; ( <unary-message>+ <binary-message>* [<keyword-message>] )
+;; <unary-message> ::= unarySelector
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-unary-message)"))
+  (unless (eq? 'identifier (curr-token-kind))
+    (error "parse-unary-message: expected unary selector" curr-token))
+  (let unary-loop ( (reversed-messages (list (astUnaryMessage curr-token))) )
+    (consume-token!)
+    (if (eq? 'identifier (curr-token-kind))
+        (loop (cons (astUnaryMessage curr-token) reversed-messages))
+        (reverse (if (eq? 'binarySelector (curr-token-kind))
+                     (cons (parse-binary-message) reversed-messages)
+                     reversed-messages)))
+  )
+)
+
+
+(define (parse-binary-message)
+;; ( <binary-message>+ [<keyword-message>] )
+;; <binary-message> ::= binarySelector <binary-argument>
+;; <binary-argument> ::= <primary> <unary-message>*
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-binary-message)"))
+  (unless (eq? 'binarySelector (curr-token-kind))
+    (error "parse-binary-message: expected binary selector" curr-token))
+  (let bin-loop ( (reversed-messages
+                   (list (prim-parse-binary-message)))
+                )
+    (if (eq? 'binarySelector (curr-token-kind))
+        (bin-loop (cons (prim-parse-binary-message) reversed-messages))
+        (if (eq? 'identifier (curr-token-kind))
+            (astMessageSequence
+             (reverse (cons (parse-keyword-message) reversed-messages)))
+            (if (= 1 (length reversed-messages))
+                (car reversed-messages) ;; unwrap single message
+                (astMessageSequence
+                 (reverse reversed-messages))
+            )
+        )
+    )
+  )
+)
+
+
+(define (prim-parse-binary-message)
+  ;; Invariant: (eq? 'binarySelector (current-token))
+  ;; i.e. a binarySelector was seen but not consumed.
+  (let ( (binary-selector (token->native curr-token)) )
+    (consume-token!)
+    (astBinaryMessage binarySelector (parse-binary-argument))
+  )
+)
+
+(define (parse-keyword-message)
+;; <keyword-message>
+;; <keyword-message> ::= (keyword <keyword-argument> )+
+  (when (trace-parse-methods)
+    (newline)
+    (display " (parse-keyword-message)"))
+  (unless (eq? 'keyword (curr-token-kind))
+    (error "parse-keyword-message: expected a keyword" curr-token))
+  ;; parse one or more <keyword, expression> pairs
+  (let loop ( (results '()) )
+    (skip-whitespace)
+    (case (curr-token-kind)
+      ((keyword)
+       (let ( (key (token-string curr-token)) )
+         (consume-token!)
+         (let ( (arg-exp (parse-keyword-argument)) )
+           (loop (cons (cons key arg-exp) results))))
+       )
+      (else ;; done
+       (let* ( (keys-and-args (reverse results))
+               (selector
+                (string->symbol
+                 (apply string-append
+                        (map car keys-and-args))))
+               (args (map cdr keys-and-args))
+             )
+         (when (null? keys-and-args)
+           (error "parse-keyword-send: expected a keyword" curr-token))
+         (astKeywordMessage selector args))
+      )
+    )
+  )
+)
 
 
 (define (parse-negative-number)
