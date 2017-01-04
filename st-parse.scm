@@ -17,6 +17,7 @@
 (define-structure (astUnaryMessage   selector))
 (define-structure (astBinaryMessage  selector argument))
 (define-structure (astKeywordMessage selector arguments))
+(define-structure (astMessageSend receiver messages))
 (define-structure (astArray       elements)) ;; ??astLiteral
 (define-structure (astMethod      selector block))
 (define-structure (astSequence    statements))
@@ -235,7 +236,8 @@
     (newline)
     (display " (parse-subexpression)"))
   (unless (eq? 'leftParen (curr-token-kind))
-    (parse-error "parse-subexpression: expected $(" curr-token))
+    (parse-error "parse-subexpression: expected $("
+                 curr-token))
   (consume-token!)
   (let ( (subexpression (parse-expression)) )
     (skip-whitespace)
@@ -292,16 +294,23 @@
   (let ( (message
           (case (curr-token-kind)
             ((identifier)
-             (parse-unary-send receiver)
+             (astMessageSend
+              receiver
+              (parse-unary-message))
              )
-           ((binarySelector)
-            (parse-binary-send receiver)
-            )
-           ((keyword)
-            (parse-keyword-send receiver)
-            )
-           (else receiver)))
-       )
+             ((binarySelector)
+              (astMessageSend
+              	receiver
+                (parse-binary-message))
+              )
+             ((keyword)
+              (astMessageSend
+              	receiver
+                (parse-keyword-message))
+              )
+             (else receiver)
+             )
+          ))
     (if (eq? 'cascade (curr-token-kind))
         (parse-cascade message)
         message)
@@ -317,12 +326,13 @@
   (consume-token!)
   (let loop ( (reversed-messages '()) )
     (let ( (message (parse-messages)) )
-       (if (eq? 'cascade (curr-token-kind))
-           (begin
-             (consume-token!)
-             (loop (cons message reversed-messages)))
-           (astCascade receiver-expression
-                       (reverse reversed-messages)))
+      (skip-whitespace)
+      (if (eq? 'cascade (curr-token-kind))
+          (begin
+            (consume-token!)
+            (loop (cons message reversed-messages)))
+          (astCascade receiver-expression
+                      (reverse (cons message reversed-messages))))
      )
   )
 )
@@ -356,6 +366,7 @@
 ;; <keyword-message> ::= (keyword <keyword-argument> )+
 
 (define (parse-messages)
+  (skip-whitespace)
   (case (curr-token-kind)
     ((identifier)
      (parse-unary-message)
@@ -382,13 +393,18 @@
     (display " (parse-unary-message)"))
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-message: expected unary selector" curr-token))
-  (let unary-loop ( (reversed-messages (list (astUnaryMessage curr-token))) )
-    (consume-token!)
+  (consume-token!)
+  (let unary-loop ( (reversed-messages (list (astUnaryMessage prev-token))) )
+    (skip-whitespace)
     (if (eq? 'identifier (curr-token-kind))
-        (loop (cons (astUnaryMessage curr-token) reversed-messages))
-        (reverse (if (eq? 'binarySelector (curr-token-kind))
+        (begin
+          (consume-token!)
+          (unary-loop (cons (astUnaryMessage prev-token) reversed-messages)))
+        (astMessageSequence
+         (reverse (if (eq? 'binarySelector (curr-token-kind))
                      (cons (parse-binary-message) reversed-messages)
                      reversed-messages)))
+    )
   )
 )
 
@@ -407,7 +423,7 @@
                 )
     (if (eq? 'binarySelector (curr-token-kind))
         (bin-loop (cons (prim-parse-binary-message) reversed-messages))
-        (if (eq? 'identifier (curr-token-kind))
+        (if (eq? 'keyword (curr-token-kind))
             (astMessageSequence
              (reverse (cons (parse-keyword-message) reversed-messages)))
             (if (= 1 (length reversed-messages))
@@ -426,7 +442,7 @@
   ;; i.e. a binarySelector was seen but not consumed.
   (let ( (binary-selector (token->native curr-token)) )
     (consume-token!)
-    (astBinaryMessage binarySelector (parse-binary-argument))
+    (astBinaryMessage binary-selector (parse-binary-argument))
   )
 )
 
@@ -634,6 +650,7 @@
         (consume-token!)
         (astBlock args temps '() #false)) ;; use literal st-nil ?
       (let ( (statements (parse-statements)) )
+        (skip-whitespace)
         (unless (eq? 'blockEnd (curr-token-kind))
           (error "parse-block: expected $]" curr-token))
         (consume-token!)
@@ -674,6 +691,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-unary-send receiver)"))
+  (skip-whitespace)
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-send: expected a unary selector" curr-token))
   (let ( (unary-message
@@ -694,12 +712,23 @@
     (newline)
     (display " (parse-binary-send receiver)"))
   (unless (eq? 'binarySelector (curr-token-kind))
-    (error "parse-binary-send: expected a binary selector" curr-token))
-  (let ( (binarySelector (token->native curr-token)) )
-    (consume-token!)
-    (let ( (arg (parse-binary-argument)) )
-      (astBinarySend receiver binarySelector arg)
-) ) )
+    (error "parse-binary-send: expected a binary selector"
+           curr-token))
+  (let bin-loop ( (reversed-messages
+                   (list (prim-parse-binary-message)))
+                )
+    (skip-whitespace)
+    (if (eq? 'binarySelector (curr-token-kind))
+        (bin-loop (cons (prim-parse-binary-message) reversed-messages))
+        (if (= 1 (length reversed-messages))
+            (car reversed-messages) ;; unwrap single message
+            (astMessageSequence
+             (reverse reversed-messages))
+        )
+
+    )
+ )
+)
 
 
 ;; <binary-argument> ::= <primary> <unary-message>*
@@ -708,11 +737,22 @@
     (newline)
     (display " (parse-binary-argument)"))
   (skip-whitespace)
-  (let loop ( (arg (parse-primary)) )
-    (skip-whitespace)
-    (if (eq? 'identifier (curr-token-kind))
-        (loop (parse-unary-send arg))
-        arg))
+  (let ( (primary (parse-primary)) )
+    (let arg-loop ( (reversed-unary-sends '()) )
+      (skip-whitespace)
+      (if (eq? 'identifier (curr-token-kind))
+          (begin
+            (consume-token!)
+            (arg-loop (cons prev-token reversed-unary-sends)))
+          (if (null? reversed-unary-sends)
+              primary
+              (astMessageSend
+               		primary
+                        (reverse reversed-unary-sends))
+          )
+      )
+    )
+  )
 )
 
 
@@ -754,7 +794,6 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-keyword-argument)"))
-
     (skip-whitespace)
     (let ( (result
             (let uloop ( (arg (parse-primary)) )
