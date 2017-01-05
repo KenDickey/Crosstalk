@@ -30,7 +30,8 @@
     (astSelector-value ast))
    ;; ((astUnarySend? ast) ...)
    ;; ((astBinarySend? ast) ...)
-   ;; ((astKeywordSend? ast) ...)
+   ((astKeywordSend? ast) 
+    (xlateKeywordSend ast))
    ;; ((astUnaryMessage? ast) ...)
    ;; ((astBinaryMessage? ast) ...)
    ;; ((astKeywordMessage? ast) ...)
@@ -136,6 +137,17 @@
   (or (astUnaryMessage?   ast)
       (astBinaryMessage?  ast)
       (astKeywordMessage? ast)
+  )
+)
+
+(define (xlateKeywordSend ast)
+  (let ( (rcvr (AST->scm (astKeywordSend-receiver ast)))
+         (selector (astKeywordSend-selector ast))
+         (arguments
+          (map AST->scm
+               (astKeywordSend-arguments ast)))
+       )
+    `(,selector ,rcvr ,@arguments)
   )
 )
 
