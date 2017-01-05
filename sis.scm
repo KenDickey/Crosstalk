@@ -115,6 +115,7 @@
      "st-set"          ;; Set
      "st-tokenizer"    ;; Stream -> tokens
      "st-parse"        ;; tokens -> AST
+     "st-xlate"	       ;; AST -> Scheme
 ;;     @@@more to come...
     )
  )

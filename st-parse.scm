@@ -10,7 +10,6 @@
 (define-structure (astIdentifier  token symbol))
 (define-structure (astLiteral     token value)) ;; elide token
 (define-structure (astSelector    value))
-(define-structure (astPrimary     receiver))
 (define-structure (astUnarySend   receiver selector))
 (define-structure (astBinarySend  receiver selector argument))
 (define-structure (astKeywordSend receiver selector arguments))
@@ -22,7 +21,6 @@
 (define-structure (astMethod      selector block))
 (define-structure (astSequence    statements))
 (define-structure (astMessageSequence messages))
-(define-structure (astTemporaries identifiers))
 (define-structure (astLetTemps    temps statements))
 (define-structure (astSubexpression expression))
 (define-structure (astReturn        expression))
@@ -85,8 +83,12 @@
   (set! next-st-token (tokenizer-for-string input-string))
   (set! curr-token #false)
   (set! prev-token #false)
-
 )
+
+(define (st->AST st-string)
+;; SmallTalk -> Abstract Syntax Tree
+  (parse-test st-string)
+  (parse-st-code))
 
 (parse-test " anArray at: 3 put: 37 ") ;; quick check
 ;; Invoke (parse-st-code) in REPL to test.
@@ -159,8 +161,13 @@
              (astSequence '()) ;; no action!?!
              )
             (else
-             (astSequence (parse-statements))
-             )))
+             (let ( (statements (parse-statements)) )
+               (if (= 1 (length statements))
+                   (car statements)
+                   (astSequence statements))
+             ))
+            )
+          )
        )
     (when (debug-parser)
       (newline))
