@@ -31,7 +31,7 @@
          #("3 perform: #between:and: with: 1 with: 5"
            0
            11))
-       between:and:)
+       'between:and:)
      #(astLiteral
        #(token
          integer
@@ -83,7 +83,7 @@
          symbol
          "#add:"
          #("self perform: #add: with: anObject" 0 14))
-       add:)
+       'add:)
      #(astIdentifier
        #(token
          identifier
@@ -223,7 +223,7 @@
        #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
          0
          42))
-     foo)))
+     'foo)))
   (begin
     (parse-test
      " #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) ")
@@ -548,7 +548,7 @@
          #("String addSelector: #contains:\n\t     withMethod: [ :self :aChar |\n\t                   self detect: [ :c | c = aChar] ]."
            0
            20))
-       contains:)
+       'contains:)
      #(astBlock
        (#(astIdentifier
           #(token
@@ -637,7 +637,7 @@
           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
             1
             10))
-        exampleWithNumber:)
+        'exampleWithNumber:)
       #(astBlock
         (#(astIdentifier
            #(token blockArg ":self" #(":self" 0 0))
@@ -778,7 +778,7 @@
                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                     9
                     7))
-                a)
+                'a)
               #(astLiteral
                 #(token
                   string

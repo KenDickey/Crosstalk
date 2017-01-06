@@ -26,7 +26,9 @@
 (define-structure (astReturn        expression))
 
 (define (ident-token->astLiteral ident-tok)
-  (astLiteral ident-tok (token->native ident-tok)))
+  (astLiteral ident-tok
+              `',(token->native ident-tok))
+)
 
 (define (ident-token->astIdentifier ident-tok)
   (astIdentifier ident-tok (token->native ident-tok)))
@@ -69,8 +71,8 @@
   ;;    verticalBar
   ;;    whitespace )
 
-(define debug-parser          (make-parameter #true))
-(define trace-parse-methods   (make-parameter #true))
+(define debug-parser          (make-parameter #false))
+(define trace-parse-methods   (make-parameter #false))
 (define trace-skip-whitespace (make-parameter #false))
 
 ;; Quick Test
@@ -835,11 +837,13 @@
     ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
               float floatWithExponent
-              string
-              symbol)
+              string)
      (consume-token!)
      (astLiteral prev-token (token->native prev-token))
      )
+    ((symbol)
+     (consume-token!) ;; quote it!
+     (astLiteral prev-token `,(token->native prev-token)))
     ((minus)
      (parse-negative-number)
      )
@@ -928,7 +932,7 @@
 ;; <binary-pattern> ::= binarySelector <method-argument>
 ;; <keyword-pattern> ::= (keyword <method-argument>)+
 
-(define (parse-message-pattern) ;; Answer (selector args)
+(define (parse-message-pattern) ;; Answer ('selector args)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-message-pattern)"))
@@ -936,7 +940,7 @@
   (case (curr-token-kind)
     ((identifier) ;; unarySelector
      (consume-token!)
-     (values (ident-token->astIdentifier prev-token) '())
+     (values (ident-token->astLiteral prev-token) '())
      )
     ((binarySelector)
      (let ( (selector-tok curr-token) )
@@ -947,8 +951,8 @@
           selector
           curr-token))
        (consume-token!)
-       (values (ident-token->astIdentifier selector-tok)
-               (list (ident-token->astIdentifier prev-token))))
+       (values (ident-token->astLiteral selector-tok)
+               (list (ident-token->astLiteral prev-token))))
      )
     ((keyword)
      (parse-keyword-pattern)
@@ -999,7 +1003,7 @@
                     (token 'symbol
                            (string-append "#" selector-string)
                            start-token-location)
-                    (string->symbol selector-string))
+                    `',(string->symbol selector-string))
                    (map ident-token->astBlockArg args)))
       ) )
 ) ) )

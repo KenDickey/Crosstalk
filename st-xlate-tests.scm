@@ -12,37 +12,48 @@
                 cleanup-st-xlate)
 
 (add-equal-test 'st-xlate
-  '(+ a b)
+  '(perform:with: a '+ b)
   (AST->scm (st->AST " a + b. "))
   "a + b")
 
 
 (add-equal-test 'st-xlate
-  '(value:value: (lambda (a b) (+ a b)) 2 3)
+  '(perform:with:with:
+    (lambda (a b) (perform:with: a '+ b))
+    'value:value:
+    2
+    3)
   (AST->scm (st->AST "[ :a :b | a + b] value: 2 value: 3."))
   "[ :a :b | a + b] value: 2 value: 3.")
 
 
 (add-equal-test 'st-xlate
-  '(addSelector:withMethod:
-  String
-  contains:
-  (lambda (self aChar)
-    (detect: self (lambda (c) (= c aChar)))))
+  '(perform:with:with:
+    String
+    'addSelector:withMethod:
+    'contains:
+    (lambda (self aChar)
+      (perform:with:
+       self
+       'detect:
+       (lambda (c) (perform:with: c '= aChar)))))
   (AST->scm
    (st->AST  "String addSelector: #contains:
 	     withMethod: [ :self :aChar |
 	                   self detect: [ :c | c = aChar] ]."))
-
   "String contains: ..")
 
 
 (add-equal-test 'st-xlate
-  '(addSelector:withMethod:
+  '(perform:with:with:
     String
-    contains:
+    'addSelector:withMethod:
+    'contains:
     (lambda (self aChar)
-      (detect: self (lambda (c) (= c aChar)))))
+      (perform:with:
+       self
+       'detect:
+       (lambda (c) (perform:with: c '= aChar)))))
   (AST->scm
    (st->AST "String ~> contains: aChar
 	[ self detect: [ :c | c = aChar] ]."))

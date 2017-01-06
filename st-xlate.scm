@@ -14,7 +14,8 @@
    ;; ((astMessageSequence? ast) ...)
    ;; ((astTemporaries? ast) ...)
    ;; ((astLetTemps? ast) ...)
-   ;; ((astSubexpression? ast) ...)
+   ((astSubexpression? ast)
+    (AST->scm (astSubexpression-expression ast)))
    ;; ((astReturn? ast) ...)
    ((astAssignment? ast)
     (xlateAssignment ast))
@@ -27,7 +28,7 @@
    ((astLiteral? ast)
     (astLiteral-value ast))
    ((astSelector? ast)
-    (astSelector-value ast))
+    `',(astSelector-value ast)) ;; NB: quoted
    ;; ((astUnarySend? ast) ...)
    ;; ((astBinarySend? ast) ...)
    ((astKeywordSend? ast) 
@@ -147,9 +148,47 @@
           (map AST->scm
                (astKeywordSend-arguments ast)))
        )
-    `(,selector ,rcvr ,@arguments)
+    (rsa->perform rcvr selector arguments)
   )
 )
+
+(define (rsa->perform rcvr selector arguments)
+  (case (length arguments)
+    ((0) `(perform: ,rcvr ',selector)
+     )
+    ((1) `(perform:with: ,rcvr ',selector ,(car arguments))
+     )
+    ((2) `(perform:with:with:
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments))
+     )
+    ((3) `(perform:with:with:with:
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments)
+           ,(caddr arguments))
+     )
+    ((4) `(perform:with:with:with:with
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments)
+           ,(caddr arguments)
+           ,(car (cdddr arguments)))
+     
+     )
+    (else         
+     `(perform:withArguments:
+       ,rcvr
+       ',selector
+       ,(list->vector arguments))
+     )
+  )
+)
+
 
 (define (xlateMessageSend ast)
   (let ( (receiver
@@ -162,21 +201,22 @@
   )
 )
     
-(define (m->send receiver ast-msg)
+(define (m->send rcvr ast-msg)
   (cond
    ((astMessageSequence? ast-msg)
     `(begin
        ,@(map
-          (lambda (m) (m->send receiver m))
+          (lambda (m) (m->send rcvr m))
           (astMessageSequence-messages ast-msg)))
     )
    ((astUnaryMessage?   ast-msg)
-    (list (token->native (astUnaryMessage-selector ast-msg))
-          receiver)
+    `(perform: ,rcvr
+               ',(token->native (astUnaryMessage-selector ast-msg)))
     )
    ((astBinaryMessage?  ast-msg)
-    `(,(astBinaryMessage-selector ast-msg)
-      ,receiver
+    `(perform:with:
+      ,rcvr
+      ',(astBinaryMessage-selector ast-msg)
       ,(AST->scm (astBinaryMessage-argument ast-msg)))
     )
    ((astKeywordMessage? ast-msg)
@@ -184,9 +224,9 @@
             (map AST->scm
                  (astKeywordMessage-arguments ast-msg)))
            )
-      `(,(astKeywordMessage-selector ast-msg)
-        ,receiver
-        ,@arguments))
+      (rsa->perform rcvr
+                    (astKeywordMessage-selector ast-msg)
+                    arguments))
     )
    (else
     (error

@@ -596,7 +596,7 @@
                       1))
                  (end-index (- str-len start-index -1))
                )
-           (string->symbol (substring tok-str
+           `',(string->symbol (substring tok-str
                                       start-index
                                       end-index))))
      )

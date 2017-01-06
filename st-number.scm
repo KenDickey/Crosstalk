@@ -103,7 +103,7 @@
         Number
         'angle
         (lambda (aComplex)
-          (angle aCimplex)))
+          (angle aComplex)))
 
 (addSelector:withMethod: 
         Number
