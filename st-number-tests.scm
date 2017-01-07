@@ -5,6 +5,13 @@
 
 ;; (require 'st-number)
 
+(define (setup-st-number)   #f)
+(define (cleanup-st-number) #f)
+
+(add-test-suite 'st-number
+                setup-st-number
+                cleanup-st-number)
+
 (add-equal-test 'st-number
   (+ 2 3)
   (perform:with: 2 '+ 3)
