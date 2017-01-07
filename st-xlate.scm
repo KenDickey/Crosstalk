@@ -22,7 +22,8 @@
    ((astBlock? ast)
     (xlateBlock ast))
    ;; ((astBrace? ast) ...)
-   ;; ((astCascade? ast) ...)
+   ((astCascade? ast)
+    (xlateCascade ast))
    ((astIdentifier? ast)
     (astIdentifier-symbol ast))
    ((astLiteral? ast)
@@ -38,7 +39,9 @@
    ;; ((astKeywordMessage? ast) ...)
    ((astMessageSend? ast)
     (xlateMessageSend ast))
-   ;; ((astArray? ast) ...)
+   ((astArray? ast)
+    (xlateArray ast)
+    )
    ;; ((astMethod? ast) ...)
    (else
     (error
@@ -46,6 +49,9 @@
     )
   )
 )
+
+
+;;; Sequence
 
 (define (xlateSequence ast)
   (let ( (ast-statements
@@ -58,9 +64,11 @@
   )
 )
 
+;;; Statement
+
 (define xlateStatement AST->scm) ;; @@FIXME: checks
 
-;;; xlateAssignment
+;;; Assignment
 
 (define (xlateAssignment ast)
   (let ( (var (astAssignment-var ast))
@@ -71,7 +79,7 @@
   )
 )
 
-;;; xlateBlock
+;;; Block
 
 (define (xlateBlock ast)
   (let ( (arguments
@@ -152,6 +160,15 @@
   )
 )
 
+(define (xlateCascade ast)
+  (let ( (rcvr     (astCascade-receiver ast))
+         (messages (astCascade-messages ast))
+       )
+    `(begin ,@(map (lambda (msg) (m->send rcvr msg))
+                   messages))
+  )
+)
+
 (define (rsa->perform rcvr selector arguments)
   (case (length arguments)
     ((0) `(perform: ,rcvr ',selector)
@@ -201,41 +218,57 @@
   )
 )
     
-(define (m->send rcvr ast-msg)
-  (cond
-   ((astMessageSequence? ast-msg)
-    `(begin
-       ,@(map
-          (lambda (m) (m->send rcvr m))
-          (astMessageSequence-messages ast-msg)))
-    )
-   ((astUnaryMessage?   ast-msg)
-    `(perform: ,rcvr
-               ',(token->native (astUnaryMessage-selector ast-msg)))
-    )
-   ((astBinaryMessage?  ast-msg)
-    `(perform:with:
-      ,rcvr
-      ',(astBinaryMessage-selector ast-msg)
-      ,(AST->scm (astBinaryMessage-argument ast-msg)))
-    )
-   ((astKeywordMessage? ast-msg)
-    (let ( (arguments
-            (map AST->scm
-                 (astKeywordMessage-arguments ast-msg)))
+(define (m->send rcvr ast-message)
+  (let ( (ast-msg
+          (if (and (list? ast-message)
+                   (= 1 (length ast-message)))
+              (car ast-message)
+              ast-message))
+       )
+    (cond
+     ((astMessageSequence? ast-msg)
+      `(begin
+         ,@(map
+            (lambda (m) (m->send rcvr m))
+            (astMessageSequence-messages ast-msg)))
+      )
+     ((astUnaryMessage?   ast-msg)
+      `(perform: ,rcvr
+                 ',(token->native (astUnaryMessage-selector ast-msg)))
+      )
+     ((astBinaryMessage?  ast-msg)
+      `(perform:with:
+        ,rcvr
+        ',(astBinaryMessage-selector ast-msg)
+        ,(AST->scm (astBinaryMessage-argument ast-msg)))
+      )
+     ((astKeywordMessage? ast-msg)
+      (let ( (arguments
+              (map AST->scm
+                   (astKeywordMessage-arguments ast-msg)))
            )
-      (rsa->perform rcvr
-                    (astKeywordMessage-selector ast-msg)
-                    arguments))
-    )
-   (else
-    (error
-     "xlateMessageSend: does not understand"
-     ast-msg)
+        (rsa->perform rcvr
+                      (astKeywordMessage-selector ast-msg)
+                      arguments))
+      )
+     ((and (token? ast-msg)
+           (eq? 'identifier (token-kind ast-msg)))
+      ;; unary message
+      `(perform: ,rcvr ',(token->native ast-msg))
+      )
+     (else
+      (error
+       "xlateMessageSend: does not understand"
+       ast-msg)
+      )
     )
   )
 )
-  
+
+;;; Static Array
+(define (xlateArray ast)
+  (list->vector (map AST->scm (astArray-elements ast)))
+)
 
 ;; (define xlate
 ;;   (newSubclassName:iVars:cVars:

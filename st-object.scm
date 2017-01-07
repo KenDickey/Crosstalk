@@ -8,6 +8,12 @@
 ;;; Note that class Object is defined in "core-classes.scm"
 ;;; which requires this file.
 
+;; @@FIXME: pre-Smalltalk namespace
+
+(define true  #true)
+(define false #false)
+(define nil   '())
+
 ;; @@FIXME: make continuable -- use Message object
 (define (doesNotUnderstand: self selector)
 
