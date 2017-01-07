@@ -11,6 +11,9 @@
    'Number '() '())
 )
 
+(set! st-integer-behavior (perform: Number 'methodDict))
+
+
 (perform:with:
      Number
      'category: '|Kernel-Numbers|)

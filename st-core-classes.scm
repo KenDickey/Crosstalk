@@ -34,6 +34,7 @@
 
 
 ;;; The Smalltalk Global Environment
+; @@@?? Use a Larceny Environment ??@@@
 (define Smalltalk (make-eq-hashtable))
 
 (define combined-classDescription-var-names
@@ -245,7 +246,7 @@
 
 ;;;The regular way to make a new (sub)class instance:
 ;;;   Ask MetaClass to make the metaClass
-;;;   Then ask the metaClass to make its class
+;;;   Then ask the metaClass to make its instance
 
 ;; Helper. Create an instance of a Class or MetaClass
 (define (instantiateName:superclass:ivars:

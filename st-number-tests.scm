@@ -5,6 +5,27 @@
 
 ;; (require 'st-number)
 
-;; NYI
+(add-equal-test 'st-number
+  (+ 2 3)
+  (perform:with: 2 '+ 3)
+  "2 + 3")
+
+(add-equal-test 'st-number
+  (* 2 3)
+  (perform:with: 2 '* 3)
+  "2 * 3")
+
+(add-equal-test 'st-number
+  (/ 2 3)
+  (perform:with: 2 '/ 3)
+  "2 / 3")
+
+(add-equal-test 'st-number
+  (- 2 3)
+  (perform:with: 2 '- 3)
+  "2 - 3")
+
+
+;; @@@FIXME: many more tests needed!!
 
 ;;;			--- E O F ---			;;;
