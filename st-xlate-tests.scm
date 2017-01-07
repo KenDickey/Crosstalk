@@ -59,6 +59,16 @@
 	[ self detect: [ :c | c = aChar] ]."))
 )
 
+
+(add-equal-test 'st-xlate
+  '(lambda (a)
+     (call/cc (return)
+      (let ((b ()))
+        (set! b (begin (perform: a 'sin)))
+        (return b))))
+  (AST->scm (st->AST "[ :a| | b | b := a sin. ^ b ]"))
+  "[ :a| | b | b := a sin. ^ b ]")
+
 ;; (ensure-exception-raised 'st-xlate
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

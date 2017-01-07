@@ -16,7 +16,8 @@
    ;; ((astLetTemps? ast) ...)
    ((astSubexpression? ast)
     (AST->scm (astSubexpression-expression ast)))
-   ;; ((astReturn? ast) ...)
+   ((astReturn? ast)
+    (xlateReturn ast))
    ((astAssignment? ast)
     (xlateAssignment ast))
    ((astBlock? ast)
@@ -50,6 +51,10 @@
   )
 )
 
+(define (identifier-token? t)
+  (and (token? t)
+       (eq? 'identifier (token-kind t)))
+)
 
 ;;; Sequence
 
@@ -104,13 +109,20 @@
       (if hasReturn?
            `(lambda ,arguments
               (call/cc (return)
-                (let ,temps ,statements)))
+                (let ,temps ,@statements)))
           `(lambda ,arguments
-             (let ,temps ,statements))
+             (let ,temps ,@statements))
       ))
     )
   )
 )
+
+;;; Return
+
+(define (xlateReturn ast)
+  `(return ,(AST->scm (astReturn-expression ast)))
+)
+
 
 (define (->scm-args ast-args-list)
   (unless (every? astIdentifier? ast-args-list)
@@ -120,12 +132,12 @@
 )
 
 (define (->scm-temps ast-temps-list)
-  (unless (every? astIdentifier? ast-temps-list)
+  (unless (every? identifier-token? ast-temps-list)
     (error "Block temporaries must be identifiers"
            ast-temps-list))
-  (map (lambda (ast-tmp)
-         (list (astIdentifier-symbol ast-tmp)
-               st-nil))
+  (map (lambda (ident-tok)
+         (list (token->native ident-tok)
+               '()))
        ast-temps-list)
 )
 

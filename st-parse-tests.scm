@@ -178,6 +178,14 @@
    #(astArray
      (#(astLiteral
         #(token
+          characterLiteral
+          "$a"
+          #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
+            0
+            11))
+        #\a)
+      #(astLiteral
+        #(token
           string
           "'b'"
           #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
@@ -621,289 +629,297 @@
 
 (add-equal-test 'st-parse
  '#(astKeywordSend
-     #(astIdentifier
-       #(token
-         identifier
-         "Object"
-         #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-           1
-           0))
-       Object)
-     addSelector:withMethod:
-     (#(astLiteral
+  #(astIdentifier
+    #(token
+      identifier
+      "Object"
+      #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+        1
+        0))
+    Object)
+  addSelector:withMethod:
+  (#(astLiteral
+     #(token
+       symbol
+       "#exampleWithNumber:"
+       #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+         1
+         10))
+     'exampleWithNumber:)
+   #(astBlock
+     (#(astIdentifier
+        #(token blockArg ":self" #(":self" 0 0))
+        self)
+      #(astIdentifier
         #(token
-          symbol
-          "#exampleWithNumber:"
+          blockArg
+          ":x"
           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
             1
-            10))
-        'exampleWithNumber:)
-      #(astBlock
-        (#(astIdentifier
-           #(token blockArg ":self" #(":self" 0 0))
-           self)
-         #(astIdentifier
-           #(token
-             blockArg
-             ":x"
-             #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-               1
-               29))
-           x))
-        (#(token
-           identifier
-           "y"
-           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-             2
-             3)))
-        (#(astMessageSend
-           #(astIdentifier
-             #(token
-               identifier
-               "true"
-               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                 4
-                 2))
-             true)
-           #(astMessageSequence
-             (#(astBinaryMessage
-                &
-                #(astMessageSend
-                  #(astIdentifier
-                    #(token
-                      identifier
-                      "false"
-                      #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                        4
-                        9))
-                    false)
-                  (#(token
+            29))
+        x))
+     (#(token
+        identifier
+        "y"
+        #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+          2
+          3)))
+     (#(astMessageSend
+        #(astIdentifier
+          #(token
+            identifier
+            "true"
+            #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+              4
+              2))
+          true)
+        #(astMessageSequence
+          (#(astBinaryMessage
+             &
+             #(astMessageSend
+               #(astIdentifier
+                 #(token
+                   identifier
+                   "false"
+                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                     4
+                     9))
+                 false)
+               (#(token
+                  identifier
+                  "not"
+                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                    4
+                    15)))))
+           #(astBinaryMessage
+             &
+             #(astSubexpression
+               #(astMessageSend
+                 #(astIdentifier
+                   #(token
                      identifier
-                     "not"
+                     "nil"
                      #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                        4
-                       15)))))
-              #(astBinaryMessage
-                &
-                #(astSubexpression
-                  #(astMessageSend
-                    #(astIdentifier
+                       22))
+                   nil)
+                 #(astMessageSequence
+                   (#(astUnaryMessage
                       #(token
                         identifier
-                        "nil"
+                        "isNil"
                         #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                           4
-                          22))
-                      nil)
-                    #(astMessageSequence
-                      (#(astUnaryMessage
-                         #(token
-                           identifier
-                           "isNil"
-                           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                             4
-                             26))))))))
-              #(astKeywordMessage
-                ifFalse:
-                (#(astBlock
-                   ()
-                   ()
-                   (#(astMessageSend
-                      #(astIdentifier
+                          26))))))))
+           #(astKeywordMessage
+             ifFalse:
+             (#(astBlock
+                ()
+                ()
+                (#(astMessageSend
+                   #(astIdentifier
+                     #(token
+                       identifier
+                       "self"
+                       #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                         5
+                         16))
+                     self)
+                   #(astMessageSequence
+                     (#(astUnaryMessage
                         #(token
                           identifier
-                          "self"
+                          "halt"
                           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                             5
-                            16))
-                        self)
-                      #(astMessageSequence
-                        (#(astUnaryMessage
-                           #(token
-                             identifier
-                             "halt"
-                             #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                               5
-                               21)))))))
-                   #f))))))
-         #(astAssignment
-           #(astIdentifier
-             #(token
-               identifier
-               "y"
-               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                 7
-                 2))
-             y)
-           #(astMessageSend
-             #(astIdentifier
+                            21)))))))
+                #f))))))
+      #(astAssignment
+        #(astIdentifier
+          #(token
+            identifier
+            "y"
+            #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+              7
+              2))
+          y)
+        #(astMessageSend
+          #(astIdentifier
+            #(token
+              identifier
+              "self"
+              #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                7
+                7))
+            self)
+          #(astMessageSequence
+            (#(astUnaryMessage
                #(token
                  identifier
-                 "self"
+                 "size"
                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                    7
-                   7))
-               self)
-             #(astMessageSequence
-               (#(astUnaryMessage
-                  #(token
+                   12)))
+             #(astBinaryMessage
+               +
+               #(astMessageSend
+                 #(astIdentifier
+                   #(token
+                     identifier
+                     "super"
+                     #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                       7
+                       19))
+                   super)
+                 (#(token
                     identifier
                     "size"
                     #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                       7
-                      12)))
-                #(astBinaryMessage
-                  +
-                  #(astMessageSend
-                    #(astIdentifier
-                      #(token
-                        identifier
-                        "super"
-                        #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                          7
-                          19))
-                      super)
-                    (#(token
-                       identifier
-                       "size"
-                       #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                         7
-                         25)))))))))
-         #(astMessageSend
-           #(astArray
-             (#(astLiteral
+                      25)))))))))
+      #(astMessageSend
+        #(astArray
+          (#(astLiteral
+             #(token
+               characterLiteral
+               "$a"
+               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                 9
+                 4))
+             #\a)
+           #(astLiteral
+             #(token
+               symbol
+               "#a"
+               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                 9
+                 7))
+             'a)
+           #(astLiteral
+             #(token
+               string
+               "'a'"
+               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                 9
+                 10))
+             "a")
+           #(astLiteral
+             #(token
+               integer
+               "1"
+               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                 9
+                 14))
+             1)
+           #(astLiteral
+             #(token
+               float
+               "1.0"
+               #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                 9
+                 16))
+             1.0)))
+        #(astKeywordMessage
+          do:
+          (#(astBlock
+             (#(astIdentifier
                 #(token
-                  symbol
-                  "#a"
+                  blockArg
+                  ":each"
                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                     9
-                    7))
-                'a)
-              #(astLiteral
-                #(token
-                  string
-                  "'a'"
-                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                    9
-                    10))
-                "a")
-              #(astLiteral
-                #(token
-                  integer
-                  "1"
-                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                    9
-                    14))
-                1)
-              #(astLiteral
-                #(token
-                  float
-                  "1.0"
-                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                    9
-                    16))
-                1.0)))
-           #(astKeywordMessage
-             do:
-             (#(astBlock
-                (#(astIdentifier
-                   #(token
-                     blockArg
-                     ":each"
-                     #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                       9
-                       26))
-                   each))
-                ()
-                (#(astCascade
-                   #(astMessageSend
-                     #(astIdentifier
-                       #(token
-                         identifier
-                         "Transcript"
-                         #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                           10
-                           11))
-                       Transcript)
-                     #(astKeywordMessage
-                       show:
-                       (#(astSubexpression
-                          #(astMessageSend
-                            #(astIdentifier
+                    26))
+                each))
+             ()
+             (#(astCascade
+                #(astMessageSend
+                  #(astIdentifier
+                    #(token
+                      identifier
+                      "Transcript"
+                      #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                        10
+                        11))
+                    Transcript)
+                  #(astKeywordMessage
+                    show:
+                    (#(astSubexpression
+                       #(astMessageSend
+                         #(astIdentifier
+                           #(token
+                             identifier
+                             "each"
+                             #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                               11
+                               19))
+                           each)
+                         #(astMessageSequence
+                           (#(astUnaryMessage
                               #(token
                                 identifier
-                                "each"
+                                "class"
                                 #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                                   11
-                                  19))
-                              each)
-                            #(astMessageSequence
-                              (#(astUnaryMessage
-                                 #(token
-                                   identifier
-                                   "class"
-                                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                                     11
-                                     24)))
-                               #(astUnaryMessage
-                                 #(token
-                                   identifier
-                                   "name"
-                                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                                     11
-                                     30))))))))))
-                   (#(astKeywordMessage
-                      show:
-                      (#(astSubexpression
-                         #(astMessageSend
-                           #(astIdentifier
+                                  24)))
+                            #(astUnaryMessage
+                              #(token
+                                identifier
+                                "name"
+                                #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                                  11
+                                  30))))))))))
+                (#(astKeywordMessage
+                   show:
+                   (#(astSubexpression
+                      #(astMessageSend
+                        #(astIdentifier
+                          #(token
+                            identifier
+                            "each"
+                            #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                              12
+                              19))
+                          each)
+                        #(astMessageSequence
+                          (#(astUnaryMessage
                              #(token
                                identifier
-                               "each"
+                               "printString"
                                #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
                                  12
-                                 19))
-                             each)
-                           #(astMessageSequence
-                             (#(astUnaryMessage
-                                #(token
-                                  identifier
-                                  "printString"
-                                  #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                                    12
-                                    24)))))))))
-                    #(astKeywordMessage
-                      show:
-                      (#(astLiteral
-                         #(token
-                           string
-                           "' '"
-                           #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                             13
-                             22))
-                         " "))))))
-                #f))))
-         #(astReturn
-           #(astMessageSend
-             #(astIdentifier
-               #(token
-                 identifier
-                 "x"
-                 #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                   16
-                   5))
-               x)
-             #(astBinaryMessage
-               <
-               #(astIdentifier
-                 #(token
-                   identifier
-                   "y"
-                   #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
-                     16
-                     9))
-                 y)))))
-        #t)))
+                                 24)))))))))
+                 #(astKeywordMessage
+                   show:
+                   (#(astLiteral
+                      #(token
+                        string
+                        "' '"
+                        #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                          13
+                          22))
+                      " "))))))
+             #f))))
+      #(astReturn
+        #(astMessageSend
+          #(astIdentifier
+            #(token
+              identifier
+              "x"
+              #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                16
+                5))
+            x)
+          #(astBinaryMessage
+            <
+            #(astIdentifier
+              #(token
+                identifier
+                "y"
+                #("\nObject ~> exampleWithNumber: x\n[ |y|\n\n  true & false not & (nil isNil)\n      ifFalse: [self halt].\n\n  y := self size + super size.\n\n  #($a #a 'a' 1 1.0) do: [:each |\n           Transcript\n           \tshow: (each class name);\n           \tshow: (each printString);\n                show: ' '\n   ].\n\n   ^ x < y\n ].\n"
+                  16
+                  9))
+              y)))))
+     #t)))
   (begin
     (parse-test
      "

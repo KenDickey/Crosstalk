@@ -531,7 +531,6 @@
   (unless (eq? 'litArrayStart (curr-token-kind))
     (parse-error "parse-literal-array: expected '#('"
                  curr-token))
-  (consume-token!)
   (let ( (start-location (token-location curr-token)) )
     (consume-token!)
     (let loop ( (elts '()) )
