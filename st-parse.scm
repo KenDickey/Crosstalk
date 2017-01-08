@@ -321,26 +321,26 @@
              )
           ))
     (if (eq? 'cascade (curr-token-kind))
-        (parse-cascade message)
+        (parse-cascade receiver message)
         message)
 ) )
 
 
-(define (parse-cascade receiver-expression)
+(define (parse-cascade receiver first-message)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-cascade)"))
   (unless (eq? 'cascade (curr-token-kind))
     (parse-error "parse-cascade: expected $;" curr-token))
   (consume-token!)
-  (let loop ( (reversed-messages '()) )
+  (let loop ( (reversed-messages (list first-message)) )
     (let ( (message (parse-messages)) )
       (skip-whitespace)
       (if (eq? 'cascade (curr-token-kind))
           (begin
             (consume-token!)
             (loop (cons message reversed-messages)))
-          (astCascade receiver-expression
+          (astCascade receiver
                       (reverse (cons message reversed-messages))))
      )
   )
@@ -409,10 +409,15 @@
         (begin
           (consume-token!)
           (unary-loop (cons (astUnaryMessage prev-token) reversed-messages)))
-        (astMessageSequence
-         (reverse (if (eq? 'binarySelector (curr-token-kind))
-                     (cons (parse-binary-message) reversed-messages)
-                     reversed-messages)))
+        (let ( (sequence
+                 (reverse (if (eq? 'binarySelector (curr-token-kind))
+                              (cons (parse-binary-message) reversed-messages)
+                              reversed-messages)))
+             )
+          (if (= 1 (length sequence))
+              (car sequence)
+              (astMessageSequence sequence))
+       )
     )
   )
 )

@@ -64,7 +64,14 @@
        )
     (if (null? ast-statements)
         '(begin st-nil)
-        (map xlateStatement ast-statements)
+        (let ( (statements
+                (map xlateStatement ast-statements))
+             )
+          (if (= 1 (length statements))
+              (car statements)
+              `(begin ,@statements)
+          )
+       )
     )
   )
 )
@@ -173,11 +180,13 @@
 )
 
 (define (xlateCascade ast)
-  (let ( (rcvr     (astCascade-receiver ast))
+  (let ( (rcvr (AST->scm (astCascade-receiver ast)))
          (messages (astCascade-messages ast))
        )
-    `(begin ,@(map (lambda (msg) (m->send rcvr msg))
-                   messages))
+    `(let ( (receiver ,rcvr) )
+       ,(AST->scm (car messages))
+       ,@(map (lambda (msg) (m->send 'recevier msg))
+              (cdr messages)))
   )
 )
 
@@ -239,11 +248,20 @@
        )
     (cond
      ((astMessageSequence? ast-msg)
-      `(begin
-         ,@(map
-            (lambda (m) (m->send rcvr m))
-            (astMessageSequence-messages ast-msg)))
-      )
+      (let ( (messages
+              (astMessageSequence-messages ast-msg))
+           )
+        (if (null? messages)
+            rcvr
+            (let loop ( (composed (m->send rcvr (car messages)))
+                        (msgs (cdr messages))
+                      )
+              (if (null? msgs)
+                  composed
+                  (loop (m->send composed (car msgs)) (cdr msgs)))
+            )
+        )
+      ))
      ((astUnaryMessage?   ast-msg)
       `(perform: ,rcvr
                  ',(token->native (astUnaryMessage-selector ast-msg)))
