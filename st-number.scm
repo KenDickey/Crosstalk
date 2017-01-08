@@ -1,5 +1,6 @@
 ;;; FILE: "st-number.scm"
 ;;; IMPLEMENTS: Number abstract class
+;;;		Complex, Float, Fraction, Integer
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 
@@ -11,8 +12,50 @@
    'Number '() '())
 )
 
-(set! st-integer-behavior (perform: Number 'methodDict))
+;; Scheme numbers form a tower of types
+;;  different than the Number hierarchy of
+;;  Smalltalk.
+;; It is a tower where each lower level is
+;;  a restriction on those above 
 
+;;  Number
+;;   Complex
+;;     Real
+;;       Rational
+;;         Integer
+
+;; So an Integer isA Rational isA Real ..
+
+(define Complex
+  (newSubclassName:iVars:cVars:
+   Number
+   'Complex '() '())
+)
+
+(define Float ;; real
+  (newSubclassName:iVars:cVars:
+   Complex
+   'Float '() '())
+)
+
+(define Fraction
+  (newSubclassName:iVars:cVars:
+   Float
+   'Fraction '() '())
+)
+
+(define Integer
+  (newSubclassName:iVars:cVars:
+   Fraction
+   'Integer '() '())
+)
+
+(set! st-integer-behavior (perform: Integer 'methodDict))
+(set! st-fraction-behavior (perform: Fraction 'methodDict))
+(set! st-real-behavior (perform: Float 'methodDict))
+(set! st-complex-behavior (perform: Complex 'methodDict))
+
+;;; Number
 
 (perform:with:
      Number
@@ -169,11 +212,11 @@
           (>= self aNumber)))
 
 ;; ?correct?
-;; (addSelector:withMethod: 
-;;         Number
-;;         '|\\|
-;;         (lambda (self aNumber)
-;;           (modulo self aNumber)))
+(addSelector:withMethod: 
+        Number
+        '|\\|
+        (lambda (self aNumber)
+          (modulo self aNumber)))
 
 (addSelector:withMethod: 
         Number
@@ -188,9 +231,19 @@
 
 (addSelector:withMethod: 
         Number
+        'zero
+        (lambda (self) 0))
+
+(addSelector:withMethod: 
+        Number
         'isZero
         (lambda (self)
           (zero? self)))
+
+(addSelector:withMethod: 
+        Number
+        'one
+        (lambda (self) 1))
 
 (addSelector:withMethod: 
         Number
@@ -338,11 +391,73 @@
 (addSelector:withMethod: 
         Number
         'arcTan:
-        (lambda (self aNUmber) (atan self aNumber)))
+        (lambda (self aNumber) (atan self aNumber)))
 
 ;; ##FIXME: Hyperbolics
 
 
+;;; Complex
+
+(addSelector:withMethod: 
+        Number
+        'i
+        (lambda (self)
+          (make-rectangular 0 self)))
+
+(addSelector:withMethod: 
+        Complex
+        'i	;; ^ self * 1i
+        (lambda (self) (* self (sqrt -1))))
+
+(addSelector:withMethod: 
+        Complex
+        'realPart
+        (lambda (self) (real-part self)))
+
+(addSelector:withMethod: 
+        Complex
+        'imagePart
+        (lambda (self) (imag-part self)))
+
+(addSelector:withMethod: 
+        (class Complex)
+        'real:imaginary:
+        (lambda (self re im)
+          (make-rectangular re im)))
+
+(addSelector:withMethod: 
+        (class Complex)
+        'abs:arg:
+        (lambda (self distance angle)
+          (make-polar distance angle)))
+
+(addSelector:withMethod: 
+        Complex
+        'magnitude
+        (lambda (self) (magnitude self)))
+
+(addSelector:withMethod: 
+        Complex
+        'angle
+        (lambda (self) (angle self)))
+
+(addSelector:withMethod: 
+ 	Complex
+        'printOn:
+        (lambda (self port)
+          (display "(" port)
+          (display (real-part port))
+          (display "+")
+          (display (imag-part port))
+          (display "i)" port)))
+; @@@ MORE ..@@@
+
+;;; Float (Real)
+; @@@ MORE ..@@@
+;;; Rational (Fraction)
+; @@@ MORE ..@@@
+;;; Integer
+; @@@ MORE ..@@@
 
 ;; (provide 'st-number)
 
