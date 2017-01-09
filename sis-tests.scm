@@ -16,8 +16,8 @@
 
 (define (source-test-files)
   (map (lambda (file-name)
-         (string-append st-root-directory-prefix file-name "-tests.scm"))
-       st-bootstrap-files)
+         (string-append scm-root-directory-prefix file-name "-tests.scm"))
+       scm-bootstrap-files)
 )
 
 (define (run-source-tests)

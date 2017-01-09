@@ -1,3 +1,10 @@
+(import (scheme load))
+(load "sis.scm")
+(load-source-bootstrap)
+;; Optional:
+;;   (load "sis-tests.scm")
+;;   (run-source-tests)
+
 (import (primitives trace untrace trace-entry trace-exit))
 
 (display-ivars st-obj)

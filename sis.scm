@@ -98,9 +98,13 @@
 
 ;;;
 
-(define st-root-directory-prefix "/home/chip/SiS/")
+(define scm-root-directory-prefix "/home/kend/SiS/")
 
-(define st-bootstrap-files
+(define st-kernel-prefix
+  (string-append scm-root-directory-prefix
+                 "/SmalltalkKernel/"))
+
+(define scm-bootstrap-files
   '( "st-kernel"       ;; message mechanics
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
@@ -120,26 +124,40 @@
     )
  )
 
-(define (source-files)
+(define (source-scm-files)
   (map (lambda (file-name)
-         (string-append st-root-directory-prefix file-name ".scm"))
+         (string-append scm-root-directory-prefix file-name ".scm"))
+       scm-bootstrap-files)
+)
+
+(define st-bootstrap-files
+  '( "Collection"
+     "Set"
+;;    @@@more to come...
+    )
+ )
+
+(define (source-st-files)
+  (map (lambda (file-name)
+         (string-append scm-root-directory-prefix file-name ".st"))
        st-bootstrap-files)
 )
+    
 
 (define (compiled-files)
   (map (lambda (file-name)
-         (string-append st-root-directory-prefix file-name ".fasl"))
-       st-bootstrap-files)
+         (string-append scm-root-directory-prefix file-name ".fasl"))
+       scm-bootstrap-files)
 )
 
 (define (remove-compiled)
   (for-each delete-file (compiled-files)))
 
 (define (compile-bootstrap)
-  (for-each (lambda (fn) (compile-file fn)) (source-files)))
+  (for-each (lambda (fn) (compile-file fn)) (source-scm-files)))
 
 (define (load-source-bootstrap)
-  (for-each load (source-files)))
+  (for-each load (source-scm-files)))
 
 (define (load-compiled-bootstrap)
   (for-each load (compiled-files)))

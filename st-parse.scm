@@ -408,11 +408,17 @@
     (if (eq? 'identifier (curr-token-kind))
         (begin
           (consume-token!)
-          (unary-loop (cons (astUnaryMessage prev-token) reversed-messages)))
-        (let ( (sequence
-                 (reverse (if (eq? 'binarySelector (curr-token-kind))
-                              (cons (parse-binary-message) reversed-messages)
-                              reversed-messages)))
+          (unary-loop (cons (astUnaryMessage prev-token)
+                            reversed-messages)))
+        (let* ( (rev-added-binary
+                 (if (eq? 'binarySelector (curr-token-kind))
+                     (cons (parse-binary-message) reversed-messages)
+                     reversed-messages))
+                (rev-added-keyword
+                 (if (eq? 'keyword (curr-token-kind))
+                     (cons (parse-keyword-message) rev-added-binary)
+                     rev-added-binary))
+                (sequence (reverse rev-added-keyword))
              )
           (if (= 1 (length sequence))
               (car sequence)
@@ -430,6 +436,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-binary-message)"))
+  (skip-whitespace)
   (unless (eq? 'binarySelector (curr-token-kind))
     (error "parse-binary-message: expected binary selector" curr-token))
   (let bin-loop ( (reversed-messages
@@ -466,6 +473,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-keyword-message)"))
+  (skip-whitespace)
   (unless (eq? 'keyword (curr-token-kind))
     (error "parse-keyword-message: expected a keyword" curr-token))
   ;; parse one or more <keyword, expression> pairs
@@ -841,7 +849,7 @@
     ((integer integerWithRadix
               scaledDecimal scaledDecimalWithFract
               float floatWithExponent
-              string)
+              string characterLiteral)
      (consume-token!)
      (astLiteral prev-token (token->native prev-token))
      )

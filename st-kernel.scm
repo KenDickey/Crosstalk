@@ -96,7 +96,7 @@
     mDict
 ) )
 
-;;; Behavior adds breains to structure
+;;; Behavior adds brains to structure
 
 ;; Nota Bene: st-*-behavior's are assigned when corresponding classes are created.
 ;;

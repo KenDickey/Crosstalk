@@ -611,6 +611,11 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      (lambda (self selectorSymbol)
        (primLookup: (perform: self 'methodDict) selectorSymbol))) 
 
+(addSelector:withMethod:
+ 	(class Object)
+        'newSubclassName:iVars:cVars:
+        newSubclassName:iVars:cVars:)
+
 ;; (provide 'st-core-classes)
 
 ;;;			--- E O F ---			;;;

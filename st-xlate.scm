@@ -51,6 +51,12 @@
   )
 )
 
+(define (st->scm aString)
+  (unless (string? aString)
+    (error "st->scm requires a Smalltalk string to translate"))
+  (AST->scm (st->AST aString)))
+
+
 (define (identifier-token? t)
   (and (token? t)
        (eq? 'identifier (token-kind t)))
@@ -299,6 +305,32 @@
 (define (xlateArray ast)
   (list->vector (map AST->scm (astArray-elements ast)))
 )
+
+
+(define (xlate-st-file->scm infile-name)
+  (set! next-st-token (tokenizer-for-file-named infile-name))
+  (set! curr-token #false)
+  (set! prev-token #false)
+  (call-with-port (current-output-port)
+    (lambda (outp)
+      (let loop ( (form (parse-st-code)) )
+        (write (AST->scm form) outp) ;; @@@ pretty-print
+        (unless (eq? 'eof (curr-token-kind))
+          (loop (parse-st-code)))
+) ) ) )
+
+
+(define (xlate-st-file->scm-file infile-name outfile-name)
+  (set! next-st-token (tokenizer-for-file-named infile-name))
+  (set! curr-token #false)
+  (set! prev-token #false)
+  (with-output-to-file outfile-name
+    (lambda ()
+      (let loop ( (form (parse-st-code)) )
+        (write (AST->scm form)) ;; @@@ pretty-print
+        (unless (eq? 'eof (curr-token-kind))
+          (loop (parse-st-code)))
+) ) ) )
 
 ;; (define xlate
 ;;   (newSubclassName:iVars:cVars:
