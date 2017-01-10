@@ -203,6 +203,9 @@
   )
 )
 
+(define (caddr l) (car (cddr l)))
+(define (cadddr l) (cadr (cddr l)))
+
 (define (rsa->perform rcvr selector arguments)
   (case (length arguments)
     ((0) `(perform: ,rcvr ',selector)
@@ -228,7 +231,7 @@
            ,(car arguments)
            ,(cadr arguments)
            ,(caddr arguments)
-           ,(car (cdddr arguments)))
+           ,(cadddr arguments))
      
      )
     (else         

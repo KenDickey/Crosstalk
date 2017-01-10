@@ -508,7 +508,7 @@
       #false))
 
 (define ascii-binop-chars
-  (string->list "!%&*+,/<=>?@\~-")) ;; NB: without $|
+  (string->list "!%&*+,/<=>?@\\~-")) ;; NB: without $|
 (define (ascii-binop-char? char)
   (cond
    ((member char ascii-binop-chars) #t)

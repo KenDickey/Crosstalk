@@ -968,14 +968,15 @@
     ((binarySelector)
      (let ( (selector-tok curr-token) )
        (consume-token!)
+       (skip-whitespace)
        (unless (eq? 'identifier (curr-token-kind))
          (parse-error
           "parse-message-pattern: expected binarySelector identifier"
-          selector
+          selector-tok
           curr-token))
        (consume-token!)
        (values (ident-token->astLiteral selector-tok)
-               (list (ident-token->astLiteral prev-token))))
+               (list (ident-token->astBlockArg prev-token))))
      )
     ((keyword)
      (parse-keyword-pattern)
