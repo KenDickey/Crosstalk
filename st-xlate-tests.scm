@@ -180,7 +180,31 @@
   aStream nextPut: $)
 ].
 ")
-  "Collection ~? printOn:")  
+  "Collection ~? printOn:")
+
+(add-equal-test 'st-xlate
+  '(perform:with:with:
+    (perform: Collection 'class)
+    'addSelector:withMethod:
+    'with:
+    (lambda (self anObject)
+      (call/cc
+       (return)
+       (let ((newCollection ()))
+         (set! newCollection (perform: self 'new))
+         (perform:with: newCollection 'add: anObject)
+         (return newCollection)))))
+  (st->scm "Collection class ~> with: anObject
+[
+\"Answer an instance of me containing anObject.\"
+  | newCollection |
+  newCollection := self new.
+  newCollection add: anObject.
+  ^ newCollection
+].
+")
+  "Collection class ~> with:")
+
 
 ;; (ensure-exception-raised 'st-xlate
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

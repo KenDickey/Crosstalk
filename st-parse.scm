@@ -18,7 +18,6 @@
 (define-structure (astKeywordMessage selector arguments))
 (define-structure (astMessageSend receiver messages))
 (define-structure (astArray       elements)) ;; ??astLiteral
-(define-structure (astMethod      selector block))
 (define-structure (astSequence    statements))
 (define-structure (astMessageSequence messages))
 (define-structure (astLetTemps    temps statements))
@@ -265,7 +264,7 @@
 ;; 	     <basic-expression>
 ;; <assignment> ::= <assignment-target> ':=' <expression>
 ;; <method-definition> ::=
-;;        <class-name> '~>' <message-pattern> <methBody>
+;;        <class-expr> '~>' <message-pattern> <methBody>
 ;; <basic-expression> ::=
 ;;        <primary> [<messages> <cascaded-messages>]
 ;;        <assignment-target> := identifier
@@ -289,8 +288,15 @@
       ((methDef)
        (parse-method-definition receiver)
        )
-      (else (parse-basic-expression receiver))
-      )
+      (else
+       (let ( (expr
+               (parse-basic-expression receiver))
+            )
+        (skip-whitespace)
+        (if (eq? 'methDef (curr-token-kind))
+            (parse-method-definition expr)
+            expr))
+      ))
 ) )
 
 (define (parse-basic-expression receiver)
