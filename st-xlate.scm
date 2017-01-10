@@ -100,27 +100,36 @@
 
 ;;; Block
 
+;; dynamic var
+(define within-return? (make-parameter #false))
+
 (define (xlateBlock ast)
-  (let ( (arguments
-          (->scm-args  (astBlock-arguments ast)))
-         (temps
-          (->scm-temps (astBlock-temporaries ast)))
-         (statements
-          (->scm-statements (astBlock-statements ast)))
-         (hasReturn?   (astBlock-hasReturn?  ast))
+  (let* ( (arguments
+           (->scm-args  (astBlock-arguments ast)))
+          (temps
+           (->scm-temps (astBlock-temporaries ast)))
+          (hasReturn?   (astBlock-hasReturn?  ast))
+          (addReturn?   (and hasReturn?
+                             (not (within-return?))))
+          (statements
+           (if hasReturn?
+               (parameterize ((within-return? #true))
+                 (->scm-statements (astBlock-statements ast)))
+               (->scm-statements (astBlock-statements ast))))
+
        )
     (cond
      ((null? statements)
       `(lambda ,arguments ,st-nil)
       )
      ((null? temps)
-      (if hasReturn?
+      (if addReturn?
           `(lambda ,arguments
              (call/cc (return) ,@statements))
           `(lambda ,arguments ,@statements))
       )
      (else
-      (if hasReturn?
+      (if addReturn?
            `(lambda ,arguments
               (call/cc (return)
                 (let ,temps ,@statements)))

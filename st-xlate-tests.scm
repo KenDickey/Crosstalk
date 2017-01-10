@@ -64,7 +64,7 @@
 (add-equal-test 'st-xlate
   '(lambda (a)
      (call/cc (return)
-      (let ((b ()))
+      (let ((b nil))
         (set! b (perform: a 'sin))
         (return b))))
   (AST->scm (st->AST "[ :a| | b | b := a sin. ^ b ]"))
@@ -88,7 +88,7 @@
 (add-equal-test 'st-xlate
   '(perform:
     (lambda ()
-      (let ((a ())) (set! a 3) (perform:with: a '+ a)))
+      (let ((a nil)) (set! a 3) (perform:with: a '+ a)))
     'value)
   (AST->scm (st->AST  "[|a| a := 3. a+a] value."))
   "[|a| a := 3. a+a] value.")
@@ -101,7 +101,7 @@
   (lambda (self x)
     (call/cc
       (return)
-      (let ((y ()))
+      (let ((y nil))
         (perform:with:
           (perform:with:
             (perform:with: true '& (perform: false 'not))
@@ -190,7 +190,7 @@
     (lambda (self anObject)
       (call/cc
        (return)
-       (let ((newCollection ()))
+       (let ((newCollection nil))
          (set! newCollection (perform: self 'new))
          (perform:with: newCollection 'add: anObject)
          (return newCollection)))))
