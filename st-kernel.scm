@@ -185,9 +185,7 @@
  	st-string-behavior
         'printOn:
         (lambda (self port)
-          (display "'" port)
-          (display self port)
-          (display "'" port))
+          (format port "'~a'" self))
 )
 
 (primAddSelector:withMethod: 
@@ -212,9 +210,7 @@
  	st-symbol-behavior
         'printOn:
         (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
-          (display "#'" port)
-          (display (symbol->string self) port)
-          (display "'" port))
+          (format port "#'~a'" (symbol->string self)))
 )
 
 (primAddSelector:withMethod: 

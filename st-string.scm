@@ -31,10 +31,8 @@
     String
     'printOn:
     (lambda (self port)
-      (display "'" port)
+      (format port "'~a'" self))
       ;; @@FIXME: ''' & Scheme specifics
-      (display self port)
-      (display "'" port))
 )
 
 (addSelector:withMethod: 

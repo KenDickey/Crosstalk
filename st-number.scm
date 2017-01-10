@@ -20,8 +20,8 @@
 
 ;;  Number
 ;;   Complex
-;;     Real
-;;       Rational
+;;     Real  (st Float)
+;;       Rational  (st Fraction)
 ;;         Integer
 
 ;; So an Integer isA Rational isA Real ..
@@ -445,15 +445,23 @@
  	Complex
         'printOn:
         (lambda (self port)
-          (display "(" port)
-          (display (real-part port))
-          (display "+")
-          (display (imag-part port))
-          (display "i)" port)))
+          (format port "(~a +~ai)"
+                  (real-part self)
+                  (imag-part self)))
+)
 ; @@@ MORE ..@@@
 
 ;;; Float (Real)
-; @@@ MORE ..@@@
+
+(addSelector:withMethod: 
+ 	Float
+        'printOn:
+        (lambda (self port)
+          ;;@@FIXME: number format scm->st
+          (display self port))
+)
+                                        ;
+@@@ MORE ..@@@
 ;;; Rational (Fraction)
 ; @@@ MORE ..@@@
 ;;; Integer

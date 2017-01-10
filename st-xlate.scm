@@ -322,7 +322,9 @@
   (call-with-port (current-output-port)
     (lambda (outp)
       (let loop ( (form (parse-st-code)) )
-        (write (AST->scm form) outp) ;; @@@ pretty-print
+        (format outp
+                "~%~y" ;; pretty-print
+                (AST->scm form))
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
 ) ) ) )
@@ -335,7 +337,9 @@
   (with-output-to-file outfile-name
     (lambda ()
       (let loop ( (form (parse-st-code)) )
-        (write (AST->scm form)) ;; @@@ pretty-print
+        (format outp
+                "~%~y" ;; pretty-print
+                (AST->scm form))
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
 ) ) ) )

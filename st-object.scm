@@ -153,13 +153,11 @@
         (lambda (self outport)
           (if (perform:with: self 'respondsTo: 'name)
               (display (perform: self 'name) outport)
-              (begin
-                (display "<instance of " outport)
-                (display (perform:
-                            (perform: self 'class)
-                            'name)
-                         outport)
-                (display ">" outport))))
+              (format outport
+                      "<instance of ~a>"
+                      (perform: (perform: self 'class)'name))
+       ) )
+
 )
 
 (primAddSelector:withMethod: ;; ANSI

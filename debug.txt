@@ -26,3 +26,7 @@
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
 
 (current-directory "/home/chip/SiS")
+
+(xlate-st-file->scm
+  (string-append st-kernel-prefix
+		 "Collection.st"))
