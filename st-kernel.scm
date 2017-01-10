@@ -600,6 +600,11 @@
 (define (display-selectors obj)
   (display (selectors obj)))
 
+(define (inst-method-names class)
+  (list-sort
+   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
+   (perform: class 'myMethodNames)))
+    
 
 ;; Most useful..
 (define (display-ivars st-obj)

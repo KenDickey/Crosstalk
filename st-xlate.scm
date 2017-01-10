@@ -70,7 +70,7 @@
           (astSequence-statements ast))
        )
     (if (null? ast-statements)
-        '(begin st-nil)
+        '(begin '()) ;; answer st-nil
         (let ( (statements
                 (map xlateStatement ast-statements))
              )
@@ -150,8 +150,7 @@
     (error "Block temporaries must be identifiers"
            ast-temps-list))
   (map (lambda (ident-tok)
-         (list (token->native ident-tok)
-               '()))
+         `(,(token->native ident-tok) nil))
        ast-temps-list)
 )
 
@@ -161,7 +160,7 @@
           (map AST->scm ast-list))
        )
     (if (null? statements)
-        (list st-nil)
+        '(nil)
         statements)
   )
 )
@@ -325,6 +324,7 @@
         (format outp
                 "~%~y" ;; pretty-print
                 (AST->scm form))
+        (skip-whitespace)
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
 ) ) ) )
@@ -334,12 +334,14 @@
   (set! next-st-token (tokenizer-for-file-named infile-name))
   (set! curr-token #false)
   (set! prev-token #false)
-  (with-output-to-file outfile-name
-    (lambda ()
+  (delete-file outfile-name) ;; OK to fail
+  (call-with-output-file outfile-name
+    (lambda (outp)
       (let loop ( (form (parse-st-code)) )
         (format outp
                 "~%~y" ;; pretty-print
                 (AST->scm form))
+        (skip-whitespace)
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
 ) ) ) )

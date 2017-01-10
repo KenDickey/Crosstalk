@@ -461,7 +461,7 @@
           (display self port))
 )
                                         ;
-@@@ MORE ..@@@
+; @@@ MORE ..@@@
 ;;; Rational (Fraction)
 ; @@@ MORE ..@@@
 ;;; Integer

@@ -30,3 +30,8 @@
 (xlate-st-file->scm
   (string-append st-kernel-prefix
 		 "Collection.st"))
+
+(xlate-st-file->scm-file
+  (string-append st-kernel-prefix
+		 "Collection.st")
+  "/home/kend/SiS/Temp/Collection.scm")
