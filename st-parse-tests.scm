@@ -288,16 +288,25 @@
                     0
                     26))
                 b)
-              #(astBinaryMessage
-                +
-                #(astLiteral
+              #(astMessageSend
+                #(astIdentifier
                   #(token
-                    integer
-                    "7"
+                    identifier
+                    "c"
                     #("block := [:a :b| ^(a foo: b bar: c + 7)]."
                       0
-                      37))
-                  7))))))))
+                      33))
+                  c)
+                #(astBinaryMessage
+                  +
+                  #(astLiteral
+                    #(token
+                      integer
+                      "7"
+                      #("block := [:a :b| ^(a foo: b bar: c + 7)]."
+                        0
+                        37))
+                    7)))))))))
     #t))
   (begin
     (parse-test

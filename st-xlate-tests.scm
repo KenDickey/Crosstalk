@@ -70,6 +70,21 @@
   (AST->scm (st->AST "[ :a| | b | b := a sin. ^ b ]"))
   "[ :a| | b | b := a sin. ^ b ]")
 
+
+(add-equal-test 'st-xlate
+  '(set! block
+         (lambda (a b)
+           (call/cc
+            (return)
+            (return
+             (perform:with:with:
+              a
+              'foo:bar:
+              b
+              (perform:with: c '+ 7))))))
+  (st->scm "block := [:a :b| ^(a foo: b bar: c + 7)].")
+  "block := [...]")
+
 (add-equal-test 'st-xlate
   '(perform:
     (lambda ()
@@ -132,7 +147,40 @@
 	"Smalltalk syntax on a postcard"
 )
 
-  
+
+
+(add-equal-test 'st-xlate
+  '(perform:with:with:
+  Collection
+  'addSelector:withMethod:
+  'printOn:
+  (lambda (self aStream)
+    (perform:with:
+      aStream
+      'nextPutAll:
+      (perform:with:
+        (perform: (perform: self 'class) 'name)
+        '|,|
+        " ("))
+    (perform:with:
+      self
+      'do:
+      (lambda (element)
+        (perform:with: element 'printOn: aStream)
+        (perform: aStream 'space)))
+    (perform:with: aStream 'nextPut: #\))))
+  (st->scm "Collection ~> printOn: aStream
+[
+\"Refer to the comment in Object|printOn:.\"
+  aStream nextPutAll: self class name , ' ('.
+  self
+	do: [ :element | 
+		element printOn: aStream.
+		aStream space ].
+  aStream nextPut: $)
+].
+")
+  "Collection ~? printOn:")  
 
 ;; (ensure-exception-raised 'st-xlate
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

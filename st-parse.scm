@@ -732,6 +732,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-binary-send receiver)"))
+  (skip-whitespace)
   (unless (eq? 'binarySelector (curr-token-kind))
     (error "parse-binary-send: expected a binary selector"
            curr-token))
@@ -741,15 +742,19 @@
     (skip-whitespace)
     (if (eq? 'binarySelector (curr-token-kind))
         (bin-loop (cons (prim-parse-binary-message) reversed-messages))
-        (if (= 1 (length reversed-messages))
-            (car reversed-messages) ;; unwrap single message
-            (astMessageSequence
-             (reverse reversed-messages))
-        )
+        (astMessageSend receiver
+                        (if (= 1 (length reversed-messages))
+                            ;; unwrap single message
+                            (car reversed-messages)
+                            (astMessageSequence
+                             (reverse reversed-messages))
+        )               )
 
     )
- )
+  )
 )
+  
+
 
 
 ;; <binary-argument> ::= <primary> <unary-message>*
