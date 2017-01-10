@@ -43,6 +43,7 @@
        ;; apropos
        current-directory
        )
+    (srfi :48) ;; intermediate-format-strings
 )
 
 ;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
