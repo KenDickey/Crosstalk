@@ -18,6 +18,8 @@
 ;; Optional:
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
+;;
+;; (xlate-st-bootstrap)
 
 (import
     (rnrs hashtables)
@@ -103,7 +105,10 @@
 
 (define st-kernel-prefix
   (string-append scm-root-directory-prefix
-                 "/SmalltalkKernel/"))
+                 "SmalltalkKernel/"))
+
+(define temp-dir-prefix
+  (string-append scm-root-directory-prefix "Temp/"))
 
 (define scm-bootstrap-files
   '( "st-kernel"       ;; message mechanics
@@ -138,10 +143,11 @@
     )
  )
 
-(define (source-st-files)
-  (map (lambda (file-name)
-         (string-append scm-root-directory-prefix file-name ".st"))
-       st-bootstrap-files)
+(define (xlate-st-file fname)
+  (format #t "~%St->Scm translate ~a" fname)
+  (xlate-st-file->scm-file
+   (string-append st-kernel-prefix fname ".st")
+   (string-append temp-dir-prefix fname ".scm"))
 )
     
 
@@ -163,6 +169,8 @@
 (define (load-compiled-bootstrap)
   (for-each load (compiled-files)))
 
+(define (xlate-st-bootstrap)
+  (for-each xlate-st-file  st-bootstrap-files))
 
 
 ;;;			--- E O F ---			;;;
