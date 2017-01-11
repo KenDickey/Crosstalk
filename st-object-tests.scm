@@ -157,7 +157,7 @@
 
 (add-equal-test 'st-object
   '(#t #f () 1 #\c)
-  (perform:withArguments: %%test-object 'with:with:with:with:with (vector %%st-object-tag%% '() #t #f '() 1 #\c))
+  (perform:withArguments: %%test-object 'with:with:with:with:with (vector #t #f '() 1 #\c))
   "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c")
   
 

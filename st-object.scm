@@ -67,9 +67,9 @@
   ((lookupSelector: self selectorSym) self arg1 arg2 arg3 arg4))
 
 (define (perform:withArguments: self selectorSym argsArray)
-  ;; @@FIXME: Check argsArry is a Smalltalk Array object..
   (apply (lookupSelector: self selectorSym)
-         (cons self (cddr (vector->list argsArray)))))
+         (cons self (vector->list argsArray))))
+
 (define (perform:withArgsList: self selectorSym argsList)
   (apply (lookupSelector: self selectorSym)
          (cons self argsList)))
@@ -109,6 +109,11 @@
  	st-object-behavior
         'perform:withArguments:   ;; ANSI
         perform:withArguments:)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'perform:withArgsList:   ;; Scheme
+        perform:withArgsList:)
 
 (primAddSelector:withMethod:
  	st-object-behavior
