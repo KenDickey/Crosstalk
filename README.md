@@ -39,14 +39,18 @@ This is very much a work in progress.
   1. Dispatch mechanics (message send with #perform:)
   2. Class Structure (bootstrap + fixup; classes can create subclasses)
   3. Basic unit tests (need to be populated)
+  4. [in progress] Translation of st kernel code into scheme.
+     + needs Environments for name lookup
+     + needs Return anaylsis & simplification
+     + needs to inline primops (e.g. +, ifTrue:)
 
 ## Upcoming
   - Fill in the class structure (approx ANSI)
-    + Present Scheme native objects
-  - Parsing Smalltalk with location/position info
-  - Transliteration into Scheme
+    + Present Scheme native objects [**Basics working; needs fill-in**]
+  - Parsing Smalltalk with location/position info [**Mostly working**]
+  - Transliteration into Scheme [**IN PROGRESS**]
   - Read and execute Smalltalk code directly
-    + Fill in bootstrap by transliterating Smalltalk runtime
+    + Fill in bootstrap by transliterating Smalltalk runtime [*in progress*]
   - Look at runtime issues
   - _Bootstrap Morphic_
     
