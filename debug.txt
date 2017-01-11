@@ -1,10 +1,11 @@
 (import (scheme load))
 (load "sis.scm")
 (load-source-bootstrap)
-;; Optional:
-;;   (load "sis-tests.scm")
-;;   (run-source-tests)
-;; xlate-st-bootstrap)
+
+;; (load "sis-tests.scm")
+;; (run-source-tests)
+
+;; (xlate-st-bootstrap)
 
 
 (display-ivars st-obj)
@@ -23,6 +24,7 @@
 (define $:::  perform:with:with:with:)
 (define $:::: perform:with:with:with:with:)
 (define $&    perform:withArguments:)
+(define $*    perform:withArgsList:)
 
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
 
