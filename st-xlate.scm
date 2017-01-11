@@ -187,7 +187,7 @@
   (let ( (receiver (AST->scm (astUnarySend-receiver ast)))
          (selector (astUnarySend-selector ast))
        )
-  `(perform: ,receiver ',selector)
+  `($ ,receiver ',selector)
 ) )
 
 (define (xlateKeywordSend ast)
@@ -217,24 +217,24 @@
 
 (define (rsa->perform rcvr selector arguments)
   (case (length arguments)
-    ((0) `(perform: ,rcvr ',selector)
+    ((0) `($ ,rcvr ',selector)
      )
-    ((1) `(perform:with: ,rcvr ',selector ,(car arguments))
+    ((1) `($: ,rcvr ',selector ,(car arguments))
      )
-    ((2) `(perform:with:with:
+    ((2) `($::
            ,rcvr
            ',selector
            ,(car arguments)
            ,(cadr arguments))
      )
-    ((3) `(perform:with:with:with:
+    ((3) `($:::
            ,rcvr
            ',selector
            ,(car arguments)
            ,(cadr arguments)
            ,(caddr arguments))
      )
-    ((4) `(perform:with:with:with:with
+    ((4) `($::::
            ,rcvr
            ',selector
            ,(car arguments)
@@ -244,7 +244,7 @@
      
      )
     (else         
-     `(perform:withArguments:
+     `($&
        ,rcvr
        ',selector
        ,(list->vector arguments))
@@ -288,14 +288,13 @@
         )
       ))
      ((astUnaryMessage?   ast-msg)
-      `(perform: ,rcvr
-                 ',(token->native (astUnaryMessage-selector ast-msg)))
+      `($ ,rcvr
+          ',(token->native (astUnaryMessage-selector ast-msg)))
       )
      ((astBinaryMessage?  ast-msg)
-      `(perform:with:
-        ,rcvr
-        ',(astBinaryMessage-selector ast-msg)
-        ,(AST->scm (astBinaryMessage-argument ast-msg)))
+      `($: ,rcvr
+           ',(astBinaryMessage-selector ast-msg)
+           ,(AST->scm (astBinaryMessage-argument ast-msg)))
       )
      ((astKeywordMessage? ast-msg)
       (let ( (arguments
@@ -309,7 +308,7 @@
      ((and (token? ast-msg)
            (eq? 'identifier (token-kind ast-msg)))
       ;; unary message
-      `(perform: ,rcvr ',(token->native ast-msg))
+      `($ ,rcvr ',(token->native ast-msg))
       )
      (else
       (error

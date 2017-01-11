@@ -4,8 +4,8 @@
 ;; Optional:
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
+;; xlate-st-bootstrap)
 
-(import (primitives trace untrace trace-entry trace-exit))
 
 (display-ivars st-obj)
 (class obj)
@@ -22,6 +22,7 @@
 (define $::   perform:with:with:)
 (define $:::  perform:with:with:with:)
 (define $:::: perform:with:with:with:with:)
+(define $&    perform:withArguments:)
 
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
 
@@ -35,3 +36,13 @@
   (string-append st-kernel-prefix
 		 "Collection.st")
   "/home/kend/SiS/Temp/Collection.scm")
+
+;;; Scheme
+
+(import (primitives trace untrace trace-entry trace-exit))
+
+(debug-parser #true)
+(trace-parse-methods #true)
+
+;(debug-parser #false)
+;(trace-parse-methods #false)

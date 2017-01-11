@@ -12,14 +12,14 @@
                 cleanup-st-xlate)
 
 (add-equal-test 'st-xlate
-  '(perform:with: a '+ b)
+  '($: a '+ b)
   (AST->scm (st->AST " a + b. "))
   "a + b")
 
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
-    (lambda (a b) (perform:with: a '+ b))
+  '($::
+    (lambda (a b) ($: a '+ b))
     'value:value:
     2
     3)
@@ -28,15 +28,15 @@
 
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
+  '($::
     String
     'addSelector:withMethod:
     'contains:
     (lambda (self aChar)
-      (perform:with:
+      ($:
        self
        'detect:
-       (lambda (c) (perform:with: c '= aChar)))))
+       (lambda (c) ($: c '= aChar)))))
   (AST->scm
    (st->AST  "String addSelector: #contains:
 	     withMethod: [ :self :aChar |
@@ -45,15 +45,15 @@
 
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
+  '($::
     String
     'addSelector:withMethod:
     'contains:
     (lambda (self aChar)
-      (perform:with:
+      ($:
        self
        'detect:
-       (lambda (c) (perform:with: c '= aChar)))))
+       (lambda (c) ($: c '= aChar)))))
   (AST->scm
    (st->AST "String ~> contains: aChar
 	[ self detect: [ :c | c = aChar] ]."))
@@ -65,7 +65,7 @@
   '(lambda (a)
      (call/cc (return)
       (let ((b nil))
-        (set! b (perform: a 'sin))
+        (set! b ($ a 'sin))
         (return b))))
   (AST->scm (st->AST "[ :a| | b | b := a sin. ^ b ]"))
   "[ :a| | b | b := a sin. ^ b ]")
@@ -77,24 +77,24 @@
            (call/cc
             (return)
             (return
-             (perform:with:with:
+             ($::
               a
               'foo:bar:
               b
-              (perform:with: c '+ 7))))))
+              ($: c '+ 7))))))
   (st->scm "block := [:a :b| ^(a foo: b bar: c + 7)].")
   "block := [...]")
 
 (add-equal-test 'st-xlate
-  '(perform:
+  '($
     (lambda ()
-      (let ((a nil)) (set! a 3) (perform:with: a '+ a)))
+      (let ((a nil)) (set! a 3) ($: a '+ a)))
     'value)
   (AST->scm (st->AST  "[|a| a := 3. a+a] value."))
   "[|a| a := 3. a+a] value.")
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
+  '($::
   Object
   'addSelector:withMethod:
   'exampleWithNumber:
@@ -102,33 +102,33 @@
     (call/cc
       (return)
       (let ((y nil))
-        (perform:with:
-          (perform:with:
-            (perform:with: true '& (perform: false 'not))
+        ($:
+          ($:
+            ($: true '& ($ false 'not))
             '&
-            (perform: nil 'isNil))
+            ($ nil 'isNil))
           'ifFalse:
-          (lambda () (perform: self 'halt)))
+          (lambda () ($ self 'halt)))
         (set! y
-          (perform:with:
-            (perform: self 'size)
+          ($:
+            ($ self 'size)
             '+
-            (perform: super 'size)))
-        (perform:with:
+            ($ super 'size)))
+        ($:
           #(#\a 'a "a" 1 1.0)
           'do:
           (lambda (each)
             (let ((receiver Transcript))
-              (perform:with:
+              ($:
                 Transcript
                 'show:
-                (perform: (perform: each 'class) 'name))
-              (perform:with:
+                ($ ($ each 'class) 'name))
+              ($:
                 recevier
                 'show:
-                (perform: each 'printString))
-              (perform:with: recevier 'show: " "))))
-        (return (perform:with: x '< y))))))
+                ($ each 'printString))
+              ($: recevier 'show: " "))))
+        (return ($: x '< y))))))
   (AST->scm (st->AST
 "Object ~> exampleWithNumber: x
 [ |y|
@@ -150,25 +150,25 @@
 
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
+  '($::
   Collection
   'addSelector:withMethod:
   'printOn:
   (lambda (self aStream)
-    (perform:with:
+    ($:
       aStream
       'nextPutAll:
-      (perform:with:
-        (perform: (perform: self 'class) 'name)
+      ($:
+        ($ ($ self 'class) 'name)
         '|,|
         " ("))
-    (perform:with:
+    ($:
       self
       'do:
       (lambda (element)
-        (perform:with: element 'printOn: aStream)
-        (perform: aStream 'space)))
-    (perform:with: aStream 'nextPut: #\))))
+        ($: element 'printOn: aStream)
+        ($ aStream 'space)))
+    ($: aStream 'nextPut: #\))))
   (st->scm "Collection ~> printOn: aStream
 [
 \"Refer to the comment in Object|printOn:.\"
@@ -183,16 +183,16 @@
   "Collection ~? printOn:")
 
 (add-equal-test 'st-xlate
-  '(perform:with:with:
-    (perform: Collection 'class)
+  '($::
+    ($ Collection 'class)
     'addSelector:withMethod:
     'with:
     (lambda (self anObject)
       (call/cc
        (return)
        (let ((newCollection nil))
-         (set! newCollection (perform: self 'new))
-         (perform:with: newCollection 'add: anObject)
+         (set! newCollection ($ self 'new))
+         ($: newCollection 'add: anObject)
          (return newCollection)))))
   (st->scm "Collection class ~> with: anObject
 [
@@ -208,7 +208,7 @@
 
 ;; (ensure-exception-raised 'st-xlate
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
-;;    (perform: %%test-object 'glerph)
+;;    ($ %%test-object 'glerph)
 ;;    "obj glerph -> doesNotUnderstand")
 
 

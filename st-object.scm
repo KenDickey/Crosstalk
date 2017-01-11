@@ -70,12 +70,15 @@
   ;; @@FIXME: Check argsArry is a Smalltalk Array object..
   (apply (lookupSelector: self selectorSym)
          (cons self (cddr (vector->list argsArray)))))
-;;; Debug shortcuts
+
+;;; Shorter Syntax
 (define $     perform:)
 (define $:    perform:with:)
 (define $::   perform:with:with:)
 (define $:::  perform:with:with:with:)
 (define $:::: perform:with:with:with:with:)
+(define $&    perform:withArguments:)
+
 ;;;
 
 (primAddSelector:withMethod:
