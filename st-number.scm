@@ -211,10 +211,13 @@
         (lambda (self aNumber)
           (>= self aNumber)))
 
-;; ?correct?
+;;Nota Bene:
+;; (string-length "\\\\") --> 2
+;; (string->list (symbol->string '|\\\\|)) --> (#\\ #\\)
+
 (addSelector:withMethod: 
-        Number
-        '|\\|
+        Number 
+        '|\\\\| ;; Smalltalk #'\\'
         (lambda (self aNumber)
           (modulo self aNumber)))
 
