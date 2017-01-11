@@ -70,6 +70,9 @@
   ;; @@FIXME: Check argsArry is a Smalltalk Array object..
   (apply (lookupSelector: self selectorSym)
          (cons self (cddr (vector->list argsArray)))))
+(define (perform:withArgsList: self selectorSym argsList)
+  (apply (lookupSelector: self selectorSym)
+         (cons self argsList)))
 
 ;;; Shorter Syntax
 (define $     perform:)
@@ -77,7 +80,8 @@
 (define $::   perform:with:with:)
 (define $:::  perform:with:with:with:)
 (define $:::: perform:with:with:with:with:)
-(define $&    perform:withArguments:)
+(define $&    perform:withArguments:) ;; args array
+(define $*    perform:withArgsList:)  ;; args list
 
 ;;;
 
