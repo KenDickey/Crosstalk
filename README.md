@@ -39,7 +39,7 @@ This is very much a work in progress.
   1. Dispatch mechanics (message send with #perform:)
   2. Class Structure (bootstrap + fixup; classes can create subclasses)
   3. Basic unit tests (need to be populated)
-  4. [in progress] Translation of st kernel code into scheme.
+  4. [**in progress**] Translation of st kernel code into scheme.
      + needs Environments for name lookup
      + needs Return anaylsis & simplification
      + needs to inline primops (e.g. +, ifTrue:)
