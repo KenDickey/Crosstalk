@@ -349,6 +349,7 @@
   (delete-file outfile-name) ;; OK to fail
   (call-with-output-file outfile-name
     (lambda (outp)
+      (format outp "~%;; \"~a\" (translated)~%" outfile-name)
       (let loop ( (form (parse-st-code)) )
         (format outp
                 "~%~y" ;; pretty-print
@@ -356,7 +357,9 @@
         (skip-whitespace)
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
-) ) ) )
+        )
+      (format outp "~%;;   -- e o f ---    ;;~%")
+) ) )
 
 ;; (define xlate
 ;;   (newSubclassName:iVars:cVars:
