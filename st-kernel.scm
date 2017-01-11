@@ -511,7 +511,7 @@
         (lambda (self)  
           (let ( (receiver  (perform: self 'receiver))
                  (selector  (perform: self 'selector))
-                 (arguments (perform: self 'arguments))
+                 (arguments (perform: self 'arguments)) ;;@@@?@@@ vec or list?
                )
           (if (zero? (vector-length arguments))
               (perform: receiver selector)
@@ -520,7 +520,7 @@
 
 (primAddSelector:withMethod: 
  	st-messageSend-behavior
-        'valueWithArguments:  ;; retry w dirrerent args
+        'valueWithArguments:  ;; retry w different args
         (lambda (self newArgsArray)  
           (let ( (receiver  (perform: self 'receiver))
                  (selector  (perform: self 'selector))
