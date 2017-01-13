@@ -90,11 +90,13 @@
 ;;; Assignment
 
 (define (xlateAssignment ast)
-  (let ( (var (astAssignment-var ast))
-         (val (astAssignment-val ast))
+  (let ( (var (AST->scm (astAssignment-var ast)))
+         (val (AST->scm (astAssignment-val ast)))
        )
-    `(set! ,(AST->scm var)
-           ,(AST->scm val))
+;; st semantics; assignment returns value
+    `(let ( (%%val%% ,val) )  
+       (set! ,var %%val%%)
+       %%val%%)
   )
 )
 

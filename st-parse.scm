@@ -303,6 +303,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-basic-expression)"))
+  (skip-whitespace)
   (when (eq? (curr-token-kind) 'cascade)
     (parse-error "parse-basic-expression: cascade without message "
                  curr-token))
@@ -406,6 +407,7 @@
   (when (trace-parse-methods)
     (newline)
     (display " (parse-unary-message)"))
+  (skip-whitespace)
   (unless (eq? 'identifier (curr-token-kind))
     (error "parse-unary-message: expected unary selector" curr-token))
   (consume-token!)
@@ -448,6 +450,7 @@
   (let bin-loop ( (reversed-messages
                    (list (prim-parse-binary-message)))
                 )
+    (skip-whitespace)
     (if (eq? 'binarySelector (curr-token-kind))
         (bin-loop (cons (prim-parse-binary-message) reversed-messages))
         (if (eq? 'keyword (curr-token-kind))
@@ -761,8 +764,6 @@
 )
   
 
-
-
 ;; <binary-argument> ::= <primary> <unary-message>*
 (define (parse-binary-argument)
   (when (trace-parse-methods)
@@ -770,19 +771,20 @@
     (display " (parse-binary-argument)"))
   (skip-whitespace)
   (let ( (primary (parse-primary)) )
-    (let arg-loop ( (reversed-unary-sends '()) )
-      (skip-whitespace)
-      (if (eq? 'identifier (curr-token-kind))
-          (begin
-            (consume-token!)
-            (arg-loop (cons prev-token reversed-unary-sends)))
-          (if (null? reversed-unary-sends)
-              primary
-              (astMessageSend
-               		primary
-                        (reverse reversed-unary-sends))
-          )
-      )
+    (skip-whitespace)
+    (if (not (eq? 'identifier (curr-token-kind)))
+        primary
+        (let unary-loop ( (msg
+                           (astUnarySend primary
+                                         (token->native curr-token)))
+                        )
+          (consume-token!)
+          (skip-whitespace)
+          (if (eq? 'identifier (curr-token-kind))
+              (unary-loop (astUnarySend msg
+                                        (token->native curr-token)))
+              msg)
+        )
     )
   )
 )

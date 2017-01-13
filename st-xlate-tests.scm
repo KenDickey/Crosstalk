@@ -63,73 +63,62 @@
 
 (add-equal-test 'st-xlate
   '(lambda (a)
-     (call/cc (return)
-      (let ((b nil))
-        (set! b ($ a 'sin))
-        (return b))))
-  (AST->scm (st->AST "[ :a| | b | b := a sin. ^ b ]"))
+  (call/cc
+    (return)
+    (let ((b nil))
+      (let ((%%val%% ($ a 'sin)))
+        (set! b %%val%%)
+        %%val%%)
+      (return b))))
+  (st->scm "[ :a| | b | b := a sin. ^ b ]")
   "[ :a| | b | b := a sin. ^ b ]")
 
 
 (add-equal-test 'st-xlate
-  '(set! block
-         (lambda (a b)
-           (call/cc
+  '(let ((%%val%%
+        (lambda (a b)
+          (call/cc
             (return)
-            (return
-             ($::
-              a
-              'foo:bar:
-              b
-              ($: c '+ 7))))))
+            (return ($:: a 'foo:bar: b ($: c '+ 7)))))))
+  (set! block %%val%%)
+  %%val%%)
   (st->scm "block := [:a :b| ^(a foo: b bar: c + 7)].")
   "block := [...]")
 
 (add-equal-test 'st-xlate
-  '($
-    (lambda ()
-      (let ((a nil)) (set! a 3) ($: a '+ a)))
-    'value)
-  (AST->scm (st->AST  "[|a| a := 3. a+a] value."))
+   '($ (lambda ()
+     (let ((a nil))
+       (let ((%%val%% 3)) (set! a %%val%%) %%val%%)
+       ($: a '+ a)))
+   'value)
+  (st->scm  "[|a| a := 3. a+a] value.")
   "[|a| a := 3. a+a] value.")
 
 (add-equal-test 'st-xlate
-  '($::
-  Object
-  'addSelector:withMethod:
-  'exampleWithNumber:
-  (lambda (self x)
-    (call/cc
-      (return)
-      (let ((y nil))
-        ($:
-          ($:
-            ($: true '& ($ false 'not))
-            '&
-            ($ nil 'isNil))
-          'ifFalse:
-          (lambda () ($ self 'halt)))
-        (set! y
-          ($:
-            ($ self 'size)
-            '+
-            ($ super 'size)))
-        ($:
-          #(#\a 'a "a" 1 1.0)
-          'do:
-          (lambda (each)
-            (let ((receiver Transcript))
-              ($:
-                Transcript
-                'show:
-                ($ ($ each 'class) 'name))
-              ($:
-                recevier
-                'show:
-                ($ each 'printString))
-              ($: recevier 'show: " "))))
-        (return ($: x '< y))))))
-  (AST->scm (st->AST
+  '($:: Object
+     'addSelector:withMethod:
+     'exampleWithNumber:
+     (lambda (self x)
+       (call/cc
+         (return)
+         (let ((y nil))
+           ($: ($: ($: true '& ($ false 'not))
+                   '&
+                   ($ nil 'isNil))
+               'ifFalse:
+               (lambda () ($ self 'halt)))
+           (let ((%%val%% ($: ($ self 'size) '+ ($ super 'size))))
+             (set! y %%val%%)
+             %%val%%)
+           ($: #(#\a 'a "a" 1 1.0)
+               'do:
+               (lambda (each)
+                 (let ((receiver Transcript))
+                   ($: Transcript 'show: ($ ($ each 'class) 'name))
+                   ($: recevier 'show: ($ each 'printString))
+                   ($: recevier 'show: " "))))
+           (return ($: x '< y))))))
+  (st->scm
 "Object ~> exampleWithNumber: x
 [ |y|
   true & false not & (nil isNil)
@@ -143,7 +132,7 @@
         ].
    ^ x < y
 ].
-"))
+")
 	"Smalltalk syntax on a postcard"
 )
 
@@ -183,17 +172,18 @@
   "Collection ~? printOn:")
 
 (add-equal-test 'st-xlate
-  '($::
-    ($ Collection 'class)
-    'addSelector:withMethod:
-    'with:
-    (lambda (self anObject)
-      (call/cc
-       (return)
-       (let ((newCollection nil))
-         (set! newCollection ($ self 'new))
-         ($: newCollection 'add: anObject)
-         (return newCollection)))))
+  '($:: ($ Collection 'class)
+     'addSelector:withMethod:
+     'with:
+     (lambda (self anObject)
+       (call/cc
+         (return)
+         (let ((newCollection nil))
+           (let ((%%val%% ($ self 'new)))
+             (set! newCollection %%val%%)
+             %%val%%)
+           ($: newCollection 'add: anObject)
+           (return newCollection)))))
   (st->scm "Collection class ~> with: anObject
 [
 \"Answer an instance of me containing anObject.\"

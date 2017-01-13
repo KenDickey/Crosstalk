@@ -44,7 +44,8 @@ Collection ~> asSet
 
 Collection ~> collect: aBlock
 [
-"Evaluate aBlock with each of the receiver's elements as the argument. Collect the resulting values into a collection like the receiver.
+"Evaluate aBlock with each of the receiver's elements as the argument.
+ Collect the resulting values into a collection like the receiver.
  Answer the new collection."
   | newCollection |
   newCollection := self species new.
@@ -65,7 +66,7 @@ Collection ~> detect: aBlock ifNone: exceptionBlock
 
 Collection ~> do: aBlock
 [
-	"Evaluate aBlock with each of the receiver's elements as the argument."
+"Evaluate aBlock with each of the receiver's elements as the argument."
   self subclassResponsibility
 ].
 
@@ -87,9 +88,8 @@ Collection ~> errorNotFound
 
 Collection ~> includes: anObject
 [
-	"Answer whether anObject is one of the receiver's elements."
-  self
-	do: [ :each | 
+"Answer whether anObject is one of the receiver's elements."
+  self do: [ :each | 
 		anObject = each
 			ifTrue: [ ^ true ] ].
   ^ false
@@ -103,50 +103,49 @@ Collection ~> isEmpty
 
 Collection ~> printOn: aStream
 [
-	"Refer to the comment in Object|printOn:."
+"Refer to the comment in Object|printOn:."
   aStream nextPutAll: self class name , ' ('.
-  self
-	do: [ :element | 
-		element printOn: aStream.
-		aStream space ].
+  self do: [ :element | 
+	element printOn: aStream.
+	aStream space ].
   aStream nextPut: $)
 ].
 
 Collection ~> remove: oldObject
 [
-	"Remove oldObject as one of the receiver's elements. Answer oldObject 
-	unless no element is equal to oldObject, in which case, create an error 
-	notification."
+"Remove oldObject as one of the receiver's elements. Answer oldObject 
+ unless no element is equal to oldObject, in which case, create an error 
+ notification."
   ^ self remove: oldObject ifAbsent: [ self errorNotFound ]
 ].
 
 Collection ~> remove: oldObject ifAbsent: anExceptionBlock
 [
-	"Remove oldObject as one of the receiver's elements. If several of the 
-	elements are equal to oldObject, only one is removed. If no element is 
-	equal to oldObject, answer the result of evaluating anExceptionBlock. 
-	Otherwise, answer the argument, oldObject. SequenceableCollections 
-	cannot respond to this message."
+"Remove oldObject as one of the receiver's elements. If several of the 
+ elements are equal to oldObject, only one is removed. If no element is 
+ equal to oldObject, answer the result of evaluating anExceptionBlock. 
+ Otherwise, answer the argument, oldObject. SequenceableCollections 
+ cannot respond to this message."
   self subclassResponsibility
 ].
 
 Collection ~> select: aBlock
 [
-	"Evaluate aBlock with each of the receiver's elements as the argument. 
-	Collect into a new collection like the receiver, only those elements for 
-	which aBlock evaluates to true. Answer the new collection."
+"Evaluate aBlock with each of the receiver's elements as the argument. 
+ Collect into a new collection like the receiver, only those elements for 
+ which aBlock evaluates to true. Answer the new collection."
   | newCollection |
   newCollection := self species new.
-  self
-	do: [ :each | 
-		(aBlock value: each)
-			ifTrue: [ newCollection add: each ] ].
+  self do: [ :each | 
+	(aBlock value: each)
+		ifTrue: [ newCollection add: each ] 
+  ].
   ^ newCollection
 ].
 
 Collection ~> size
 [
-	"Answer how many elements the receiver contains."
+"Answer how many elements the receiver contains."
   | count |
   count := 0.
   self do: [ :each | count := count + 1 ].
@@ -155,8 +154,9 @@ Collection ~> size
 
 Collection ~> sum
 [
-	"Answer the sum of the elements of this collection. If the collection is empty, answer zero."
-	"Details: Use an arbitrary element of the collection as the initial value so this method will work for collections of any kind of object that understands + and -."
+"Answer the sum of the elements of this collection. If the collection is empty, answer zero."
+"Details: Use an arbitrary element of the collection as the initial value so
+ this method will work for collections of any kind of object that understands + and -."
   | total seed |
   total := seed := self detect: [ :x | true ] ifNone: [ ^ 0 ].
   self do: [ :el | total := total + el ].
@@ -166,7 +166,7 @@ Collection ~> sum
 
 Collection class ~> with: anObject
 [
-	"Answer an instance of me containing anObject."
+"Answer an instance of me containing anObject."
   | newCollection |
   newCollection := self new.
   newCollection add: anObject.
@@ -175,7 +175,7 @@ Collection class ~> with: anObject
 
 Collection class ~> with: firstObject with: secondObject
 [
-	"Answer an instance of me containing the two arguments as elements."
+"Answer an instance of me containing the two arguments as elements."
   | newCollection |
   newCollection := self new.
   newCollection add: firstObject.
@@ -185,7 +185,7 @@ Collection class ~> with: firstObject with: secondObject
 
 Collection class ~> with: firstObject with: secondObject with: thirdObject
 [
-	"Answer an instance of me containing the three arguments as elements."
+"Answer an instance of me containing the three arguments as elements."
   | newCollection |
   newCollection := self new.
   newCollection add: firstObject.
