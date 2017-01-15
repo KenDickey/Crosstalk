@@ -29,7 +29,7 @@
 
 (add-equal-test 'st-xlate
   '($::
-    (smalltalkAt: String)
+    (smalltalkAt: 'String)
     'addSelector:withMethod:
     'contains:
     (lambda (self aChar)
@@ -46,7 +46,7 @@
 
 (add-equal-test 'st-xlate
   '($::
-    (smalltalkAt: String)
+    (smalltalkAt: 'String)
     'addSelector:withMethod:
     'contains:
     (lambda (self aChar)
@@ -95,7 +95,7 @@
   "[|a| a := 3. a+a] value.")
 
 (add-equal-test 'st-xlate
-  '($:: (smalltalkAt: Object)
+  '($:: (smalltalkAt: 'Object)
      'addSelector:withMethod:
      'exampleWithNumber:
      (lambda (self x)
@@ -113,8 +113,8 @@
            ($: #(#\a 'a "a" 1 1.0)
                'do:
                (lambda (each)
-                 (let ((receiver (smalltalkAt: Transcript)))
-                   ($: (smalltalkAt: Transcript) 'show: ($ ($ each 'class) 'name))
+                 (let ((receiver (smalltalkAt: 'Transcript)))
+                   ($: (smalltalkAt: 'Transcript) 'show: ($ ($ each 'class) 'name))
                    ($: recevier 'show: ($ each 'printString))
                    ($: recevier 'show: " "))))
            (return ($: x '< y))))))
@@ -140,7 +140,7 @@
 
 (add-equal-test 'st-xlate
   '($::
-  (smalltalkAt: Collection)
+  (smalltalkAt: 'Collection)
   'addSelector:withMethod:
   'printOn:
   (lambda (self aStream)
@@ -172,7 +172,7 @@
   "Collection ~? printOn:")
 
 (add-equal-test 'st-xlate
-  '($:: ($ (smalltalkAt: Collection) 'class)
+  '($:: ($ (smalltalkAt: 'Collection) 'class)
      'addSelector:withMethod:
      'with:
      (lambda (self anObject)

@@ -38,7 +38,7 @@
 (define Smalltalk (make-eq-hashtable))
 
 (define (smalltalkAt: aSymbol)
-  (primLookop: Smalltalk aSymbol))
+  (hashtable-ref Smalltalk aSymbol st-nil))
 
 (define (smalltalkAt:Put: aSymbol aValue)
   (primSet:toValue: Smalltalk aSymbol aValue))

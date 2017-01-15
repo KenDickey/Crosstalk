@@ -153,7 +153,7 @@
 (define (xlateIdentifier ast)
    (let ( (ident (astIdentifier-symbol ast)) )
      (if (capitalized-symbol? ident) ;; => Smalltalk Global
-         `(smalltalkAt: ,ident)
+         `(smalltalkAt: ',ident)
          ident)
  ) )
 
