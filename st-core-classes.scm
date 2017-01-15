@@ -37,6 +37,12 @@
 ; @@@?? Use a Larceny Environment ??@@@
 (define Smalltalk (make-eq-hashtable))
 
+(define (smalltalkAt: aSymbol)
+  (primLookop: Smalltalk aSymbol))
+
+(define (smalltalkAt:Put: aSymbol aValue)
+  (primSet:toValue: Smalltalk aSymbol aValue))
+
 (define combined-classDescription-var-names
   '(superclass methodDict format
     instanceVariables organization))

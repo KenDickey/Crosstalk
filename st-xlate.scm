@@ -26,7 +26,7 @@
    ((astCascade? ast)
     (xlateCascade ast))
    ((astIdentifier? ast)
-    (astIdentifier-symbol ast))
+    (xlateIdentifier ast))
    ((astLiteral? ast)
     (astLiteral-value ast))
    ((astSelector? ast)
@@ -142,11 +142,24 @@
   )
 )
 
-;;; Return
+;;;; Return
 
 (define (xlateReturn ast)
   `(return ,(AST->scm (astReturn-expression ast)))
 )
+
+
+;;; Identifier
+(define (xlateIdentifier ast)
+   (let ( (ident (astIdentifier-symbol ast)) )
+     (if (capitalized-symbol? ident) ;; => Smalltalk Global
+         `(smalltalkAt: ,ident)
+         ident)
+ ) )
+
+(define (capitalized-symbol? ident)
+  (and (symbol? ident)  ;; invariant: symbol-length > 0
+       (char-upper-case? (string-ref (symbol->string ident) 0))))
 
 
 (define (->scm-args ast-args-list)
