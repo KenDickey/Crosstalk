@@ -1,6 +1,7 @@
 "FILE: 'Set.st'
  IMPLEMENTS: class Set
- AUTHOR: Ken Dickey
+ AUTHOR: Guillermo Polito [Note LICENCE.md in this directory]
+ Modifications by: Ken Dickey
  DATE: 10 January 2017
 "
 

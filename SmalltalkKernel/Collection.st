@@ -1,6 +1,7 @@
 "FILE: 'Collection.st'
  IMPLEMENTS: Collection (abstract) protocol
- AUTHOR: Ken Dickey
+ AUTHOR: Guillermo Polito [Note LICENCE.md in this directory]
+ Modifications by: Ken Dickey
  DATE: 08 January 2017
 
  NOTE: Collection, SequenceableCollection, ArrayedCollection def'ed in st-collection.scm
