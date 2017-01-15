@@ -5,7 +5,7 @@
  DATE: 10 January 2017
 "
 
-Collection newSubclassName: #Set iVars: #(#tally #array) cVars: nil.
+Collection newSubclassName: #Set iVars: #(tally array) cVars: nil.
 
 Set ~> = aSet
 [
