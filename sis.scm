@@ -139,6 +139,7 @@
 (define st-bootstrap-files
   '( "Collection"
      "Set"
+     "Point"
 ;;    @@@more to come...
     )
  )

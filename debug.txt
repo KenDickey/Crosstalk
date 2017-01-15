@@ -52,3 +52,8 @@
 
 ;(debug-parser #false)
 ;(trace-parse-methods #false)
+
+ (load "Temp/Point.scm")
+ (define p ($:: (smalltalkAt: 'Point) 'x:y: 2 3))
+ (display-ivars p)
+ 

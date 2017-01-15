@@ -887,6 +887,11 @@
     ((leftParen)
      (parse-subexpression)
      )
+    ((sharp) ;; symbol
+     (consume-token!) ;; #
+     (consume-token!) ;; <a symbol>
+     (astLiteral prev-token `',(token->native prev-token))
+     )
     (else
      (parse-error "parse-primary: unexpected token"
                   curr-token)

@@ -64,12 +64,12 @@
 (add-equal-test 'st-xlate
   '(lambda (a)
   (call/cc
-    (return)
+   (lambda (return)
     (let ((b nil))
       (let ((%%val%% ($ a 'sin)))
         (set! b %%val%%)
         %%val%%)
-      (return b))))
+      (return b)))))
   (st->scm "[ :a| | b | b := a sin. ^ b ]")
   "[ :a| | b | b := a sin. ^ b ]")
 
@@ -78,8 +78,8 @@
   '(let ((%%val%%
         (lambda (a b)
           (call/cc
-            (return)
-            (return ($:: a 'foo:bar: b ($: c '+ 7)))))))
+            (lambda (return)
+            (return ($:: a 'foo:bar: b ($: c '+ 7))))))))
   (set! block %%val%%)
   %%val%%)
   (st->scm "block := [:a :b| ^(a foo: b bar: c + 7)].")
@@ -100,25 +100,25 @@
      'exampleWithNumber:
      (lambda (self x)
        (call/cc
-         (return)
-         (let ((y nil))
-           ($: ($: ($: true '& ($ false 'not))
-                   '&
-                   ($ nil 'isNil))
-               'ifFalse:
-               (lambda () ($ self 'halt)))
-           (let ((%%val%% ($: ($ self 'size) '+ ($ super 'size))))
-             (set! y %%val%%)
-             %%val%%)
-           ($: #(#\a 'a "a" 1 1.0)
-               'do:
-               (lambda (each)
-                 (let ((receiver (smalltalkAt: 'Transcript)))
-                   ($: (smalltalkAt: 'Transcript) 'show: ($ ($ each 'class) 'name))
-                   ($: recevier 'show: ($ each 'printString))
-                   ($: recevier 'show: " "))))
-           (return ($: x '< y))))))
-  (st->scm
+         (lambda (return)
+           (let ((y nil))
+             ($: ($: ($: true '& ($ false 'not))
+                     '&
+                     ($ nil 'isNil))
+                 'ifFalse:
+                 (lambda () ($ self 'halt)))
+             (let ((%%val%% ($: ($ self 'size) '+ ($ super 'size))))
+               (set! y %%val%%)
+               %%val%%)
+             ($: #(#\a 'a "a" 1 1.0)
+                 'do:
+                 (lambda (each)
+                   (let ((receiver (smalltalkAt: 'Transcript)))
+                     ($: (smalltalkAt: 'Transcript) 'show: ($ ($ each 'class) 'name))
+                     ($: recevier 'show: ($ each 'printString))
+                     ($: recevier 'show: " "))))
+             (return ($: x '< y)))))))
+     (st->scm
 "Object ~> exampleWithNumber: x
 [ |y|
   true & false not & (nil isNil)
@@ -177,13 +177,13 @@
      'with:
      (lambda (self anObject)
        (call/cc
-         (return)
+        (lambda (return)
          (let ((newCollection nil))
            (let ((%%val%% ($ self 'new)))
              (set! newCollection %%val%%)
              %%val%%)
            ($: newCollection 'add: anObject)
-           (return newCollection)))))
+           (return newCollection))))))
   (st->scm "Collection class ~> with: anObject
 [
 \"Answer an instance of me containing anObject.\"

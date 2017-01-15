@@ -303,7 +303,7 @@
 
 ;;; Ask a class to create a new subclass
 (define (newSubclassName:iVars:cVars:
-         selfClass nameSym instanceVarsList classVarsList)
+         selfClass nameSym instanceVars classVars)
    ;; (when (hashtable-ref Smalltalk nameSym #f)
    ;;  (error "Class already exists" nameSym))
   (unless (and (symbol? nameSym)
@@ -313,30 +313,43 @@
                   (char-upper-case? (string-ref name 0)))))
     (error "subclass name must be a symbol which starts uppercase" name))
   ;; (unless (or (string? category) (symbol? category))
-  ;;       (error: "subclass name must be a string or symbol" category))
-  (unless (and (list? instanceVarsList)
-               (every? symbol? instanceVarsList))
-    (error: "InstanceVariableNames must be a list of symbols" instanceVarsList))
-  (unless (and (list? classVarsList)
-               (every? symbol? classVarsList))
-    (error "ClassVariableNames must be a list of symbols" classVarsList))
-  (let* ( (newMetaClass
+  ;;       (error "subclass name must be a string or symbol" category))
+  (unless (or (list? instanceVars) (vector? instanceVars))
+    (error "InstanceVariableNames must be a list or array of symbols"
+           instanceVars))
+  (unless (or (list? classVars) (vector? classVars))
+    (error "ClassVariableNames must be a list or array of symbols"
+           classVars))
+  (let ( (instanceVarsList
+          (if (vector? instanceVars)
+              (vector->list instanceVars)
+              instanceVars))
+         (classVarsList
+          (if (vector? classVars)
+              (vector->list classVars)
+              classVars))
+       )
+    (unless (every? symbol? instanceVarsList)
+      (error "InstanceVariableNames must be a list of symbols" instanceVarsList))
+    (unless (every? symbol? classVarsList)
+      (error "ClassVariableNames must be a list of symbols" classVarsList))
+    (let* ( (newMetaClass
              (instantiateName:superclass:ivars:
-                MetaClass
-                (name->metaName nameSym)
-                (class selfClass) ;;(perform: selfClass 'class)
-                classVarsList))
-          (newSubclass
+              MetaClass
+              (name->metaName nameSym)
+              (class selfClass) ;;(perform: selfClass 'class)
+              classVarsList))
+            (newSubclass
              (instantiateName:superclass:ivars:
-                newMetaClass
-                nameSym
-                selfClass
-                instanceVarsList))
-        )
-    (perform:with: newMetaClass 'thisClass: newSubclass)
-    (primSet:toValue: Smalltalk nameSym newSubclass)
-    newSubclass		;; @@??@@ move initialize to here?
-) )
+              newMetaClass
+              nameSym
+              selfClass
+              instanceVarsList))
+          )
+      (perform:with: newMetaClass 'thisClass: newSubclass)
+      (primSet:toValue: Smalltalk nameSym newSubclass)
+      newSubclass		;; @@??@@ move initialize to here?
+) ) )
 
 ;;; OK.  Now use protoClasses to bootstrap core classes
 
@@ -621,6 +634,16 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
  	(class Object)
         'newSubclassName:iVars:cVars:
         newSubclassName:iVars:cVars:)
+
+(addSelector:withMethod:
+ 	MetaClass
+        'newSubclassName:iVars:cVars:
+        newSubclassName:iVars:cVars:
+        )
+
+(addSelector:withMethod: MetaClass
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
 
 ;; (provide 'st-core-classes)
 

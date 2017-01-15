@@ -127,14 +127,14 @@
      ((null? temps)
       (if addReturn?
           `(lambda ,arguments
-             (call/cc (return) ,@statements))
+             (call/cc (lambda (return) ,@statements)))
           `(lambda ,arguments ,@statements))
       )
      (else
       (if addReturn?
            `(lambda ,arguments
-              (call/cc (return)
-                (let ,temps ,@statements)))
+              (call/cc (lambda (return)
+                (let ,temps ,@statements))))
           `(lambda ,arguments
              (let ,temps ,@statements))
       ))
