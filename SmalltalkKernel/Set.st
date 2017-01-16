@@ -128,7 +128,7 @@ Set ~> grow
 "Grow the elements array and reinsert the old elements."
   | oldElements |
   oldElements := self array.
-  self array: Array new: oldElements size + (oleELements size max: 2).
+  self array: (Array new: oldElements size + (oleELements size max: 2)).
   self tally: 0.
   oldElements do: [ :each | 
 	each == nil
@@ -144,7 +144,7 @@ Set ~> includes: anObject
 Set ~> init: n
 [
 "Initialize array to an array size of n."
-  self array: Array new: n.
+  self array: (Array new: n).
   self tally: 0
 ].
 
