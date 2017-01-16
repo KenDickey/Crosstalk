@@ -40,6 +40,10 @@
     'asString
     (lambda (self) self))
 
+(addSelector:withMethod: 
+    String
+    'asSymbol
+    (lambda (self) (string->symbol self)))
 
 (addSelector:withMethod: 
     String
@@ -162,6 +166,38 @@
            'do:
            (lambda (c) (set! result (cons c result))))
         (list->string (reverse result)))))
+
+(addSelector:withMethod: 
+    String
+    '=
+    (lambda (self other)
+      (and (string? other)
+           (string=? self other))))
+
+(addSelector:withMethod:
+    String
+    'hash
+    string-hash)
+
+(addSelector:withMethod: 
+    String
+    '<
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string<? self other)))
+
+(addSelector:withMethod: 
+    String
+    '<=
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string<=? self other)))
+
+(addSelector:withMethod: 
+    String
+    'copy
+    (lambda (self)
+      (string-copy self)))
 
 (addSelector:withMethod: 
     String

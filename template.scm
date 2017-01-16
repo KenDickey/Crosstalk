@@ -1,7 +1,7 @@
 ;;; FILE: "st-@@.scm"
 ;;; IMPLEMENTS: @@
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 16 July 2016
+;;; DATE: 16 January 2017
 
 ;; (requires 'st-core-classes)
 

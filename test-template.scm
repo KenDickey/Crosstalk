@@ -1,6 +1,6 @@
 ;;; IMPLEMENTS: Unit tests for st-*.scm
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 29 June 2016
+;;; DATE: 16 January 2017
 
 ;; (require 'st-*)
 

@@ -15,7 +15,7 @@
 (define nil   '())
 
 ;; @@FIXME: make continuable -- use Message object
-(define (doesNotUnderstand: self selector)
+(define (doesNotUnderstand: self selector) ;; ANSI
 
 ;; NOTE: (make-message-send self selector rest-args)
 ;; @@FIXME: Conditions
@@ -148,11 +148,18 @@
         (lambda (self other) (not (eqv? self other))))
 
 ;; @@ copy   -- ANSI
-;; @@ doesNotUnderstand:  -- ANSI
+
 ;; @@ error:  -- ANSI
-;; @@ hash -- ANSI
-;; @@ identityHash -- ANSI
-;; @@ printOn: -- ANSI
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'hash   ;; ANSI
+        equal-hash)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'identityHash   ;; ANSI
+        object-hash)
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -161,7 +168,7 @@
 
 (primAddSelector:withMethod:
  	st-object-behavior
-        'printOn: 
+        'printOn:  ;; ANSI
         (lambda (self outport)
           (if (perform:with: self 'respondsTo: 'name)
               (display (perform: self 'name) outport)

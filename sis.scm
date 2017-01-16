@@ -35,6 +35,10 @@
     (primitives
        vector-like-ref
        load compile-file
+       object-hash
+       equal-hash
+       string-hash
+       symbol-hash
        procedure-name
        procedure-name-set!
        procedure-arity
@@ -120,6 +124,7 @@
      "st-number"
      "st-collection"
      "st-string"       ;; String
+     "st-symbol"       ;; Symbol
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
      "st-set"          ;; Set
