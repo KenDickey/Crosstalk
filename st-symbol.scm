@@ -60,7 +60,7 @@
 (perform:with:
      Symbol
      'category:
-     "Kernel-Text")
+     '|Kernel-Text|)
 
 (perform:with:
      Symbol

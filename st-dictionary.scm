@@ -29,7 +29,7 @@
 (perform:with:
      Dictionary
      'category:
-     "Collections-Unordered")
+     '|Collections-Unordered|)
 
 (perform:with:
      Dictionary
@@ -41,16 +41,22 @@
  I inherit many operations from Set."
 )
 
+(perform:with:
+     IdentityDictionary
+     'comment:
+"I am like a Dictionary, except that keys are compared with #== instead of #="
+)
+
 (addSelector:withMethod:
      (class Dictionary)
      'new:
-     (lambda (self size)
+     (lambda (self size) ;; eqv -> #=
        (make-eqv-hashtable size)))
 
 (addSelector:withMethod:
      (class IdentityDictionary)
      'new:
-     (lambda (self size)
+     (lambda (self size) ;; eq -> #==
        (make-eq-hashtable size)))
 
 
@@ -90,7 +96,40 @@
        value)
 )
 
-;;; @@@ much more to come @@@
+(addSelector:withMethod:
+     Dictionary
+     'copy
+     (lambda (self)
+       (hashtable-copy self))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'keysDo:
+     (lambda (self aBlock)
+       (let ( (keys-vec (hashtable-keys self)) )
+         (vector-for-each aBlock keys-vec)))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'keysAndValuesDo: 
+     (lambda (self twoArgBlock)
+       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
+         (vector-for-each twoArgBlock keys-vec vals-vec)))
+)
+
+
+(addSelector:withMethod:
+     Dictionary
+     'valuesDo: 
+     (lambda (self aBlock)
+       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
+         (vector-for-each aBlock vals-vec)))
+)
+
+
+;;; fillIn@@dictionary
 
 ;; (provides st-dictionary)
 

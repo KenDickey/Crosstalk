@@ -4,18 +4,62 @@
 
 ;; (require 'st-dictionary)
 
-(define (setup-st-dictionary)   #f)
-(define (cleanup-st-dictionary) #f)
+(define %%dict%% #false)
+(define (setup-st-dictionary)
+  (set! %%dict%% ($ Dictionary 'new))
+  ($:: %%dict%% 'at:put: 'a 1)
+  ($:: %%dict%% 'at:put: 'b 2)
+  ($:: %%dict%% 'at:put: 'c 3)
+)
+(define (cleanup-st-dictionary)
+  (set! %%dict%% #f)
+)
 
 (add-test-suite 'st-dictionary
                 setup-st-dictionary
                 cleanup-st-dictionary)
 
-;; (add-equal-test 'st-dictionary
-;;   (vector 3)
-;;   (perform:with: Array
-;;                  'with: 3)
-;;   "Array with: 3")
+(add-equal-test 'st-dictionary
+  3
+  ($ %%dict%% 'size)
+  "size")
+
+(add-equal-test 'st-dictionary
+  2
+  ($: %%dict%% 'at: 'b)
+  "at:")
+
+(add-equal-test 'st-dictionary
+  '(c b a)
+  (let ( (keys '()) )
+    ($: %%dict%%
+      'keysDo:
+      (lambda (k)
+        (set! keys (cons k keys))))
+    keys)
+  "keysDo:")
+
+(add-equal-test 'st-dictionary
+  6
+  (let ( (total 0) )
+    ($: %%dict%%
+      'valuesDo:
+      (lambda (v)
+        (set! total (+ total v))))
+     total)
+  "valuesDo:")
+
+
+(add-equal-test 'st-dictionary
+  #((c b a) 6)
+  (let ( (keys '()) (total 0) )
+    ($: %%dict%%
+      'keysAndValuesDo:
+      (lambda (k v)
+        (set! keys (cons k keys))
+        (set! total (+ total v))))
+    (vector keys total))
+  "keysAndValuesDo:")
 
 ;; (ensure-exception-raised 'st-dictionary
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
