@@ -37,7 +37,7 @@ This is very much a work in progress.
 
 ## The story so far..
   1. Dispatch mechanics (message send with #perform:)
-  2. Class Structure (bootstrap + fixup; classes can create subclasses)
+  2. Class Structure (bootstrap + fixup; class/metaClass hierarchy setup)
   3. Basic unit tests (need to be populated)
   4. [**in progress**] Translation of st kernel code into scheme.
      + needs Environments for name lookup
@@ -48,11 +48,31 @@ This is very much a work in progress.
   - Fill in the class structure (approx ANSI)
     + Present Scheme native objects [**Basics working; needs fill-in**]
   - Parsing Smalltalk with location/position info [**Mostly working**]
+    + Need to pass location info thru for debug [to do!]
   - Transliteration into Scheme [**IN PROGRESS**]
   - Read and execute Smalltalk code directly
     + Fill in bootstrap by transliterating Smalltalk runtime [*in progress*]
   - Look at runtime issues
   - _Bootstrap Morphic_
     
+## Processing Notes
+  - The control file is "sis.scm".  This imports Scheme functions and loads the system.
+  - There are two phases: the Scheme bootstrap and the Smalltalk bootstrap
+    + The Scheme bootstrap implements St code function and exposes Scheme datatypes.
+    This code also includes a St parser and translator into Scheme which allows for the St bootstrap to be translated.
+    + The Smalltalk bootstrap is the St kernel code which is xlated and loaded. 
+
+The main idea here is to minimize the Scheme code and max the Smalltalk code.
+
+How small can we make the Scheme support core?
+
+How best to stage in Smalltalk functionality?
+  - Compiling (St in St)
+  - Debug (w St sources)
+  - Unit testing; ANSI & system self test
+  - Morphic UI/graphic framework
+  - Host Cuis Smalltalk on top of this St kernel
+
+
 
 
