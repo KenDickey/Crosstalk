@@ -43,6 +43,10 @@
 (define (smalltalkAt:Put: aSymbol aValue)
   (primSet:toValue: Smalltalk aSymbol aValue))
 
+;;; Enable reflective introspection
+;; Note: Dictionary Class undefined here..
+(smalltalkAt:Put: 'Smalltalk Smalltalk)
+
 (define combined-classDescription-var-names
   '(superclass methodDict format
     instanceVariables organization))

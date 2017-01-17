@@ -123,7 +123,7 @@
 (define st-object-behavior       (make-mDict-placeholder 'Object))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
-
+(define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
 
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
@@ -342,6 +342,7 @@
         (else
          (error "Wierd port: " thing)))
       )
+      ((method-dictionary? thing) st-dictionary-behavior)
       ;; (pare? thing) ;; err
       ;; list -> err
       ;; input-file 4
@@ -581,6 +582,7 @@
     (list->st-array (reverse reversed-args))
 ) )
 
+;;;
 
 (define (primSetClass: behavior class)
   (primSet:toValue: behavior 'class (lambda (self) class)))
