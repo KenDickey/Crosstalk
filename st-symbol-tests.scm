@@ -11,11 +11,10 @@
                 setup-st-symbol
                 cleanup-st-symbol)
 
-;; (add-equal-test 'st-symbol
-;;   (vector 3)
-;;   (perform:with: Array
-;;                  'with: 3)
-;;   "Array with: 3")
+(add-equal-test 'st-symbol
+     6
+     ($ '|123456| 'size)
+     "size")
 
 ;; (ensure-exception-raised 'st-symbol
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

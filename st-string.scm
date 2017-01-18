@@ -15,7 +15,7 @@
 
 (perform:with:
      String
-     'category: "Kernel-Text")
+     'category: '|Kernel-Text|)
 
 (perform:with:
      String
@@ -39,11 +39,6 @@
     String
     'asString
     (lambda (self) self))
-
-(addSelector:withMethod: 
-    String
-    'asSymbol
-    (lambda (self) (string->symbol self)))
 
 (addSelector:withMethod: 
     String
