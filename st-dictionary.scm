@@ -12,6 +12,16 @@
 ;; Er, its a Dictionary _and_ a Set of Associations.
 ;; Huh? Man, this be confuzin!
 
+;;; @@FIXME: Associations
+;; This class definition is completed at the Smalltalk
+;; level because Associations are defined in the
+;; Smalltalk layer.
+
+;; One is tempted to alias Association with a Cons cell
+;; but this punning could lead to strange bugs, so
+;; Associations are full St objects at this time.
+
+
 (define Dictionary
   (newSubclassName:iVars:cVars:
    Set
@@ -80,13 +90,56 @@
 
 (addSelector:withMethod:
      Dictionary
+     'at:ifAbsent:
+     (lambda (self key absentThunk)
+       (if (hashtable-contains? self key)
+           (hashtable-ref self key nil)
+           (absentThunk)))
+)
+
+(addSelector:withMethod:
+     Dictionary
      'at:
      (lambda (self key)
-       (let ( (result (hashtable-ref self key '%%bogus%%)) )
-         (if (eq? result '%%bogus%%)
-             (error "Key not found" self key) ;;@@FIXME: keyNotFound error
-             result)))
- )
+       ($:: self
+            'at:ifAbsent:
+            key
+            (lambda () (error "key not found" self key))))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'at:ifAbsentPut:
+     (lambda (self key valueThunk)
+       (when (hashtable-contains? self key)
+         (hashtable-set! self key (valueThunk))))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'at:ifPresent:ifAbsent:
+     (lambda (self key presentThunk absentThunk)
+       (if (hashtable-contains? self key)
+           (presentThunk)
+           (absentThunk)))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'at:ifPresent:
+     (lambda (self key presentThunk)
+       (if (hashtable-contains? self key)
+           (presentThunk)
+           st-nil))
+)
+
+
+(addSelector:withMethod:
+     Dictionary
+     'includesKey:
+     (lambda (self key)
+       (hashtable-contains? self key))
+)
 
 (addSelector:withMethod:
      Dictionary
@@ -128,6 +181,55 @@
          (vector-for-each aBlock vals-vec)))
 )
 
+(addSelector:withMethod:
+     Dictionary
+     'keys
+     (lambda (self) (hashtable-keys self))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'values
+     (lambda (self)
+       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
+         vals-vec))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'removeKey:ifAbsent:
+     (lambda (self key absentThunk)
+       (if (hashtable-contains? self key)
+           (hashtable-delete! self key)
+           (absentThunk)))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'removeKey:
+     (lambda (self key)
+       ($:: self
+            'removeKey:ifAbsent:
+            key
+            (lambda () (error "key not found" self key))))
+)
+
+(addSelector:withMethod:
+     Dictionary
+     'keysAndValuesRemove: 
+     (lambda (self twoArgPredicate?)
+       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
+         (let ( (keys-to-remove '()) )
+           (vector-for-each
+            (lambda (k v)
+              (when (twoArgPredicate? k v)
+                (set! keys-to-remove
+                      (cons k keys-to-remove))))
+            keys-vec
+            vals-vec)
+           (for-each (lambda (k) ($: self 'removeKey k))
+                     keys-to-remove))))
+)
 
 ;;; fillIn@@dictionary
 
