@@ -222,6 +222,9 @@
           (consume-token!))
         (list (astReturn return-exp)))
      )
+    ((blockEnd) ;; don't process
+     nil
+     )
     (else
      (let ( (exp (parse-expression)) )
        (skip-whitespace)
@@ -678,7 +681,7 @@
   (if (eq? 'blockEnd (curr-token-kind))
       (begin ;; no statements
         (consume-token!)
-        (astBlock args temps '() #false)) ;; use literal st-nil ?
+        (astBlock args temps '() #false))
       (let ( (statements (parse-statements)) )
         (skip-whitespace)
         (unless (eq? 'blockEnd (curr-token-kind))

@@ -1,5 +1,5 @@
 ;;; FILE: "st-stream.scm"
-;;; IMPLEMENTS: Stream, TextStream, ByteStream
+;;; IMPLEMENTS: Stream, CharStream, ByteStream
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 24 July 2016
 
@@ -46,15 +46,16 @@
    Stream
    'CharStream '() '())
 )
-(set! st-text-stream-behavior (perform: CharStream 'methodDict))
+
+(set! st-char-stream-behavior (perform: CharStream 'methodDict))
 
 (perform:with:
-     (class CharStream)
+     CharStream
      'category:
      '|Collections-Streams|)
 
 (perform:with:
-     (class CharStream)
+     CharStream
      'comment:
 "I am a stream of Unicode characters.  Use a ByteStream if you want bytes."
 )
@@ -125,12 +126,12 @@
 (set! st-byte-stream-behavior (perform: ByteStream 'methodDict))
 
 (perform:with:
-     (class ByteStream)
+     ByteStream
      'category:
      '|Collections-Streams|)
 
 (perform:with:
-     (class ByteStream)
+     ByteStream
      'comment:
 "I am a stream of bytes.  Use CharStream if you want Unicode characters."
 )

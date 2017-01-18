@@ -351,7 +351,7 @@
               instanceVarsList))
           )
       (perform:with: newMetaClass 'thisClass: newSubclass)
-      (primSet:toValue: Smalltalk nameSym newSubclass)
+      (smalltalkAt:Put: nameSym newSubclass)
       newSubclass		;; @@??@@ move initialize to here?
 ) ) )
 
@@ -415,6 +415,10 @@
 (perform:with: MetaClass 'superclass: ClassDescription)
 (perform:with: ClassDescription
                'subclasses: (list Class MetaClass))
+
+;; make accessable to Smalltalk
+(smalltalkAt:Put: 'Class Class)
+(smalltalkAt:Put: 'MetaClass MetaClass)
 
 ;;; Track which methods are added to a particular class
 ;;;  so they are not copied over from above.
@@ -645,7 +649,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
         newSubclassName:iVars:cVars:
         )
 
-(addSelector:withMethod: MetaClass
+(addSelector:withMethod: Behavior
                          'addSelector:withMethod:
                          addSelector:withMethod:)
 

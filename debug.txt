@@ -7,8 +7,9 @@
 
 ;; (xlate-st-bootstrap)
 
-
+(smalltalk-keys)
 (display-ivars st-obj)
+(display-obj st-obj)
 (class obj)
 (superclass obj)
 (display-allSupers obj)
@@ -44,10 +45,6 @@
 (import (primitives trace untrace trace-entry trace-exit))
 
 (debug-parser #true)
-(trace-parse-methods #true)
-
-(trace-parse-methods #true)
-
 (trace-parse-methods #true)
 
 ;(debug-parser #false)

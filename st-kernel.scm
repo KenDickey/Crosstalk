@@ -593,10 +593,20 @@
 ;;;======================================================
 ;;; What do we have here?
 
+;; Smalltalk
+
+(define (symbol<? a b)
+  (string<? (symbol->string a) (symbol->string b)))
+
+(define (smalltalk-keys)
+  (vector-sort
+   symbol<?
+   (hashtable-keys Smalltalk)))
+
 ;; What selectors does  obj  respond to?
 (define (selectors obj)
   (list-sort
-   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
+   symbol<?
    (primSelectors (behavior obj))))
 
 (define (display-selectors obj)
@@ -604,10 +614,9 @@
 
 (define (inst-method-names class)
   (list-sort
-   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
+   symbol<?
    (perform: class 'myMethodNames)))
     
-
 ;; Most useful..
 (define (display-ivars st-obj)
   (if (st-object? st-obj)
@@ -725,6 +734,8 @@
    )
 ;;  (newline)
  )
+
+
 
 ;;;======================================================
 

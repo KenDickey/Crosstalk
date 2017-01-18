@@ -132,6 +132,7 @@
      "st-tokenizer"    ;; Stream -> tokens
      "st-parse"        ;; tokens -> AST
      "st-xlate"	       ;; AST -> Scheme
+     "st-stream"       ;; Stream CharStream ByteStream
      "st-dictionary"   ;; Dictionary
 ;;     @@@more to come...
     )
