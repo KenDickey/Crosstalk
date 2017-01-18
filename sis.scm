@@ -50,6 +50,9 @@
        current-directory
        )
     (srfi :48) ;; intermediate-format-strings
+    ;; For st-eval (in "st-xlate.scm")
+    (rnrs eval) 
+    (scheme repl) ; (interaction-environment)
 )
 
 ;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.

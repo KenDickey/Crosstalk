@@ -57,3 +57,16 @@
  (define p ($:: (smalltalkAt: 'Point) 'x:y: 2 3))
  (display-ivars p)
  
+(import (rnrs eval) (scheme repl))
+(define (st-eval st-string)
+  (eval (st->scm st-string) (interaction-environment)))
+
+(st-eval
+"Class ~> displayOn: charStream indent: indent delta: delta
+[ charStream newLine.
+  indent timesRepeat: [ charStream space ].
+  self printOn: charStream.
+  self subclassesDo: [ :s |
+       s displayOn: charStream indent: delta + indent delta: delta
+  ].
+].")

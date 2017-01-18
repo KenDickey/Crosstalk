@@ -103,6 +103,15 @@
              'do:
              (lambda (aChar) (write-char aChar self)))))
 
+(addSelector:withMethod:
+        CharStream
+        'newLine
+        (lambda (self) (write-char #\newline self)))
+
+(addSelector:withMethod:
+        CharStream
+        'space
+        (lambda (self) (write-char #\space self)))
 
 
 

@@ -375,6 +375,10 @@
       (format outp "~%;;   -- e o f ---    ;;~%")
 ) ) )
 
+;;; st-eval
+(define (st-eval st-string)
+  (eval (st->scm st-string) (interaction-environment)))
+
 ;; (define xlate
 ;;   (newSubclassName:iVars:cVars:
 ;;    Object

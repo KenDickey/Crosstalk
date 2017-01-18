@@ -468,7 +468,18 @@
 ;;; Rational (Fraction)
 ; @@@ MORE ..@@@
 ;;; Integer
+
 ; @@@ MORE ..@@@
+
+(addSelector:withMethod: 
+ 	Integer
+        'timesRepeat:
+        (lambda (self aThunk)
+          (let loop ( (count 0) )
+            (when (< count self)
+              (aThunk)
+              (loop (+ count 1)))))
+)
 
 ;; (provide 'st-number)
 
