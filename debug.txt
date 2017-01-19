@@ -14,6 +14,7 @@
 (superclass obj)
 (display-allSupers obj)
 (display-subs obj) ;; direct subclasses
+(display-subclasses class)
 (allInstVarNames st-obj)
 (allSuperclasses st-obj)
 (selectors obj)
@@ -59,7 +60,7 @@
   (eval (st->scm st-string) (interaction-environment)))
 
 (st-eval
-"Class ~> displayOn: charStream indent: indent delta: delta
+"Object ~> displayOn: charStream indent: indent delta: delta
 [ charStream newLine.
   indent timesRepeat: [ charStream space ].
   self printOn: charStream.

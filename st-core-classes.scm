@@ -16,11 +16,11 @@
 ;; A class's shape (class variables) and behavior (class methods)
 ;;   is defined in the instance class's metaClass 
 
-;; Classes are instances of metaCLasses
+;; Classes are instances of metaClasses
 ;; metaClasses are instances of class MetaClass
 
 ;; We tie these together here by making instances and then setting
-;;  up the proper references via instance variabkes and behaviors.
+;;  up the proper references via instance variables and behaviors.
 
 ;; Boolean superclass -> Object
 ;; Object  superclass -> nil  (ground case)
@@ -44,7 +44,7 @@
   (primSet:toValue: Smalltalk aSymbol aValue))
 
 ;;; Enable reflective introspection
-;; Note: Dictionary Class undefined here..
+;; Note: Dictionary Class is undefined at this point..
 (smalltalkAt:Put: 'Smalltalk Smalltalk)
 
 (define combined-classDescription-var-names
@@ -103,11 +103,60 @@
         (append (allSuperclasses mySuper) (list mySuper)))
 ) )
 
+(define (allSubclasses a-class)
+  ;; NB: Class/Object/.. wraps around
+  ;; ( Class is an Object; Object is a Class )
+  (let process-loop ( (all-subs '()) (to-process (list a-class)) )
+    (if (null? to-process)
+        all-subs ; done
+        (let obj-loop ( (directSubs ($ (car to-process) 'subclasses))
+                        (allSubs all-subs)
+                        (toProcess (cdr to-process)) )
+          (cond
+           ((null? directSubs)
+            (process-loop allSubs toProcess)
+            )
+           ((eq? (car directSubs) a-class) ; elide self
+            (obj-loop (cdr directSubs) allSubs toProcess)
+            )
+           ((memq (car directSubs) allSubs) ; already seen
+            (obj-loop (cdr directSubs) allSubs toProcess)
+            )
+           (else
+            (obj-loop (cdr directSubs)
+                      (cons (car directSubs) allSubs)
+                      (cons (car directSubs) toProcess))
+            )
+          )
+) ) ) )
+    
+
 (define (display-allSupers obj)
   (display-obj (allSuperclasses obj)))
 
 (define (display-subs obj) ;; direct subclasses
   (display-obj (perform: obj 'subclasses)))
+
+(define (display-spaces n)
+  (let loop ( (count 0) )
+    (when (< count n)
+      (display #\space)
+      (loop (+ count 1)))))
+
+(define (display-subs class shown indent delta)
+  (when (not (memq class shown))
+    (newline)
+    (display-spaces indent)
+    (display ($ class 'printString))
+    (for-each
+     (lambda (sub)
+       (display-subs sub (cons class shown) (+ delta indent) delta))
+     ($ class 'subclasses))
+) )
+
+(define (display-subclasses class)
+  (display-subs class '() 0 3))
+  
 
 ;; Below basicNew: Make a new instance of some class
 (define (primNew: classSelf num-object-slots)
@@ -650,6 +699,18 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
         )
 
 (addSelector:withMethod: Behavior
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: (class Behavior)
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: (class Object)
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: (class (class Object)) ;; MetaClass
                          'addSelector:withMethod:
                          addSelector:withMethod:)
 
