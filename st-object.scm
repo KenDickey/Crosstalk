@@ -74,6 +74,12 @@
   (apply (lookupSelector: self selectorSym)
          (cons self argsList)))
 
+(define (perform:withArguments:inSuperclass:
+           self selectorSym argsArray superClass)
+  (apply (lookupSelector: superClass selectorSym)
+         (cons self (vector->list argsArray))))
+
+
 ;;; Shorter Syntax
 (define $     perform:)
 (define $:    perform:with:)
@@ -117,6 +123,11 @@
 
 (primAddSelector:withMethod:
  	st-object-behavior
+        'perform:withArguments:inSuperclass:
+        perform:withArguments:inSuperclass:)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
         'doesNotUnderstand:    ;; ANSI
         doesNotUnderstand:)
 
@@ -146,10 +157,6 @@
  	st-object-behavior
         '~=   ;; ANSI
         (lambda (self other) (not (eqv? self other))))
-
-;; @@ copy   -- ANSI
-
-;; @@ error:  -- ANSI
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -217,8 +224,20 @@
 
 (primAddSelector:withMethod:  ;; base case
  	st-object-behavior
-        'basicSize
-        (lambda (self) 0)
+        'basicSize ;; number of indexable slots in basic object
+        (lambda (self)
+          (cond
+            ((vector? self)
+             (if (and (< 1 (vector-length self))
+                      (eq? %%st-object-tag%% (st-obj-tag self)))
+                 (- (vector-length self) num-header-slots)
+                 (vector-length self))
+             )
+            ((string? self)     (string-length self))
+            ((symbol? self)     (symbol-length self))
+            ((bytevector? self) (bytevector-length self))
+            (else 0)
+        ) )
 )
 
 (primAddSelector:withMethod:
@@ -226,6 +245,13 @@
         'shallowCopy  
         ;; A shallow copy shares slot-values
         (lambda (self) (vector-copy self))
+)
+
+(primAddSelector:withMethod:
+ 	st-object-behavior  ;; #copy -- ANSI
+        'copy  ;; NB: Subclasses should override #copy
+               ;; NOT #basicCopy
+        (lambda (self) (perform: self 'basicCopy))
 )
 
 (primAddSelector:withMethod:
@@ -240,7 +266,51 @@
         'initialize
         (lambda (self) self))
 
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'basicCopy
+        (lambda (self)
+          (cond
+            ;; NB: vector-copy works for all St objects
+            ((vector? self)     (vector-copy self)) 
+            ((string? self)     (string-copy self))
+            ((symbol? self)     (symbol-copy self))
+            ((procedure?  self) (procedure-copy  self))
+            ((bytevector? self) (bytevector-copy self))
+            ((hashtable?  self) (hashtable-copy  self))
+            ((list? self)       (list-copy self)) ;; @@ Not St; Error?
+            ;;@@ environment, port, ..?
+            (else self) ;; immediates not copyable!
+        ) )
+)
 
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'error:  ;; ANSI
+        (lambda (self aString)
+          (error aString self))) ;;; @@FIXME: Debug!
+
+;; From PharoCandle.  Don't know why these are in Object?!?
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'putAscii:
+        (lambda (self asciiValue)
+          (display (integer->char asciiValue))))
+
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'putString:
+        (lambda (self aString)
+          (display aString))) ;;@@FIXME: St->Scheme
+
+
+
+
+;;;@@FIXME; to do:
+; #instVarAt: #instVarAt:put:
+; #handleExceptionName:context:
+; #become: #pointsTo: 
+; #tryPrimitive:withArgs:
 
 
 ;;;			--- E O F ---			;;;

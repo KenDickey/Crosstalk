@@ -145,7 +145,8 @@
 )
 
 (define st-bootstrap-files
-  '( "Collection"
+  '( "Object"
+     "Collection"
      "Set"
      "Point"
 ;;    @@@more to come...

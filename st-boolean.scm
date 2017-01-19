@@ -59,10 +59,16 @@
 (perform:with:
      Boolean
      'comment:
-"Boolean is an abstract class defining the protocol for logic testing operations and conditional control structures for the logical values represented by the instances of its subclasses True and False.
+"Boolean is an abstract class defining the protocol for logic testing
+ operations and conditional control structures for the logical values
+ represented by the instances of its subclasses True and False.
 
-Boolean redefines #new so no instances of Boolean can be created. It also redefines several messages in the 'copying' protocol to ensure that only one instance of each of its subclasses True (the global true, logical assertion) and False (the global false, logical negation) ever exist in the system."
-     )
+Boolean redefines #new so no instances of Boolean can be created.
+ It also redefines several messages in the 'copying' protocol to ensure
+ that only one instance of each of its subclasses True (the global true,
+ logical assertion) and False (the global false, logical negation) ever
+ exist in the system."
+)
 
 (perform:with:
      True
@@ -73,9 +79,13 @@ Boolean redefines #new so no instances of Boolean can be created. It also redefi
      'comment:
 "True defines the behavior of its single instance, true -- logical assertion.
 
-Notice how the truth-value checks become direct message sends, without the need for explicit testing.
+Notice how the truth-value checks become direct message sends, without the
+ need for explicit testing.
 
-Be aware however that most of these methods are not sent as real messages in normal use. Most are inline coded by the compiler/translator - avoiding the overhead of the full message sends. So simply redefining these methods here will have no effect."
+Be aware however that most of these methods are not sent as real messages in
+ normal use. Most are inline coded by the compiler/translator - avoiding the
+ overhead of the full message sends. So simply redefining these methods here
+ will have no effect."
 )
 
 (perform:with:
@@ -85,7 +95,9 @@ Be aware however that most of these methods are not sent as real messages in nor
 (perform:with:
      UndefinedObject
      'comment:
-"I describe the behavior of my sole instance, nil. nil represents a prior value for variables that have not been initialized, or for results which are meaningless."
+"I describe the behavior of my sole instance, nil. nil represents a prior
+ value for variables that have not been initialized, or for results which
+ are meaningless."
 )
 
 (perform:with:
@@ -97,9 +109,13 @@ Be aware however that most of these methods are not sent as real messages in nor
      'comment:
 "False defines the behavior of its single instance, false -- logical negation.
 
-Notice how the truth-value checks become direct message sends, without the need for explicit testing.
+Notice how the truth-value checks become direct message sends, without the
+ need for explicit testing.
 
-Be aware however that most of these methods are not sent as real messages in normal use. Most are inline coded by the compiler/translator - avoiding the overhead of the full message sends. So simply redefining these methods here will have no effect."
+Be aware however that most of these methods are not sent as real messages
+ in normal use. Most are inline coded by the compiler/translator - avoiding
+ the overhead of the full message sends. So simply redefining these methods
+ here will have no effect."
 )
 
 
@@ -234,7 +250,11 @@ Be aware however that most of these methods are not sent as real messages in nor
         Object
         'ifNotNilDo:
         (lambda (self block) (block self)))
- 
+
+(addSelector:withMethod:
+        UndefinedObject
+        'basicCopy
+        (lambda (self) self))
 
 ;;; Boolean True False
 

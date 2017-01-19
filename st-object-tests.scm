@@ -121,7 +121,7 @@
   "anObject == anObject")
 
 (add-equal-test 'st-object
-  0
+  10 ;; (display-ivars Object)
   (perform: Object 'basicSize)
   "Object basicSize")
 
