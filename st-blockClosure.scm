@@ -22,7 +22,8 @@
 (perform:with:
      BlockClosure
      'comment:
-"I am a block closure -- a bit of code which remembers the environment in which I was created.  I can be created, saved, stored in a variable, and used without being named."
+"I am a block closure -- a bit of code which remembers the environment in which I was created.
+ I can be created, saved, stored in a variable, and used without being named."
 )
 
 (addSelector:withMethod: 

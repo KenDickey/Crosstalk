@@ -85,6 +85,14 @@
      (lambda (self) (string-length (symbol->string self))))
 
 
+(addSelector:withMethod: 
+    Symbol
+    '|,|
+    (lambda (self aString)
+      (string-append (symbol->string self)
+                     (if (symbol? aString)
+                         (symbol->string aString)
+                         aString))))
 
 ;;; symbol@FillMeIn
 

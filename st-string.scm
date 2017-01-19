@@ -105,7 +105,10 @@
     String
     '|,|
     (lambda (self aString)
-      (string-append self aString)))
+      (string-append self
+                     (if (symbol? aString)
+                         (symbol->string aString)
+                         aString))))
 
 (addSelector:withMethod: 
     (class String)

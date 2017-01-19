@@ -23,7 +23,8 @@
 (perform:with:
      Set
      'comment:
-     "I am an unordered collection of non-nil objects which does not contain duplicates."
+"I am an unordered collection of non-nil objects
+ which does not contain duplicates."
 )
 
 (addSelector:withMethod:

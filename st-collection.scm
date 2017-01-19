@@ -30,7 +30,9 @@
 (perform:with:
      SequenceableCollection
      'comment:
-"I am an abstract superclass for collections that have a well-defined order associated with their elements. Thus each element is externally-named by integers referred to as indices."
+"I am an abstract superclass for collections that have a well-defined order
+ associated with their elements. Thus each element is externally-named by
+ integers referred to as indices."
 )
 
 (perform:with:
@@ -46,7 +48,8 @@
 (perform:with:
      ArrayedCollection
      'comment:
-"I am an abstract collection of elements with a fixed range of integers (from 1 to n>=0) as external keys."
+"I am an abstract collection of elements with a fixed range
+ of integers (from 1 to n>=0) as external keys."
 )
 
 (perform:with:
