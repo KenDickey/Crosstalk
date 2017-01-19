@@ -106,6 +106,7 @@
 (define (allSubclasses a-class)
   ;; NB: Class/Object/.. wraps around
   ;; ( Class is an Object; Object is a Class )
+  ;; Returns a list of St Class objects, without a-class
   (let process-loop ( (all-subs '()) (to-process (list a-class)) )
     (if (null? to-process)
         all-subs ; done
