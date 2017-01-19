@@ -41,7 +41,7 @@
             "Failed message send: #"
             (symbol->string selector)
             " to ")
-           (perform: receiver 'printString)
+           receiver
            rest-args)
 ) )
 
