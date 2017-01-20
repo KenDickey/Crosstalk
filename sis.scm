@@ -20,6 +20,7 @@
 ;;   (run-source-tests)
 ;;
 ;; (xlate-st-bootstrap)
+;; (load-st-bootstrap)
 
 (import
     (rnrs hashtables)
@@ -146,9 +147,11 @@
 
 (define st-bootstrap-files
   '( "Object"
+     "Association"
      "Collection"
      "Set"
      "Point"
+     "ValueLink"
 ;;    @@@more to come...
     )
  )
@@ -181,6 +184,14 @@
 
 (define (xlate-st-bootstrap)
   (for-each xlate-st-file  st-bootstrap-files))
+
+(define (load-st-bootstrap)
+  (format #t "Loading translated files:~%")
+  (for-each
+   (lambda (fn)
+     (format #t "~t~a~%" fn)
+     (load (string-append temp-dir-prefix fn ".scm")))
+   st-bootstrap-files))
 
 
 ;;;			--- E O F ---			;;;
