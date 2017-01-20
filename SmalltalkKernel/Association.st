@@ -44,9 +44,9 @@ Association ~> printOn: aStream
 [
 "Print in the format (key->value)."
   aStream nextPut: $(.
-  key printOn: aStream.
+  self key printOn: aStream.
   aStream nextPutAll: '->'.
-  value printOn: aStream.
+  self value printOn: aStream.
   aStream nextPut: $)
 ].
 

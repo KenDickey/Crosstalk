@@ -33,8 +33,8 @@ Dictionary ~> associationsDo: aBlock
  elements (key/value associations)."
   self keysAndValuesDo: [ :key :value |
      aBlock value: (Association key: key value: value)
-  ]
-  self
+  ].
+  ^ self
 ].
 
 Dictionary ~> collect: aBlock
@@ -106,7 +106,7 @@ Dictionary ~> keys
 
 Dictionary ~> printOn: aStream
 [
-  aStream nextPutAll: self class name , ' ('.
+  aStream nextPutAll: self class name , '( '.
   self associationsDo: [ :element | 
 	element printOn: aStream.
 	aStream space
@@ -117,7 +117,7 @@ Dictionary ~> printOn: aStream
 
 Dictionary ~> remove: anObject
 [
-self shouldNotImplement
+  self shouldNotImplement
 ].
 
 Dictionary ~> remove: anObject ifAbsent: exceptionBlock
