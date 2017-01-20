@@ -55,7 +55,8 @@ Set ~> atNewIndex: index put: anObject
 
 Set ~> collect: aBlock
 [
-"Return a Set containing the result of evaluating aBlock for each element of this set."
+"Return a Set containing the result of evaluating aBlock
+ for each element of this set."
   | newSet |
   self tally = 0
 	ifTrue: [ ^ Set new: 2 ].
@@ -84,14 +85,16 @@ Set ~> do: aBlock
 
 Set ~> findElementOrNil: anObject
 [
-"Answer the index of a first slot containing either a nil (indicating an empty slot)
- or an element that matches the given object.
+"Answer the index of a first slot containing either a nil
+ (indicating an empty slot) or an element that matches
+ the given object.
  Answer the index of that slot or zero.
  Fail if neither a match nor an empty slot is found."
   | index |
   index := self scanFor: anObject.
   index > 0
-	ifTrue: [ ^ index ]. "Bad scene.  Neither have we found a matching element
+	ifTrue: [ ^ index ]. "Bad scene.
+        Neither have we found a matching element
 	nor even an empty slot.  No hashed set is ever supposed to get
 	completely full."
   self error: 'There is no free space in this set!'
@@ -174,8 +177,8 @@ Set ~> remove: oldObject ifAbsent: aBlock
 
 Set ~> scanFor: anObject
 [
-"Scan the key array for the first slot containing either a nil (indicating an empty slot)
- or an element that matches anObject.
+"Scan the key array for the first slot containing either a nil
+ (indicating an empty slot) or an element that matches anObject.
  Answer the index of that slot or zero if no slot is found.
  This method will be overridden in various subclasses that 
  have different interpretations for matching elements."

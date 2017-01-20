@@ -183,13 +183,13 @@
 
 (addSelector:withMethod:
      Dictionary
-     'keys
+     'keysArray
      (lambda (self) (hashtable-keys self))
 )
 
 (addSelector:withMethod:
      Dictionary
-     'values
+     'valuesArray
      (lambda (self)
        (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
          vals-vec))

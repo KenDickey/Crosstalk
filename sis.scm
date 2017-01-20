@@ -150,6 +150,7 @@
      "Association"
      "Collection"
      "Set"
+     "Dictionary"
      "Point"
      "ValueLink"
 ;;    @@@more to come...
