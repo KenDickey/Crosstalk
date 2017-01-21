@@ -348,8 +348,7 @@
            st-identity-dictionary-behavior
            st-dictionary-behavior)
        )
-      ;; (pare? thing) ;; err
-      ;; list -> err
+      ((pair? thing)  st-list-behavior)
       ;; input-file 4
       ;; output-file 4
       ;; output-string 4

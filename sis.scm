@@ -128,6 +128,7 @@
      "st-collection"
      "st-string"       ;; String
      "st-symbol"       ;; Symbol
+     "st-list"         ;; proper, immutable lists (interoperate w Scheme)
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
      "st-tokenizer"    ;; Stream -> tokens
