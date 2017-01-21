@@ -86,12 +86,12 @@
  	BlockClosure
         'whileFalse:
         (lambda (self thunk)
-          (let loop ( (value (self)) )
+          (let loop ( (value (thunk)) )
             (if (st-false? value)
                 (begin
                   (thunk)
-                  (loop (self)))
-                value))))
+                  (loop (self))
+                value)))))
 
 (addSelector:withMethod:
  	BlockClosure
@@ -100,8 +100,8 @@
           (let loop ( (value (self)) )
             (if (st-true? value)
                 (begin
-                  (thunk)
-                  (loop (self)))
+                 (thunk)
+                 (loop (self)))
                 value))))
 
 (addSelector:withMethod:

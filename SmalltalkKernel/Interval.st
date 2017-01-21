@@ -7,7 +7,7 @@
 
 SequenceableCollection newSubclassName: #Interval iVars: #(start stop step) cVars: nil.
 
-Interval category: #'Collections-Unordered'.
+Interval category: #'Collections-Ordered'.
 
 Interval comment: 'I represent a finite arithmetic progression.'.
 
@@ -63,16 +63,18 @@ Interval ~> do: aBlock
   (self step < 0)
 	ifTrue: [ 
 		[ self stop <= aValue ]
-			whileTrue: [ 
-				aBlock value: aValue.
-				aValue := aValue + self step ] 
+		whileTrue: [ 
+			aBlock value: aValue.
+			aValue := aValue + self step 
+		] 
 	]
 	ifFalse: [ 
 		[ self stop >= aValue ]
-			whileTrue: [ 
-				aBlock value: aValue.
-				aValue := aValue + self step ] 
-	]
+		whileTrue: [ 
+			aBlock value: aValue.
+			aValue := aValue + self step 
+		] 
+	].
 	self
 ].
 

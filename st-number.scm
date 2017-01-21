@@ -396,6 +396,22 @@
         'arcTan:
         (lambda (self aNumber) (atan self aNumber)))
 
+(addSelector:withMethod: 
+        Number
+        'from:to:
+        (lambda (self start step)
+          (Interval from: start to: stop by: 1)))
+
+(addSelector:withMethod: 
+        Number
+        'to:do:
+        (lambda (start stop aBlock)
+          (let loop ( (index start) )
+            (when (<= index stop)
+              (aBlock index)
+              (loop (+ index 1))))))
+
+
 ;; ##FIXME: Hyperbolics
 
 

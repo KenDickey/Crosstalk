@@ -201,5 +201,8 @@
      (load (string-append temp-dir-prefix fn ".scm")))
    st-bootstrap-files))
 
+(define (add-st)
+  (xlate-st-bootstrap)
+  (load-st-bootstrap))
 
 ;;;			--- E O F ---			;;;
