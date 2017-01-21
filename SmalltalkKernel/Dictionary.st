@@ -53,7 +53,7 @@ Dictionary ~> collect: aBlock
 
 Dictionary ~> do: aBlock
 [
-  self valuesDo: aBlock
+  self associationsDo: aBlock "@@?? #valuesDo: ??@@"
 ].
 
 Dictionary ~> errorKeyNotFound
@@ -106,12 +106,19 @@ Dictionary ~> keys
 
 Dictionary ~> printOn: aStream
 [
-  aStream nextPutAll: self class name , '( '.
-  self associationsDo: [ :element | 
-	element printOn: aStream.
-	aStream space
-  ].
-  aStream nextPut: $)
+  self size < 10
+	ifTrue: [
+	  aStream nextPutAll: self class name , '( '.
+	  self associationsDo: [ :element | 
+		element printOn: aStream.
+		aStream space
+		aStream nextPut: $)
+	  ]
+	]
+	ifFalse: [
+		aStream nextPutAll: self class name, ' of size '.
+		aStream nextPutAll: self size printString.
+	]
 ].
 
 

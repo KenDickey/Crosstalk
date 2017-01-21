@@ -90,7 +90,7 @@
      'withAll:
      (lambda (self aCollection)
        (let ( (elts st-nil) )
-         (perform:with aCollection
+         (perform:with: aCollection
                        'do:
                        (lambda (elt)
                          (set! elts (cons elt elts))))

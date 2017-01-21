@@ -34,6 +34,12 @@
 
 (define primSet:toValue: hashtable-set!)
 
+(define (printName-or-obj obj)
+  (with-exception-handler
+   (lambda (ignored) obj)
+   (lambda () ($ obj 'printString))
+) )
+
 (define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
@@ -41,7 +47,7 @@
             "Failed message send: #"
             (symbol->string selector)
             " to ")
-           receiver
+           (printName-or-obj receiver)
            rest-args)
 ) )
 
