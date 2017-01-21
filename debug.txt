@@ -14,7 +14,7 @@
 (superclass obj)
 (display-allSupers obj)
 (display-subs obj) ;; direct subclasses
-(display-subclasses class)
+(display-subclasses Object)
 (allInstVarNames st-obj)
 (allSuperclasses st-obj)
 (selectors obj)
@@ -30,7 +30,8 @@
 
 (define Mumble (newSubclassName:iVars:cVars: Object 'Mumble '(mumbleString) '(mumbleClassVar)))
 
-(current-directory "/home/chip/SiS")
+(import (primitives current-directory))
+(current-directory "/home/kend/SiS")
 
 (xlate-st-file->scm
   (string-append st-kernel-prefix
@@ -59,12 +60,3 @@
 (define (st-eval st-string)
   (eval (st->scm st-string) (interaction-environment)))
 
-(st-eval
-"Object ~> displayOn: charStream indent: indent delta: delta
-[ charStream newLine.
-  indent timesRepeat: [ charStream space ].
-  self printOn: charStream.
-  self subclassesDo: [ :s |
-       s displayOn: charStream indent: delta + indent delta: delta
-  ].
-].")

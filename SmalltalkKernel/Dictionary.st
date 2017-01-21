@@ -1,5 +1,5 @@
 "FILE: 'Dictionary.st'
- IMPLEMENTS: fiull in class Dictionary
+ IMPLEMENTS: fill in class Dictionary
  AUTHOR: Guillermo Polito [Note LICENCE.md in this directory]
  Modifications by: Ken Dickey
  DATE: 20 January 2017

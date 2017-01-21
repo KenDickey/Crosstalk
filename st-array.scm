@@ -37,6 +37,12 @@
        (vector-length self)))
 
 (addSelector:withMethod:
+     Array
+     'basicSize
+     (lambda (self)
+       (vector-length self)))
+
+(addSelector:withMethod:
      (class Array)
      'basicNew:
      (lambda (self size)

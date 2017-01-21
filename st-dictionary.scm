@@ -21,6 +21,7 @@
 ;; but this punning could lead to strange bugs, so
 ;; Associations are full St objects at this time.
 
+;; (requires 'st-set)
 
 (define Dictionary
   (newSubclassName:iVars:cVars:

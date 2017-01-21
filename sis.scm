@@ -129,11 +129,11 @@
      "st-symbol"       ;; Symbol
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
-     "st-set"          ;; Set
      "st-tokenizer"    ;; Stream -> tokens
      "st-parse"        ;; tokens -> AST
      "st-xlate"	       ;; AST -> Scheme
      "st-stream"       ;; Stream CharStream ByteStream
+     "st-set"          ;; Set
      "st-dictionary"   ;; Dictionary
 ;;     @@@more to come...
     )
@@ -149,7 +149,8 @@
   '( "Object"
      "Association"
      "Collection"
-     "Set"
+     "SequenceableCollection"
+     "ArrayedCollection"
      "Dictionary"
      "Point"
      "ValueLink"
