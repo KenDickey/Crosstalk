@@ -148,6 +148,7 @@
 
 (define st-bootstrap-files
   '( "Object"
+     "Behavior"
      "Association"
      "Collection"
      "SequenceableCollection"
