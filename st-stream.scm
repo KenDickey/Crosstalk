@@ -100,7 +100,7 @@
         'nextPutAll:
         (lambda (self aCollection)
           (perform:with:
-             aCollection
+             ($ aCollection 'asString)
              'do:
              (lambda (aChar) (write-char aChar self)))))
 

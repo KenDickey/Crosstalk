@@ -157,6 +157,7 @@
      "SequenceableCollection"
      "ArrayedCollection"
      "Dictionary"
+     "Interval"
      "Point"
      "ValueLink"
 ;;    @@@more to come...

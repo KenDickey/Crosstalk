@@ -7,7 +7,7 @@
 
 Object newSubclassName: #ValueLink iVars: #(nextLink value) cVars: nil.
 
-ValueLink category: #'Kernel-Collections-Ordered'.
+ValueLink category: #'Collections-Ordered'.
 
 ValueLink ~> = anotherObject
 [
