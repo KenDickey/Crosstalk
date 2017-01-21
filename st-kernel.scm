@@ -124,6 +124,7 @@
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
 (define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
+(define st-identity-dictionary-behavior (make-mDict-placeholder 'IdentityDictionary))
 
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
@@ -342,7 +343,11 @@
         (else
          (error "Wierd port: " thing)))
       )
-      ((method-dictionary? thing) st-dictionary-behavior)
+      ((hashtable? thing)
+       (if (eq? eq? (hashtable-equivalence-function thing))
+           st-identity-dictionary-behavior
+           st-dictionary-behavior)
+       )
       ;; (pare? thing) ;; err
       ;; list -> err
       ;; input-file 4

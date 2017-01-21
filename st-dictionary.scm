@@ -35,7 +35,11 @@
    'IdentityDictionary '() '())
 )
 
-(set! st-dictionary-behavior  (perform: IdentityDictionary 'methodDict))
+(set! st-dictionary-behavior
+      (perform: Dictionary         'methodDict))
+
+(set! st-identity-dictionary-behavior
+      (perform: IdentityDictionary 'methodDict))
 
 (perform:with:
      Dictionary
