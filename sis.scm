@@ -21,6 +21,8 @@
 ;;
 ;; (xlate-st-bootstrap)
 ;; (load-st-bootstrap)
+;;
+;; (display-subclasses Object)
 
 
 (import
