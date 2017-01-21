@@ -2,10 +2,12 @@
 (load "sis.scm")
 (load-source-bootstrap)
 
-;; (load "sis-tests.scm")
-;; (run-source-tests)
+(load "sis-tests.scm")
+(run-source-tests)
 
-;; (xlate-st-bootstrap)
+(xlate-st-bootstrap)
+(load-st-bootstrap)
+
 
 (smalltalk-keys)
 (display-ivars st-obj)
@@ -59,4 +61,10 @@
 (import (rnrs eval) (scheme repl))
 (define (st-eval st-string)
   (eval (st->scm st-string) (interaction-environment)))
+
+(st-eval "[| d | d := Dictionary new.
+ d at: #a put: 1.
+ d at: #b put: 2.
+ d at: #c put: 3.
+ d printString] value.")
 
