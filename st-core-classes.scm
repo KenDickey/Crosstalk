@@ -686,7 +686,16 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
 ;; selector is not in the dictionary, create an error notification."
      (lambda (self selectorSymbol)
-       (primLookup: (perform: self 'methodDict) selectorSymbol))) 
+       (primLookup: (perform: self 'methodDict) selectorSymbol)))
+
+(addSelector:withMethod:
+     Object
+     '>>
+;; "Answer the compiled method associated with the argument, selector (a 
+;; Symbol), a message selector in the receiver's method dictionary. If the 
+;; selector is not in the dictionary, create an error notification."
+     (lambda (self selectorSymbol)
+       (primLookup: (perform: self 'methodDict) selectorSymbol)))
 
 (addSelector:withMethod:
  	(class Object)

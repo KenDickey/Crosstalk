@@ -160,6 +160,7 @@
      "Interval"
      "Point"
      "ValueLink"
+     "LinkedList"
 ;;    @@@more to come...
     )
  )
