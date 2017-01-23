@@ -485,6 +485,108 @@
 ; @@@ MORE ..@@@
 ;;; Integer
 
+(addSelector:withMethod: 
+ 	Integer
+        'bitAnd:
+        (lambda (self other)
+          (bitwise-and self other))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitOr:
+        (lambda (self other)
+          (bitwise-ior self other))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitXor:
+        (lambda (self other)
+          (bitwise-xor self other))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitInvert
+        (lambda (self)
+          (bitwise-not self))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitAt:
+        (lambda (self index)
+          (if (< index 1)
+              0 ;; default if index out of range
+              (if (bitwise-bit-set? self (- index 1))
+                  1
+                  0)))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitAt:put:
+        (lambda (self index integer) ; index starts at 1
+          (unless (integer? integer)
+            (error "bitAt:put: bit to set must be integer" integer))
+          (unless (> index 0)
+            (error "bitAt:put: index ranges from 1" index))
+          (let ( (mask (bitwise-arithmetic-shift-left 1 (- index 1)))
+                 (bit  (bitwise-and integer 1)) ; use lowest bit
+               )
+            (if (zero? bit)
+              (bitwise-and self (bitwise-not mask))
+              (bitwise-ior self mask))))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'allMask:
+        (lambda (self mask)
+	  (= self (bitwise-and self mask)))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'anyMask:
+        (lambda (self mask)
+	  (not (zero? (bitwise-and self mask))))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'bitShift:
+        (lambda (self shift)
+          (bitwise-arithmetic-shift self shift))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'factorial
+        (lambda (self)
+          (unless (> self 0)
+            (error "facorial: must be positive" self))
+          (let loop ( (count 1) (result 1) )
+            (if (<= count self)
+                (loop (+ count 1) (* result count))
+                result)))
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'gcd
+        gcd
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'lcm
+        lcm
+)
+
+;; highBit
+
 ; @@@ MORE ..@@@
 
 (addSelector:withMethod: 

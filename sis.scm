@@ -32,6 +32,7 @@
     (rnrs io simple)
     (rnrs files)
     (rnrs syntax-case)
+    (rnrs arithmetic bitwise) ;; st-number.scm
     (scheme char)
     (scheme inexact)
     (scheme complex)

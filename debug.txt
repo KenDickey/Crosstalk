@@ -62,9 +62,36 @@
 (define (st-eval st-string)
   (eval (st->scm st-string) (interaction-environment)))
 
-(st-eval "[| d | d := Dictionary new.
- d at: #a put: 1.
- d at: #b put: 2.
- d at: #c put: 3.
- d printString] value.")
+(st-eval "[Smalltalk at: #D put: Dictionary new.
+ D at: #a put: 1.
+ D at: #b put: 2.
+ D at: #c put: 3.
+ D printString] value.")
 
+(import (primitives add-exit-procedure!
+  add-init-procedure!
+  include-procedure-names
+  integrate-procedures
+  interpreted-procedure?
+  make-assembly-procedure
+  make-procedure
+  procedure-arity
+  procedure-copy
+  procedure-documentation
+  procedure-documentation-string
+  procedure-environment
+  procedure-expression
+  procedure-formals
+  procedure-hasher
+  procedure-length
+  procedure-name
+  procedure-name-set!
+  procedure-printer
+  procedure-ref
+  procedure-set!
+  procedure-source-column
+  procedure-source-file
+  procedure-source-line
+  procedure-source-position
+  procedure?)
+)

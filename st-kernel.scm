@@ -34,11 +34,6 @@
 
 (define primSet:toValue: hashtable-set!)
 
-(define (printName-or-obj obj)
-  (with-exception-handler
-   (lambda (ignored) obj)
-   (lambda () ($ obj 'printString))
-) )
 
 (define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
@@ -47,7 +42,7 @@
             "Failed message send: #"
             (symbol->string selector)
             " to ")
-           (printName-or-obj receiver)
+           receiver
            rest-args)
 ) )
 
@@ -654,38 +649,32 @@
   (newline)
 )
 
-(define (display-obj st-obj-or-list)
-  (cond
-   ((st-object? st-obj-or-list)
-    (cond
-     ((perform:with: st-obj-or-list 'respondsTo: 'name)
-      (display "'")
-      (display (perform: st-obj-or-list 'name))
-      )
-     ((perform:with: st-obj-or-list 'respondsTo: 'printString)
-      (display "'")
-      (display (perform: st-obj-or-list 'printString))
-      )
-     (else
-      (display "instance of #'")
-      (display
-       (perform:
-        (perform: st-obj-or-list 'class)
-        'name))
-      )
-    )
-    (display "' ")
-   )
-   ((and (list? st-obj-or-list)
-         (every? st-object? st-obj-or-list))
-    (display "(")
-    (for-each display-obj st-obj-or-list)
-    (display ")"))
-   (else (write st-obj-or-list))
- ) )
+(define (display-obj obj)
+  (if (st-object? obj)
+       (cond
+        ((perform:with: obj 'respondsTo: 'name)
+         (format #t "'~a'" (perform: obj 'name))
+         )
+        ((perform:with: obj 'respondsTo: 'printString)
+         (format #t "'~a'" (perform: obj 'printString))
+         )
+        ((perform:with: obj 'respondsTo: 'class)
+         (let ( (class (perform: obj 'class)) )
+           (cond
+            ((symbol? class)
+             (format #t "instance of #~a" class)
+             )
+            ((perform:with: class 'respondsTo: 'name)
+             (format #t "instance of #~a" (perform: class 'name)))
+            (else (write obj))
+            )
+           ))
+        (else (write obj))
+        )
+       (write obj)
+) )
 
 (define (describe obj)
-  (newline) ;; mostly harmless
   (cond
    ((null? obj) (display 'nil)
     )
@@ -700,7 +689,11 @@
           (display #\")
           (display " is ")))
     (display "an instance of #'")
-    (display (perform: (perform: obj 'class) 'name))
+    (let ( (class (perform: obj 'class)) )
+      (if (or (symbol? class) ;; before-defined
+              (not (perform:with: class 'respondsTo 'name)))
+          (display class)
+          (display (perform: (perform: obj 'class) 'name))))
     (display "'")
     )
    ((vector? obj)

@@ -112,8 +112,8 @@ Dictionary ~> printOn: aStream
 	  self associationsDo: [ :element | 
 		element printOn: aStream.
 		aStream space
-		aStream nextPut: $)
-	  ]
+	  ].
+	  aStream nextPut: $)
 	]
 	ifFalse: [
 		aStream nextPutAll: self class name, ' of size '.
