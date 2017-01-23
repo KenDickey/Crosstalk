@@ -23,7 +23,7 @@ ValueLink ~> asLink
 
 ValueLink ~> hash
 [
-  ^ self value hash bitXor: nextLink identityHash
+  ^ self value hash bitXor: self nextLink identityHash
 ].
 
 

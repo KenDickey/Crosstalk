@@ -189,6 +189,12 @@
 
 (addSelector:withMethod: 
         Number
+        'hash
+        (lambda (self)
+          (equal-hash self)))
+
+(addSelector:withMethod: 
+        Number
         '<
         (lambda (self aNumber)
           (< self aNumber)))

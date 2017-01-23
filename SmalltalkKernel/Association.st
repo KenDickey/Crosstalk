@@ -14,7 +14,7 @@ Association comment:
 Association ~> < aLookupKey
 [
   "For sort by keys."
-  ^ key < aLookupKey key
+  ^ self key < aLookupKey key
 ].
 
 "@@FIXME?? 
@@ -23,14 +23,14 @@ Association ~> = anAssociation
 [
 "True if the receiver and argument have equal keys."
   self species = anAssociation species
-	ifTrue: [ ^ key = anAssociation key ]
+	ifTrue: [ ^ self key = anAssociation key ]
 	ifFalse: [ ^ false ]
 ].
 
 Association ~> hash
 [
 "Hash is reimplemented because = is implemented."
-  ^ key hash
+  ^ self key hash
 ].
 
 
