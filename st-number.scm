@@ -470,10 +470,34 @@
  	Complex
         'printOn:
         (lambda (self port)
-          (format port "(~a +~ai)"
+          (format port "(~a ~a~ai)"
                   (real-part self)
+                  (if (negative? (image-part self)) #\- #\+)
                   (imag-part self)))
 )
+
+(define (printStringRadix: integer radix)
+  (unless (or (real? integer) (integer? integer))
+    (error "printWIthRadix prefers an integer" integer))
+  (format #f
+          (if (negative? integer)
+              "-~ar~a"
+              "~ar~a")
+          radix
+          (number->string (abs integer) radix)))
+
+(addSelector:withMethod: 
+ 	Complex
+        'printStringRadix:
+        (lambda (self radix)
+          (string-append
+           "("
+           (printStringRadix: (real-part self) radix)
+           (if (negative? (imag-part self)) " " " +")
+           (printStringRadix: (imag-part self) radix)
+           " i)"))
+)
+
 ; @@@ MORE ..@@@
 
 ;;; Float (Real)
@@ -485,11 +509,37 @@
           ;;@@FIXME: number format scm->st
           (display self port))
 )
-                                        ;
+
+(addSelector:withMethod: 
+ 	Float
+        'printStringRadix:
+        (lambda (self radix)
+          (printStringRadix: self radix))
+)
+
+;
 ; @@@ MORE ..@@@
 ;;; Rational (Fraction)
 ; @@@ MORE ..@@@
+
+(addSelector:withMethod: 
+ 	Fraction
+        'printStringRadix:
+        (lambda (self radix)
+          (format #t "(~a / ~a)"
+                  (printStringRadix: (numerator self) radix)
+                  (printStringRadix: (denominator self) radix)))
+)
+
 ;;; Integer
+
+
+(addSelector:withMethod: 
+ 	Integer
+        'printStringRadix:
+        (lambda (self radix)
+          (printStringRadix: self radix))
+)
 
 (addSelector:withMethod: 
  	Integer
@@ -559,6 +609,15 @@
         (lambda (self mask)
 	  (not (zero? (bitwise-and self mask))))
 )
+
+
+(addSelector:withMethod: 
+ 	Integer
+        'noMask:
+        (lambda (self mask)
+	  (zero? (bitwise-and self mask)))
+)
+
 
 (addSelector:withMethod: 
  	Integer
