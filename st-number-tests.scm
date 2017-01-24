@@ -32,6 +32,15 @@
   (perform:with: 2 '- 3)
   "2 - 3")
 
+(add-equal-test 'st-number
+  "3r1200201"
+  (st-eval "1234 printStringRadix: 3")
+  "1234 printStringRadix: 3")
+
+(add-equal-test 'st-number
+  "(12r3 +12r44a i)"
+  ($: 3+634i 'printStringRadix: 12)
+  "(3 + 634 i) printStringRadix: 3")
 
 ;; @@@FIXME: many more tests needed!!
 

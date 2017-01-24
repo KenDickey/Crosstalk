@@ -35,8 +35,9 @@
 (define Float ;; real
   (newSubclassName:iVars:cVars:
    Complex
-   'Float '() '())
+   'Float '() '(pi e))
 )
+
 
 (define Fraction
   (newSubclassName:iVars:cVars:
@@ -54,6 +55,18 @@
 (set! st-fraction-behavior (perform: Fraction 'methodDict))
 (set! st-real-behavior (perform: Float 'methodDict))
 (set! st-complex-behavior (perform: Complex 'methodDict))
+
+(define pi (* 2 (acos 0)))
+
+($: Float 'pi: pi)
+($: Float 'e: (exp 1))
+
+(define twicePi (* 4 (acos 0)))
+;; 360 deg = 2 pi radians
+(define (degreesToRadians deg)
+  (/ (* twicePi deg) 360))
+(define (radiansToDegrees rad)
+  (/ (* 360 rad) twicePi))
 
 ;;; Number
 
@@ -150,6 +163,16 @@
         'angle
         (lambda (aComplex)
           (angle aComplex)))
+
+(addSelector:withMethod: 
+        Number
+        'degreesToRadians
+        degreesToRadians)
+
+(addSelector:withMethod: 
+        Number
+        'radiansToDegrees
+        radiansToDegrees)
 
 (addSelector:withMethod: 
         Number
