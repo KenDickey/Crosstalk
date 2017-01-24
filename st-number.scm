@@ -477,14 +477,31 @@
 )
 
 (define (printStringRadix: integer radix)
-  (unless (or (real? integer) (integer? integer))
-    (error "printWIthRadix prefers an integer" integer))
-  (format #f
-          (if (negative? integer)
-              "-~ar~a"
-              "~ar~a")
-          radix
-          (number->string (abs integer) radix)))
+  (unless (integer? integer)
+    (error "printWIthRadix: unsupported for this recevier" integer))
+  (let ( (string-port (open-output-string)) )
+    (printOn:base:showRadix: integer string-port radix #true)
+    (get-output-string string-port)))
+  ;; (format #f
+  ;;         (if (negative? integer)
+  ;;             "-~ar~a"
+  ;;             "~ar~a")
+  ;;         radix
+  ;;         (number->string (abs integer) radix)))
+
+(define (printOn:base:showRadix: integer port radix showRadix?)
+  (unless (integer? integer)
+    (error "printOn:base:showRadix: unsupported for this recevier" integer))
+  (if showRadix?
+      (format port
+              (if (negative? integer) "-~ar~a" "~ar~a")
+              radix
+              (number->string (abs integer) radix))
+      (format port
+              (if (negative? integer) "-~a" "~a")
+              (number->string (abs integer) radix)))
+)
+              
 
 (addSelector:withMethod: 
  	Complex
@@ -539,6 +556,15 @@
         'printStringRadix:
         (lambda (self radix)
           (printStringRadix: self radix))
+)
+
+
+
+;;printOn: output base: base showRadix: flag
+(addSelector:withMethod: 
+ 	Integer
+        'printOn:base:showRadix:
+        printOn:base:showRadix:
 )
 
 (addSelector:withMethod: 
