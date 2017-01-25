@@ -373,7 +373,7 @@
 ) ) )
 
 (define (superLookupSelector: self selectorSym) ;; Polymorphic
-  (let ( (mDict (perform: (superclass self) 'methodDict)) )
+  (let ( (mDict (perform: (superclass (class self)) 'methodDict)) )
     (if (st-nil? mDict)
         (error "Missing method dictionary for: " self selectorSym)
         (primLookup: mDict selectorSym)
