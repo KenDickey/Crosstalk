@@ -112,7 +112,7 @@
      (letrec ( (check-for-returns
         (lambda (ast)
           (cond
-           ((list? ast) (for-each check-for-returns ast))
+           ((list? ast) (for-each check-for-returns ast) #false)
            ((astSequence? ast)
             (check-for-returns (astSequence-statements ast)))
            ((astSubexpression? ast)
