@@ -201,10 +201,14 @@
 ;;; Identifier
 (define (xlateIdentifier ast)
    (let ( (ident (astIdentifier-symbol ast)) )
-     (if (capitalized-symbol? ident) ;; => Smalltalk Global
-         `(smalltalkAt: ',ident)
-         ident)
- ) )
+     (cond
+      ((capitalized-symbol? ident) ;; => Smalltalk Global
+       `(smalltalkAt: ',ident))
+      ((memq ident '(nil true false self super))
+       ident) ;; normal Scheme identifier (less #super)
+      (else
+       ident) ;; local XOR instance accessor
+ ) ) )
 
 (define (capitalized-symbol? ident)
   (and (symbol? ident)  ;; invariant: symbol-length > 0
@@ -251,7 +255,9 @@
   (let ( (receiver (AST->scm (astUnarySend-receiver ast)))
          (selector (astUnarySend-selector ast))
        )
-  `($ ,receiver ',selector)
+    (if (eq? receiver 'super)
+        `(@ self ',selector)
+        `($ ,receiver ',selector))
 ) )
 
 (define (xlateKeywordSend ast)
@@ -261,7 +267,9 @@
           (map AST->scm
                (astKeywordSend-arguments ast)))
        )
-    (rsa->perform rcvr selector arguments)
+    (if (eq? rcvr 'super)
+        (rsa->superPerform 'self selector arguments)
+        (rsa->perform rcvr selector arguments))
   )
 )
 
@@ -269,6 +277,7 @@
   (let ( (rcvr (AST->scm (astCascade-receiver ast)))
          (messages (astCascade-messages ast))
        )
+;; @@@FIXME: 'super allowed in this context??
     `(let ( (receiver ,rcvr) )
        ,(AST->scm (car messages))
        ,@(map (lambda (msg) (m->send 'recevier msg))
@@ -316,6 +325,43 @@
   )
 )
 
+(define (rsa->superPerform rcvr selector arguments)
+  (case (length arguments)
+    ((0) `(@ ,rcvr ',selector)
+     )
+    ((1) `(@: ,rcvr ',selector ,(car arguments))
+     )
+    ((2) `(@::
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments))
+     )
+    ((3) `(@:::
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments)
+           ,(caddr arguments))
+     )
+    ((4) `(@::::
+           ,rcvr
+           ',selector
+           ,(car arguments)
+           ,(cadr arguments)
+           ,(caddr arguments)
+           ,(cadddr arguments))
+     
+     )
+    (else         
+     `(@&
+       ,rcvr
+       ',selector
+       ,(list->vector arguments))
+     )
+  )
+)
+
 
 (define (xlateMessageSend ast)
   (let ( (receiver
@@ -334,6 +380,7 @@
                    (= 1 (length ast-message)))
               (car ast-message)
               ast-message))
+         (superSend? (eq? rcvr 'super))
        )
     (cond
      ((astMessageSequence? ast-msg)
@@ -352,28 +399,38 @@
         )
       ))
      ((astUnaryMessage?   ast-msg)
-      `($ ,rcvr
+      (if superSend?
+          `(@ ,rcvr
           ',(token->native (astUnaryMessage-selector ast-msg)))
-      )
+          `($ ,rcvr
+              ',(token->native (astUnaryMessage-selector ast-msg)))
+      ))
      ((astBinaryMessage?  ast-msg)
-      `($: ,rcvr
-           ',(astBinaryMessage-selector ast-msg)
-           ,(AST->scm (astBinaryMessage-argument ast-msg)))
-      )
+      (if superSend?
+          `(@: ,rcvr
+               ',(astBinaryMessage-selector ast-msg)
+               ,(AST->scm (astBinaryMessage-argument ast-msg)))
+          `($: ,rcvr
+               ',(astBinaryMessage-selector ast-msg)
+               ,(AST->scm (astBinaryMessage-argument ast-msg)))
+      ))
      ((astKeywordMessage? ast-msg)
       (let ( (arguments
               (map AST->scm
                    (astKeywordMessage-arguments ast-msg)))
            )
-        (rsa->perform rcvr
-                      (astKeywordMessage-selector ast-msg)
-                      arguments))
+        ((if superSend? rsa->superPerform rsa->perform)
+         rcvr
+         (astKeywordMessage-selector ast-msg)
+         arguments))
       )
      ((and (token? ast-msg)
            (eq? 'identifier (token-kind ast-msg)))
       ;; unary message
-      `($ ,rcvr ',(token->native ast-msg))
-      )
+      (if superSend?
+          `(@ ,rcvr ',(token->native ast-msg))
+          `($ ,rcvr ',(token->native ast-msg))
+      ))
      (else
       (error
        "xlateMessageSend: does not understand"

@@ -80,6 +80,30 @@
          (cons self (vector->list argsArray))))
 
 
+(define (superPerform: self selectorSym)
+  ((superLookupSelector: self selectorSym) self))
+
+(define (superPerform:with: self selectorSym arg)
+  ((superLookupSelector: self selectorSym) self arg))
+
+(define (superPerform:with:with: self selectorSym arg1 arg2)
+  ((superLookupSelector: self selectorSym) self arg1 arg2))
+
+(define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
+  ((superLookupSelector: self selectorSym) self arg1 arg2 arg3))
+
+(define (superPerform:with:with:with:with:
+         self selectorSym arg1 arg2 arg3 arg4)
+  ((superLookupSelector: self selectorSym) self arg1 arg2 arg3 arg4))
+
+(define (superPerform:withArguments: self selectorSym argsArray)
+  (apply (superLookupSelector: self selectorSym)
+         (cons self (vector->list argsArray))))
+
+(define (superPerform:withArgsList: self selectorSym argsList)
+  (apply (superLookupSelector: self selectorSym)
+         (cons self argsList)))
+
 ;;; Shorter Syntax
 (define $     perform:)
 (define $:    perform:with:)
@@ -88,6 +112,14 @@
 (define $:::: perform:with:with:with:with:)
 (define $&    perform:withArguments:) ;; args array
 (define $*    perform:withArgsList:)  ;; args list
+
+(define @     superPerform:)
+(define @:    superPerform:with:)
+(define @::   superPerform:with:with:)
+(define @:::  superPerform:with:with:with:)
+(define @:::: superPerform:with:with:with:with:)
+(define @&    superPerform:withArguments:) ;; args array
+(define @*    superPerform:withArgsList:)  ;; args list
 
 ;;;
 

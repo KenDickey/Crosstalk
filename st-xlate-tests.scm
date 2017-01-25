@@ -107,7 +107,7 @@
                      ($ nil 'isNil))
                  'ifFalse:
                  (lambda () ($ self 'halt)))
-             (let ((%%val%% ($: ($ self 'size) '+ ($ super 'size))))
+             (let ((%%val%% ($: ($ self 'size) '+ (@ self 'size))))
                (set! y %%val%%)
                %%val%%)
              ($: #(#\a 'a "a" 1 1.0)
