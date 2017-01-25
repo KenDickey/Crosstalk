@@ -174,7 +174,7 @@ OrderedCollection ~> last
 "Answer the last element. If the receiver is empty, create an errror
  message. This is a little faster than the implementation in the superclass."
   self emptyCheck.
-  ^ self array at: lastIndex
+  ^ self array at: self lastIndex
 ].
 
 OrderedCollection ~> makeRoomAtFirst
@@ -249,7 +249,7 @@ OrderedCollection ~> removeFirst
 OrderedCollection ~> removeIndex: removedIndex
 [
   | index |
-  index := removedIndex.
+  index := removedIndex + self firstIndex - 1.
   [ index < self lastIndex ]
 	whileTrue: [ 
 		self array at: index 

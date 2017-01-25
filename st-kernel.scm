@@ -640,6 +640,7 @@
           (for-each
            (lambda (ivarName)
              (newline)
+             (display "  ")
              (display ivarName)
              (display " -> ")
              (display-obj (perform: st-obj ivarName))
@@ -682,19 +683,7 @@
     (display "a list of length ")
     (display (length obj)))
    ((st-object? obj)
-    (if (perform:with: obj 'respondsTo: 'name)
-        (begin
-          (display #\")
-          (display (perform: obj 'name))
-          (display #\")
-          (display " is ")))
-    (display "an instance of #'")
-    (let ( (class (perform: obj 'class)) )
-      (if (or (symbol? class) ;; before-defined
-              (not (perform:with: class 'respondsTo 'name)))
-          (display class)
-          (display (perform: (perform: obj 'class) 'name))))
-    (display "'")
+    (display (perform: obj 'printString))
     )
    ((vector? obj)
     (display "an array of length ")
@@ -737,7 +726,6 @@
    )
 ;;  (newline)
  )
-
 
 
 ;;;======================================================
