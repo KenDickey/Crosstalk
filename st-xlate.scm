@@ -327,25 +327,25 @@
 
 (define (rsa->superPerform rcvr selector arguments)
   (case (length arguments)
-    ((0) `(@ ,rcvr ',selector)
+    ((0) `(@ self ',selector)
      )
-    ((1) `(@: ,rcvr ',selector ,(car arguments))
+    ((1) `(@: self ',selector ,(car arguments))
      )
     ((2) `(@::
-           ,rcvr
+           self
            ',selector
            ,(car arguments)
            ,(cadr arguments))
      )
     ((3) `(@:::
-           ,rcvr
+           self
            ',selector
            ,(car arguments)
            ,(cadr arguments)
            ,(caddr arguments))
      )
     ((4) `(@::::
-           ,rcvr
+           self
            ',selector
            ,(car arguments)
            ,(cadr arguments)
@@ -355,7 +355,7 @@
      )
     (else         
      `(@&
-       ,rcvr
+       self
        ',selector
        ,(list->vector arguments))
      )
@@ -400,14 +400,14 @@
       ))
      ((astUnaryMessage?   ast-msg)
       (if superSend?
-          `(@ ,rcvr
+          `(@ self
           ',(token->native (astUnaryMessage-selector ast-msg)))
           `($ ,rcvr
               ',(token->native (astUnaryMessage-selector ast-msg)))
       ))
      ((astBinaryMessage?  ast-msg)
       (if superSend?
-          `(@: ,rcvr
+          `(@: self
                ',(astBinaryMessage-selector ast-msg)
                ,(AST->scm (astBinaryMessage-argument ast-msg)))
           `($: ,rcvr
@@ -428,7 +428,7 @@
            (eq? 'identifier (token-kind ast-msg)))
       ;; unary message
       (if superSend?
-          `(@ ,rcvr ',(token->native ast-msg))
+          `(@ self ',(token->native ast-msg))
           `($ ,rcvr ',(token->native ast-msg))
       ))
      (else
