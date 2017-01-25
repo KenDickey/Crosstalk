@@ -39,7 +39,7 @@ OrderedCollection ~> at: anInteger
  client to access an existing element"
   (anInteger < 1 or: [ anInteger + self firstIndex - 1 > self lastIndex ])
 	ifTrue: [ self errorNoSuchElement ]
-	ifFalse: [ ^ self array at: anInteger + firstIndex - 1 ]
+	ifFalse: [ ^ self array at: anInteger + self firstIndex - 1 ]
 ].
 
 
@@ -254,7 +254,8 @@ OrderedCollection ~> removeIndex: removedIndex
 	whileTrue: [ 
 		self array at: index 
 			  put: (self array at: index + 1).
-		index := index + 1 ].
+		index := index + 1 
+	].
   self array at: self lastIndex put: nil.
   self lastIndex: self lastIndex - 1
 ].
