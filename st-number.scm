@@ -263,6 +263,22 @@
 
 (addSelector:withMethod: 
         Number
+        'min:
+        (lambda (self other)
+          (if (> self other)
+              other
+              self)))
+
+(addSelector:withMethod: 
+        Number
+        'max:
+        (lambda (self other)
+          (if (< self other)
+              other
+              self)))
+
+(addSelector:withMethod: 
+        Number
         'zero
         (lambda (self) 0))
 
@@ -697,6 +713,12 @@
  	Integer
         'lcm
         lcm
+)
+
+(addSelector:withMethod: 
+ 	Integer
+        'asInteger
+        (lambda (self) self)
 )
 
 ;; highBit

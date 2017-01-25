@@ -5,8 +5,9 @@
 (load "sis-tests.scm")
 (run-source-tests)
 
-(xlate-st-bootstrap)
-(load-st-bootstrap)
+(add-st)
+;(xlate-st-bootstrap)
+;(load-st-bootstrap)
 
 
 (smalltalk-keys)

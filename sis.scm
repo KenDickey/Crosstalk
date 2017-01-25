@@ -158,6 +158,7 @@
      "SequenceableCollection"
      "ArrayedCollection"
      "Dictionary"
+     "OrderedCollection"
      "Interval"
      "Point"
      "ValueLink"
@@ -196,7 +197,7 @@
   (for-each xlate-st-file  st-bootstrap-files))
 
 (define (load-st-bootstrap)
-  (format #t "Loading translated files:~%")
+  (format #t "~%Loading translated files:~%")
   (for-each
    (lambda (fn)
      (format #t "~t~a~%" fn)
