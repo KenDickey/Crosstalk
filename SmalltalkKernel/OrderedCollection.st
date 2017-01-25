@@ -146,7 +146,8 @@ OrderedCollection ~> grow
 	to: self array size
 	with: self array
 	startingAt: 1.
-  self array: newArray
+  self array: newArray.
+  self
 ].
 
 

@@ -105,12 +105,61 @@
 ;; dynamic var
 (define within-return? (make-parameter #false))
 
+(define (block-statements-have-return ast)
+;; traverse AST and check for internal RETURNs
+  (call/cc
+   (lambda (return)
+     (letrec ( (check-for-returns
+        (lambda (ast)
+          (cond
+           ((list? ast) (for-each check-for-returns ast))
+           ((astSequence? ast)
+            (check-for-returns (astSequence-statements ast)))
+           ((astSubexpression? ast)
+            (check-for-returns (astSubexpression-expression ast)))
+           ((astReturn? ast) (return #true))
+           ((astAssignment? ast)
+            (check-for-returns (astAssignment-val ast)))
+           ((astBlock? ast)
+            (if (astBlock-hasReturn? ast) (return #true))
+            (check-for-returns (astBlock-statements ast)))
+           ((astCascade? ast)
+            (check-for-returns (astCascade-messages ast)))
+           ((astIdentifier? ast) #false)
+           ((astLiteral? ast) #false)
+           ((astSelector? ast) #false)
+           ((astUnarySend? ast) #false)
+           ((astKeywordSend? ast) #false)
+           ((astUnaryMessage? ast) #false)
+           ((astBinaryMessage? ast) 
+            (check-for-returns (astBinaryMessage-argument ast)))
+           ((astKeywordMessage? ast)
+            (check-for-returns (astKeywordMessage-arguments ast)))
+           ((astMessageSequence? ast)
+            (check-for-returns (astMessageSequence-messages ast)))
+           ((astMessageSend? ast)
+            (unless (check-for-returns (astMessageSend-receiver ast))
+              (check-for-returns (astMessageSend-messages ast))))
+           ((astArray? ast) #false)
+           (else
+            (error
+             "check-for-returns: unhandled AST case" ast)
+            )
+           ) )
+        ) )
+       (check-for-returns ast)
+
+) ) ) )
+
+
 (define (xlateBlock ast)
   (let* ( (arguments
            (->scm-args  (astBlock-arguments ast)))
           (temps
            (->scm-temps (astBlock-temporaries ast)))
-          (hasReturn?   (astBlock-hasReturn?  ast))
+          (hasReturn? (or (astBlock-hasReturn?  ast)
+                          (block-statements-have-return
+                           (astBlock-statements ast))))
           (addReturn?   (and hasReturn?
                              (not (within-return?))))
           (statements
