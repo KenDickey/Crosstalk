@@ -690,8 +690,54 @@
         (astBlock args
                   temps
                   statements
-                  (any? astReturn? statements))))
+                  (block-statements-have-return statements))))
 ) )
+
+(define (block-statements-have-return ast)
+;; traverse AST and check for internal RETURNs
+  (call/cc
+   (lambda (return)
+     (letrec ( (check-for-returns
+        (lambda (ast)
+          (cond
+           ((list? ast) (for-each check-for-returns ast) #false)
+           ((astSequence? ast)
+            (check-for-returns (astSequence-statements ast)))
+           ((astSubexpression? ast)
+            (check-for-returns (astSubexpression-expression ast)))
+           ((astReturn? ast) (return #true))
+           ((astAssignment? ast)
+            (check-for-returns (astAssignment-val ast)))
+           ((astBlock? ast)
+            (if (astBlock-hasReturn? ast) (return #true))
+            (check-for-returns (astBlock-statements ast)))
+           ((astCascade? ast)
+            (check-for-returns (astCascade-messages ast)))
+           ((astIdentifier? ast) #false)
+           ((astLiteral? ast) #false)
+           ((astSelector? ast) #false)
+           ((astUnarySend? ast) #false)
+           ((astKeywordSend? ast) #false)
+           ((astUnaryMessage? ast) #false)
+           ((astBinaryMessage? ast) 
+            (check-for-returns (astBinaryMessage-argument ast)))
+           ((astKeywordMessage? ast)
+            (check-for-returns (astKeywordMessage-arguments ast)))
+           ((astMessageSequence? ast)
+            (check-for-returns (astMessageSequence-messages ast)))
+           ((astMessageSend? ast)
+            (unless (check-for-returns (astMessageSend-receiver ast))
+              (check-for-returns (astMessageSend-messages ast))))
+           ((astArray? ast) #false)
+           (else
+            (error
+             "check-for-returns: unhandled AST case" ast)
+            )
+           ) )
+        ) )
+       (check-for-returns ast)
+
+) ) ) )
 
 
 (define parse-block-temps parse-temps) ;; just an alias
@@ -953,6 +999,16 @@
           )
       ;; (astBlock arguments temporaries statements hasReturn?)
       (vector-set! method-block 1 method-args) 
+      ;; Unlike block-closures, which return their last value,
+      ;; method blocks return #self unless explicit ^return.
+      (unless (astBlock-hasReturn? method-block)
+        (set-astBlock-statements!
+         method-block
+         (append (astBlock-statements method-block)
+                 (list (astIdentifier
+                        (token 'identifier "self" #("self" 0 0))
+                        'self))))
+      )
       (astKeywordSend receiver
                       'addSelector:withMethod:
                       (list selector method-block))

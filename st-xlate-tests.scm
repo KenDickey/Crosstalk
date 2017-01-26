@@ -45,18 +45,17 @@
 
 
 (add-equal-test 'st-xlate
-  '($::
-    (smalltalkAt: 'String)
-    'addSelector:withMethod:
-    'contains:
-    (lambda (self aChar)
-      ($:
-       self
-       'detect:
-       (lambda (c) ($: c '= aChar)))))
+  '($:: (smalltalkAt: 'String)
+     'addSelector:withMethod:
+     'contains:
+     (lambda (self aChar)
+       (call/cc
+         (lambda (return)
+           (return
+             ($: self 'detect: (lambda (c) ($: c '= aChar))))))))
   (AST->scm
    (st->AST "String ~> contains: aChar
-	[ self detect: [ :c | c = aChar] ]."))
+	[ ^ self detect: [ :c | c = aChar] ]."))
   "String contains: ... (2)"
 )
 
@@ -157,7 +156,8 @@
       (lambda (element)
         ($: element 'printOn: aStream)
         ($ aStream 'space)))
-    ($: aStream 'nextPut: #\))))
+    ($: aStream 'nextPut: #\))
+    self))
   (st->scm "Collection ~> printOn: aStream
 [
 \"Refer to the comment in Object|printOn:.\"

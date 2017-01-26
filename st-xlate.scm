@@ -44,7 +44,7 @@
    ((astArray? ast)
     (xlateArray ast)
     )
-   ;; ((astMethod? ast) ...)
+   ;; ((astMethod ast) ...)
    (else
     (error
      "unhandled/malformed AST" ast)
@@ -157,9 +157,7 @@
            (->scm-args  (astBlock-arguments ast)))
           (temps
            (->scm-temps (astBlock-temporaries ast)))
-          (hasReturn? (or (astBlock-hasReturn?  ast)
-                          (block-statements-have-return
-                           (astBlock-statements ast))))
+          (hasReturn?   (astBlock-hasReturn?  ast))
           (addReturn?   (and hasReturn?
                              (not (within-return?))))
           (statements
