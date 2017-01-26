@@ -10,6 +10,9 @@ SequenceableCollection newSubclassName: #OrderedCollection
 
 OrderedCollection category: #'Collections-Ordered'.
 
+OrderedCollection comment: 
+'I represent a collection of objects ordered by the collector.'.
+
 
 OrderedCollection ~> add: newObject
 [
@@ -299,16 +302,46 @@ OrderedCollection ~> size
   ^ self lastIndex - self firstIndex + 1
 ].
 
+OrderedCollection ~> asNewArray
+[
+  ^ self array copyFrom: self firstIndex to: self lastIndex
+].
+
+OrderedCollection ~> reset
+[
+  self firstIndex: self array size // 3 max: 1.
+  self lastIndex selffirstIndex - 1
+].
+
+
+OrderedCollection ~> resetTo: index
+[
+  self firstIndex: index.
+  self lastIndex: self firstIndex - 1
+].
+
 
 OrderedCollection class ~> new
 [
   ^ self new: 8
 ].
 
+
 OrderedCollection class ~> new: anInteger
 [
 "If a subclass adds fields, then that subclass must reimplement new:."
   ^ self basicNew setCollection: (Array new: anInteger)
+].
+
+
+OrderedCollection class ~> newFrom: aCollection
+[
+"Create a new collection containing all the elements from aCollection"
+
+  ^(self new: aCollection size)
+	resetTo: 1;
+	addAll: aCollection;
+	yourself
 ].
 
 
