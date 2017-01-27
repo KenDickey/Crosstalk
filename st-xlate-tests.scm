@@ -28,15 +28,11 @@
 
 
 (add-equal-test 'st-xlate
-  '($::
-    (smalltalkAt: 'String)
-    'addSelector:withMethod:
-    'contains:
-    (lambda (self aChar)
-      ($:
-       self
-       'detect:
-       (lambda (c) ($: c '= aChar)))))
+  '($:: (smalltalkAt: 'String)
+     'addSelector:withMethod:
+     'contains:
+     (lambda (self aChar)
+       ($: self 'detect: (lambda (c) ($: c '= aChar)))))
   (AST->scm
    (st->AST  "String addSelector: #contains:
 	     withMethod: [ :self :aChar |
@@ -49,10 +45,7 @@
      'addSelector:withMethod:
      'contains:
      (lambda (self aChar)
-       (call/cc
-         (lambda (return)
-           (return
-             ($: self 'detect: (lambda (c) ($: c '= aChar))))))))
+       ($: self 'detect: (lambda (c) ($: c '= aChar)))))
   (AST->scm
    (st->AST "String ~> contains: aChar
 	[ ^ self detect: [ :c | c = aChar] ]."))
@@ -75,12 +68,9 @@
 
 (add-equal-test 'st-xlate
   '(let ((%%val%%
-        (lambda (a b)
-          (call/cc
-            (lambda (return)
-            (return ($:: a 'foo:bar: b ($: c '+ 7))))))))
-  (set! block %%val%%)
-  %%val%%)
+          (lambda (a b) ($:: a 'foo:bar: b ($: c '+ 7)))))
+     (set! block %%val%%)
+     %%val%%)
   (st->scm "block := [:a :b| ^(a foo: b bar: c + 7)].")
   "block := [...]")
 
