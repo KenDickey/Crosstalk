@@ -158,15 +158,25 @@
           (temps
            (->scm-temps (astBlock-temporaries ast)))
           (hasReturn?   (astBlock-hasReturn?  ast))
-          (addReturn?   (and hasReturn?
-                             (not (within-return?))))
+          (addReturn?
+           (and hasReturn?
+                (not (or (within-return?)
+                         (simple-return? (astBlock-statements ast)))))
+           )
           (statements
-           (if hasReturn?
-               (parameterize ((within-return? #true))
-                 (->scm-statements (astBlock-statements ast)))
-               (->scm-statements (astBlock-statements ast))))
-
+           (cond
+            ((simple-return? (astBlock-statements ast))
+             (simplified-return (astBlock-statements ast)))
+           (hasReturn?
+            (parameterize ((within-return? #true))
+              (->scm-statements (astBlock-statements ast)))
+            )
+           (else
+            (->scm-statements (astBlock-statements ast)))
+           ))
        )
+;;; @@@FIXME: simplify:
+;;;  (call/cc (return) (return foo)) -> foo
     (cond
      ((null? statements)
       `(lambda ,arguments ,st-nil)
@@ -188,6 +198,14 @@
     )
   )
 )
+
+(define (simple-return? ast)
+  (and (list? ast)
+       (= 1 (length ast))
+       (astReturn? (car ast))))
+
+(define (simplified-return ast)
+  (list (AST->scm (astReturn-expression (car ast)))))
 
 ;;;; Return
 
