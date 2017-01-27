@@ -113,23 +113,25 @@
           (hasReturn?   (astBlock-hasReturn?  ast))
           (addReturn?
            (and hasReturn?
-                (not (or (within-return?)
-                         (simple-return? (astBlock-statements ast)))))
+                (not (within-return?))
+                (not (simple-return? (astBlock-statements ast))))
            )
           (statements
            (cond
-            ((simple-return? (astBlock-statements ast))
-             (simplified-return (astBlock-statements ast)))
-           (hasReturn?
-            (parameterize ((within-return? #true))
-              (->scm-statements (astBlock-statements ast)))
-            )
-           (else
-            (->scm-statements (astBlock-statements ast)))
-           ))
-       )
-;;; @@@FIXME: simplify:
+;;;simplify:
 ;;;  (call/cc (return) (return foo)) -> foo
+            ((and (simple-return? (astBlock-statements ast))
+                  (not (within-return?)))
+             (simplified-return (astBlock-statements ast))
+             )
+            (hasReturn?
+             (parameterize ((within-return? #true))
+               (->scm-statements (astBlock-statements ast)))
+             )
+            (else
+             (->scm-statements (astBlock-statements ast)))
+            ))
+       )
     (cond
      ((null? statements)
       `(lambda ,arguments ,st-nil)
