@@ -172,6 +172,13 @@
       (and (string? other)
            (string=? self other))))
 
+(addSelector:withMethod: 
+    String
+    'caseInsensitiveEqual:
+    (lambda (self other)
+      (and (string? other)
+           (string-ci-=? self other))))
+
 (addSelector:withMethod:
     String
     'hash
@@ -193,9 +200,75 @@
 
 (addSelector:withMethod: 
     String
+    '>
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string>? self other)))
+
+(addSelector:withMethod: 
+    String
+    '>=
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string>=? self other)))
+
+(addSelector:withMethod: 
+    String
+    'caseInsensitiveLess:
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string-ci<? self other)))
+
+(addSelector:withMethod: 
+    String
+    'caseInsensitiveLessOrEqual:
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string-ci-<=? self other)))
+
+(addSelector:withMethod: 
+    String
+    'caseInsensitiveGreater:
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string-ci->? self other)))
+
+(addSelector:withMethod: 
+    String
+    'caseInsensitiveGreaterOrEqual:
+    (lambda (self other)
+      ;; @@FIXME: (string? other)
+      (string-ci->=? self other)))
+
+(addSelector:withMethod: 
+    String
     'copy
     (lambda (self)
       (string-copy self)))
+
+(addSelector:withMethod: 
+    String
+    'copy:from:to:
+    (lambda (self startIndex stopIndex)
+      (let ( (start (- startIndex 1)) )
+        (unless (<= start stopIndex (string-length self))
+          (error "copy:from:to: index out of range"
+                 startIndex stopIndex))
+        (string-copy self start stopIndex)))
+)
+
+(addSelector:withMethod: 
+    String
+    'copy:from:count:
+    (lambda (self startIndex count)
+      (let* ( (start (- startIndex 1))
+              (stopIndex (+ start count))
+            )
+      (unless (<= start stopIndex (string-length self))
+        (error "copy:from:count: index out of range"
+               startIndex stopIndex))
+      (string-copy self start stopIndex)))
+)
 
 (addSelector:withMethod: 
     String
