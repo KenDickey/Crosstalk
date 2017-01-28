@@ -159,7 +159,7 @@
      "ArrayedCollection"
      "Dictionary"
      "OrderedCollection"
-     "String"
+;;     "String"
      "Interval"
      "Point"
      "ValueLink"
