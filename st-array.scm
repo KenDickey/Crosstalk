@@ -107,6 +107,19 @@
 
 (addSelector:withMethod:
      Array
+     'printOn:
+     (lambda (self port)
+       (display "#( " port)
+       (vector-for-each
+        (lambda (each)
+          ($: each 'printOn: port)
+          (display " " port))
+        self)
+       (display ")" port))
+)
+
+(addSelector:withMethod:
+     Array
      'asArray
      (lambda (self) ;; called by subclasses
        (if (eq? (class self) Array)
@@ -115,11 +128,10 @@
 
 (addSelector:withMethod:
      Array
-     'printOn:
-     (lambda (self port)
-       (display "#" port)
-       (perform:with:
-           self 'printElementsOn: port)))
+     'asString
+     (lambda (self)
+       (list->string
+        (map integer->char (vector->list self)))))
 
 (addSelector:withMethod:
      Array
@@ -223,11 +235,24 @@
      (lambda (self)
        (bytevector-length self)))
 
+(addSelector:withMethod:
+     ByteArray
+     'printOn:
+     (lambda (self port)
+       (display "#[ " port)
+       (bytevector-for-each
+        (lambda (each)
+          ($: each 'printOn: port)
+          (display " " port))
+        self)
+       (display "]" port))
+)
+
 (define (bytevector-for-each proc bvec)
-  (let ( (size (bytevector-size bvec)) )
+  (let ( (size (bytevector-length bvec)) )
     (let loop ( (index 0) )
       (when (< index size)
-        (proc (bytevector-u8-ref bvec))
+        (proc (bytevector-u8-ref bvec index))
         (loop (+ 1 index)))
 ) ) )
 
@@ -238,6 +263,27 @@
        (bytevector-for-each aBlock self)
        self))
 
+
+(addSelector:withMethod:
+     ByteArray
+     'asByteArray
+     (lambda (self) self))
+
+(addSelector:withMethod:
+     ByteArray
+     'asString
+     (lambda (self)
+       (let* ( (strLen (bytevector-length self))
+               (result (make-string strLen #\space))
+             )
+         (let loop ( (index 0) )
+           (when (< index strLen)
+             (string-set! result
+                          index
+                          (integer->char (bytevector-ref self index)))
+             (loop (+ index 1))))
+         result))
+)
 
 ;; (provide 'st-array)
 

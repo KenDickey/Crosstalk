@@ -227,7 +227,30 @@
                      )))))))
   ) ) )
 
-                    
+
+(addSelector:withMethod:
+     String
+     'asByteArray
+     (lambda (self)
+       (let* ( (strLen (string-length self))
+               (result (make-bytevector strLen 0))
+             )
+         (let loop ( (index 0) )
+           (when (< index strLen)
+             (bytevector-set! result
+                              index
+                              (char->integer (string-ref self index)))
+             (loop (+ index 1))))
+         result))
+)
+
+(addSelector:withMethod:
+     String
+     'asArray
+     (lambda (self)
+       (list->vector
+        (map char->integer (string->list self))))
+)
 
 ;; (provide 'st-string)
 

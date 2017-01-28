@@ -721,6 +721,12 @@
         (lambda (self) self)
 )
 
+(addSelector:withMethod: 
+ 	Integer
+        'asCharacter
+        (lambda (self) (integer->char self))
+)
+
 ;; highBit
 
 ; @@@ MORE ..@@@

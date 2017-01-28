@@ -61,7 +61,7 @@
      Collection
      'printElementsOn:
      (lambda (self port)
-       (display "(" port)
+       (display "( " port)
        (perform:with: self
                       'do:
                       (lambda (elt)
