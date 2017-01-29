@@ -533,11 +533,12 @@
                    (string-append "-" (token-string curr-token))
                    (token-location minus-token)))
          )
-      (astLiteral new-token (- (token->native curr-token)))))
+      (consume-token!)
+      (astLiteral new-token (- (token->native prev-token)))))
 )
 
 
-(define (st-number-token? tok)
+(define (st-number-token? token)
   (if (member (token-kind token)
               '(integer integerWithRadix
                 scaledDecimal scaledDecimalWithFract
@@ -579,6 +580,9 @@
               )
            (consume-token!)
            (loop (cons identifier elts)))
+         )
+        ((minus)
+         (loop (cons (parse-negative-number) elts))
          )
         ((litArrayStart)
          (let ( (array (parse-literal-array)) )

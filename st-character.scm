@@ -96,6 +96,11 @@
 
 (addSelector:withMethod:
         Character
+        'asInteger
+        (lambda (self) (char->integer self)))
+
+(addSelector:withMethod:
+        Character
         'value   ;; NOT an instance variable !!
         (lambda (self)
           (char->integer self)))
@@ -130,6 +135,21 @@
         (lambda (self)
           (or (char-alphabetic? self)
               (char-numeric? self))))
+
+(addSelector:withMethod:
+        Character
+        'isValidInIdentifiers
+        (lambda (self)
+          (or (char-alphabetic? self)
+              (char-numeric? self))))
+
+(addSelector:withMethod:
+        Character
+        'tokenish ;; 'isTokenish ??
+        (lambda (self)
+          (or (char-alphabetic? self)
+              (char-numeric? self)
+              (char=? self #\:))))
 
 (addSelector:withMethod:
         Character
@@ -189,7 +209,9 @@
     (lessOverEqual . #x9A) ; math
     (lf         .   10) ; line feed
     (nbsp       .  202) ; non-breakable space
-    (newLineCharacter . 10) ; NB: lf NOT cr
+    (newlineCharacter . 10) ; NB: lf NOT cr
+    (newline . 10)    ; NB: lf NOT cr
+    (nl . 10)         ; NB: lf NOT cr
     (newPage    .   12) ; form feed
     (notEqual     . #x94) ; math
     (notIdentical . #x96) ; math

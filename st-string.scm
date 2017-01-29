@@ -325,6 +325,53 @@
         (map char->integer (string->list self))))
 )
 
+(addSelector:withMethod:
+     String
+     'findString:startingAt:caseSensitive:
+     (lambda (self key start caseSensitive?)
+       (let ( (result
+               ((if caseSensitive?
+                   string-contains
+                   string-contains-ci)
+                 self
+                 key
+                 (- start 1) ;; Scheme 0-based, St 1-based
+                 (string-length self)))
+            )
+         (if result
+             (+ 1 result)
+             0) ; Answer 0 if no match
+         ))
+)
+
+(addSelector:withMethod:
+     String
+     'indexOf:startingAt:ifAbsent:
+     (lambda (self aChar startIndex failureThunk)
+       (let ( (strLen (string-length self)) )
+         (let loop ( (index (- startIndex 1)) )
+           (cond
+            ((>= index strLen) ;; failed
+             (failureThunk))
+            ((char=? aChar (string-ref self index)) ;; match
+             (+ 1 index))
+            (else (loop (+ 1 index)))))))
+)
+
+(addSelector:withMethod:
+     String
+     'indexOf:startingAt:
+     (lambda (self aChar startIndex)
+       (let ( (strLen (string-length self)) )
+         (let loop ( (index (- startIndex 1)) )
+           (cond
+            ((>= index strLen) ;; failed
+             0)
+            ((char=? aChar (string-ref self index)) ;; match
+             (+ 1 index))
+            (else (loop (+ 1 index)))))))
+)
+
 ;; (provide 'st-string)
 
 ;;;			--- E O F ---			;;;

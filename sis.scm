@@ -53,6 +53,8 @@
        current-directory
        )
     (srfi :48) ;; intermediate-format-strings
+    (only (srfi :13) ;; String library (see "st-string.scm")
+          string-contains string-contains-ci)
     ;; For st-eval (in "st-xlate.scm")
     (scheme eval) 
     (scheme repl) ; (interaction-environment)
@@ -159,7 +161,7 @@
      "ArrayedCollection"
      "Dictionary"
      "OrderedCollection"
-;;     "String"
+     "String"
      "Interval"
      "Point"
      "ValueLink"
