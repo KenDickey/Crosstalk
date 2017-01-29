@@ -39,19 +39,20 @@ This is very much a work in progress.
   1. Dispatch mechanics (message send with #perform:)
   2. Class Structure (bootstrap + fixup; class/metaClass hierarchy setup)
   3. Basic unit tests (need to be populated)
-  4. [**in progress**] Translation of st kernel code into scheme.
-     + needs Environments for name lookup
-     + needs Return anaylsis & simplification
+  4. Translation of st kernel code into scheme. [***In Progress***]
+     + needs Environments for name lookup [basics working w/o analysis]
+     + needs Return anaylsis & simplification [call/cc proto working]
      + needs to inline primops (e.g. +, ifTrue:)
+     + convert procedures into syntaxtic transforms (macros) for speed
 
 ## Upcoming
   - Fill in the class structure (approx ANSI)
     + Present Scheme native objects [**Basics working; needs fill-in**]
   - Parsing Smalltalk with location/position info [**Mostly working**]
     + Need to pass location info thru for debug [to do!]
-  - Transliteration into Scheme [**IN PROGRESS**]
   - Read and execute Smalltalk code directly
     + Fill in bootstrap by transliterating Smalltalk runtime [*in progress*]
+    + Check baseline by porting ANSI unit test suite.
   - Look at runtime issues
   - _Bootstrap Morphic_
     
@@ -72,7 +73,3 @@ How best to stage in Smalltalk functionality?
   - Unit testing; ANSI & system self test
   - Morphic UI/graphic framework
   - Host Cuis Smalltalk on top of this St kernel
-
-
-
-
