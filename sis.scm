@@ -162,6 +162,7 @@
      "Dictionary"
      "OrderedCollection"
      "String"
+     "Character"
      "Interval"
      "Point"
      "ValueLink"

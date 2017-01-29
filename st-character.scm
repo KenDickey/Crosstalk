@@ -124,6 +124,40 @@
           (char-numeric? self)))
 
 (addSelector:withMethod:
+        (class Character)
+        'digitValue:
+;"Answer the Character whose digit value is x.
+; For example, answer $9 for x=9, $0 for x=0, $A for x=10, $Z for x=35."
+        (lambda (self aChar)
+          (let ( (val
+                  ($::: "0123456789abcdefghijklmnopqrstuvwxyz"
+                        'indexOf:startingAt:ifAbsent:
+                        (char-downcase aChar)
+                        1
+                        (lambda () #false)))
+               )
+            (if val (- val 1) ; zero is index 1
+                -1)))
+)
+
+(addSelector:withMethod:
+        Character
+        'digitValue
+;"Answer the Character whose digit value is x.
+; For example, answer $9 for x=9, $0 for x=0, $A for x=10, $Z for x=35."
+        (lambda (self)
+          (let ( (val
+                  ($::: "0123456789abcdefghijklmnopqrstuvwxyz"
+                        'indexOf:startingAt:ifAbsent:
+                        (char-downcase self)
+                        1
+                        (lambda () #false)))
+               )
+            (if val (- val 1) ; zero is index 1
+                -1)))
+)
+
+(addSelector:withMethod:
         Character
         'isSeparator
         (lambda (self)
@@ -163,8 +197,8 @@
         (lambda (self)
           (char-lower-case? self)))
 
-(define st-special-chars
-  (string->list "+-/\*~<>=@,%|&?!"))
+(define st-special-chars ;; "\\" = (string #\\)
+  (string->list "+-/\\*~<>=@,%|&?!"))
 
 (addSelector:withMethod:
         Character
@@ -249,6 +283,14 @@
           (class Character)
           'new:
           (lambda (self value) (error "cannot create new characters" self value)))
+
+(addSelector:withMethod:
+          (class Character)
+          'value:
+          (lambda (self value)
+            (unless (integer? value)
+              (error: "Character value: anInteger" value))
+            (integer->char value)))
 
 
 ;; (provide 'st-character)
