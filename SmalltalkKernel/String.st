@@ -1,4 +1,4 @@
-"FILE: 'Collection.st'
+"FILE: 'String.st'
  IMPLEMENTS: Augments class String
  AUTHOR: Guillermo Polito [Note LICENCE.md in this directory]
  Modifications by: Ken Dickey
