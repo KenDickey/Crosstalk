@@ -50,13 +50,13 @@ This is very much a work in progress.
  "[|d| 
       d := Dictionary new. 
       d at: #a put: 1;
- 	at: #b put: 2;
-	at: #c put: 3. 
+        at: #b put: 2;
+        at: #c put: 3. 
       d collect: [ :val | val squared ]
    ] value printString."
 )
 
-"Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
+ "Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
 ````
 
 ## Upcoming
