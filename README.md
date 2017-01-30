@@ -45,6 +45,20 @@ This is very much a work in progress.
      + needs to inline primops (e.g. +, ifTrue:)
      + convert procedures into syntaxtic transforms (macros) for speed
 
+````Scheme
+(st-eval 
+ "[|d| 
+      d := Dictionary new. 
+      d at: #a put: 1;
+ 	at: #b put: 2;
+	at: #c put: 3. 
+      d collect: [ :val | val squared ]
+   ] value printString."
+)
+
+"Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
+````
+
 ## Upcoming
   - Fill in the class structure (approx ANSI)
     + Present Scheme native objects [**Basics working; needs fill-in**]

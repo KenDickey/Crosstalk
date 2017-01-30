@@ -248,10 +248,10 @@
   (let ( (rcvr (AST->scm (astCascade-receiver ast)))
          (messages (astCascade-messages ast))
        )
-;; @@@FIXME: 'super allowed in this context??
+;; Presume #super NEVER allowed in this context
     `(let ( (receiver ,rcvr) )
        ,(AST->scm (car messages))
-       ,@(map (lambda (msg) (m->send 'recevier msg))
+       ,@(map (lambda (msg) (m->send 'receiver msg))
               (cdr messages)))
   )
 )

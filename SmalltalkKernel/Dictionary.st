@@ -43,13 +43,12 @@ Dictionary ~> collect: aBlock
  Collect the resulting values into a collection that is like me.
  Answer with the new collection."
   | newCollection |
-  newCollection := OrderedCollection new: self size.
-  self valuesDo: [ :aValue | 
-	newCollection add: (aBlock value: aValue)
+  newCollection := self species new: self size.
+  self keysAndValuesDo: [ :key :value | 
+	newCollection at: key put: (aBlock value: value)
   ].
   ^ newCollection
 ].
-
 
 Dictionary ~> do: aBlock
 [
