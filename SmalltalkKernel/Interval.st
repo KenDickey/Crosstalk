@@ -169,5 +169,12 @@ Interval class ~> from: startInteger to: stopInteger by: stepInteger
   ^ self basicNew setFrom: startInteger to: stopInteger by: stepInteger
 ].
 
+Interval class ~> from: startInteger to: stopInteger count: count
+[
+ | step |
+  step := (stop - start) / (count - 1).
+  ^ self basicNew setFrom: startInteger to: stopInteger by: step
+].
+
 
 "		E O F 		"

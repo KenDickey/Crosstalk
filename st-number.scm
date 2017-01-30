@@ -443,9 +443,21 @@
 
 (addSelector:withMethod: 
         Number
-        'from:to:
-        (lambda (self start step)
-          (Interval from: start to: stop by: 1)))
+        'to:
+        (lambda (start stop)
+          ($::: (smalltalkAt: 'Interval) 'from:to:by: start stop 1)))
+
+(addSelector:withMethod: 
+        Number
+        'to:by:
+        (lambda (start stop step)
+          ($::: (smalltalkAt: 'Interval) 'from:to:by: start stop step)))
+
+(addSelector:withMethod: 
+        Number
+        'to:count:
+        (lambda (self stop count)
+          ($::: (smalltalkAt: 'Interval) 'from:to:count: self stop count)))
 
 (addSelector:withMethod: 
         Number
@@ -455,6 +467,28 @@
             (when (<= index stop)
               (aBlock index)
               (loop (+ index 1))))))
+
+;; (st-eval "[|n| n := 0. 3 to: 7 do: [:a| n := n + a]. n] value")
+;; --> 25
+
+(addSelector:withMethod: 
+        Number
+        'to:by:do:
+        (lambda (start stop step aBlock)
+          (if (< step 0)
+              (let loop ( (index start) )
+                (when (>= index stop)
+                  (aBlock index)
+                  (loop (+ index step))))
+              (let loop ( (index start) )
+                (when (<= index stop)
+                  (aBlock index)
+                  (loop (+ index step))))))
+)
+
+;; (st-eval "[|n| n := 0. 3 to: 7 by: 2 do: [:a| n := n + a]. n] value")
+;; (st-eval "[|n| n := 0. 7 to: 3 by: -2 do: [:a| n := n + a]. n] value")
+;; --> 15
 
 
 ;; ##FIXME: Hyperbolics
