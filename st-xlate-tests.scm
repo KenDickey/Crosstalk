@@ -103,9 +103,11 @@
                  'do:
                  (lambda (each)
                    (let ((receiver (smalltalkAt: 'Transcript)))
-                     ($: (smalltalkAt: 'Transcript) 'show: ($ ($ each 'class) 'name))
-                     ($: recevier 'show: ($ each 'printString))
-                     ($: recevier 'show: " "))))
+                     ($: (smalltalkAt: 'Transcript)
+                         'show:
+                         ($ ($ each 'class) 'name))
+                     ($: receiver 'show: ($ each 'printString))
+                     ($: receiver 'show: " "))))
              (return ($: x '< y)))))))
      (st->scm
 "Object ~> exampleWithNumber: x
