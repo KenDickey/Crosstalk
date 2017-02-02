@@ -55,6 +55,7 @@
     (srfi :48) ;; intermediate-format-strings
     (only (srfi :13) ;; String library (see "st-string.scm")
           string-contains string-contains-ci)
+    (srfi :19) ;; date and time (see "st-data-time.scm")
     ;; For st-eval (in "st-xlate.scm")
     (scheme eval) 
     (scheme repl) ; (interaction-environment)
@@ -142,6 +143,7 @@
      "st-stream"       ;; Stream CharStream ByteStream
      "st-set"          ;; Set
      "st-dictionary"   ;; Dictionary
+     "st-date-time"    ;; PointInTime Duration DateAndTime
 ;;     @@@more to come...
     )
  )

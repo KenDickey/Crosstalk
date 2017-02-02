@@ -124,6 +124,9 @@
 (define st-object-behavior       (make-mDict-placeholder 'Object))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
+(define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))
+(define st-time-behavior         (make-mDict-placeholder 'Time))
+(define st-duration-behavior     (make-mDict-placeholder 'Duration))
 (define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
 (define st-identity-dictionary-behavior (make-mDict-placeholder 'IdentityDictionary))
 
@@ -350,6 +353,21 @@
            st-dictionary-behavior)
        )
       ((pair? thing)  st-list-behavior)
+      ((time? thing)
+       (cond
+        ((eq? 'time-duration (time-type thing))
+         st-duration-behavior
+         )
+        ((eq? 'time-utc (time-type-thing))
+         st-time-behavior
+         )
+        ;; 'time-tai
+        ;; 'time-monotonic
+        ;; 'time-thread
+        ;; 'time-process
+        (else (error "Unhandled type" (time-type thing) thing)))
+       )
+      ((date? thing)  st-date+time-behavior)
       ;; input-file 4
       ;; output-file 4
       ;; output-string 4
