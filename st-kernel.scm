@@ -358,7 +358,7 @@
         ((eq? 'time-duration (time-type thing))
          st-duration-behavior
          )
-        ((eq? 'time-utc (time-type-thing))
+        ((eq? 'time-utc (time-type thing))
          st-time-behavior
          )
         ;; 'time-tai

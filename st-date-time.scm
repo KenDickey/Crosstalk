@@ -115,6 +115,12 @@
 
 (addSelector:withMethod:
      Duration
+     'totalSeconds
+     (lambda (self)
+       (time-second self)))
+
+(addSelector:withMethod:
+     Duration
      'copy
      (lambda (self)
        (copy-time self)))
@@ -188,13 +194,19 @@
 
 (addSelector:withMethod:
      PointInTime
-     'nanoSecond
+     'nanoSeconds
      (lambda (self)
        (time-nanosecond self)))
 
 (addSelector:withMethod:
      PointInTime
-     'second
+     'seconds
+     (lambda (self)
+       (time-second self)))
+
+(addSelector:withMethod:
+     PointInTime
+     'totalSeconds
      (lambda (self)
        (time-second self)))
 
