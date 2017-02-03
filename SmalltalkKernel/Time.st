@@ -16,6 +16,13 @@ Time comment:
  If you need a point in time on a particular day, use DateAndTime. 
  If you need a duration of time, use Duration.'.
 
+Time ~> initialize
+[
+  self seconds: 0.
+  self nanos:   0.
+].
+
+
 Time ~> < aTime
 [
   ^(self seconds < aTime privateSeconds) or: [ 
@@ -31,7 +38,7 @@ Time ~> = aTime
 
   self class == aTime class ifFalse: [ ^false ].
 
-  ^ seconds = aTime privateSeconds 
+  ^ self seconds = aTime privateSeconds 
 	and: [ nanos = aTime privateNanos ] 
 ].
 
@@ -54,7 +61,8 @@ Time ~> hour12
 
 Time ~> hour24
 [
-  ^ self asDurationSinceMidnight hours
+  ^ (self asDurationSinceMidnight) 
+	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | h ]
 ].
 
 Time ~> meridianAbbreviation
@@ -64,12 +72,14 @@ Time ~> meridianAbbreviation
 
 Time ~> minute
 [
-  ^ self asDurationSinceMidnight minutes 
+  ^ self asDurationSinceMidnight
+	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | m ]
 ].
 
 Time ~> second
 [
-  ^ self asDurationSinceMidnight seconds 
+  ^ self asDurationSinceMidnight
+	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | s ]
 ].
 
 Time ~> hhmm24
@@ -171,8 +181,8 @@ Time ~> printMinutes
 Time ~> printOn: aStream
 [
    self print24: false
-	showSeconds: ((seconds ~= 0) or: [ nanos ~= 0])
-	showSecondsFraction: nanos ~= 0
+	showSeconds: ((self seconds ~= 0) or: [ self nanos ~= 0])
+	showSecondsFraction: self nanos ~= 0
 	on: aStream 
 ].
 
@@ -196,19 +206,12 @@ Time ~> privateSeconds
   ^self seconds 
 ].
 
-Time ~> seconds: secondCount
-[
-"Private - only used by Time class."
-  self seconds: secondCount.
-  self nanos: 0 
-].
-
 Time ~> seconds: secondCount nanoSeconds: nanoCount 
 [
 "Private - only used by Time class."
 "@@@FIXME:  self assert: nanoCount < Time nanosInSecond."
   self seconds: secondCount.
-  self nanos: nanoCount 
+  self nanos:   nanoCount 
 ].
 
 Time ~> - aTime
@@ -220,7 +223,7 @@ Time ~> asDurationSinceMidnight
 [
 "Answer the duration since midnight"
 
-  ^ Duration seconds: seconds nanoSeconds: nanos 
+  ^ Duration seconds: self seconds nanoSeconds: self nanos 
 ].
 
 Time class ~> microsecondsToRun: timedBlock 
@@ -242,7 +245,7 @@ Time class ~> microsecondsToRun: timedBlock
   	with: (self fromSeconds: secondCount \\ self secondsInDay)
 ]."
 
-Time ~> dateAndTimeNow
+Time class ~> dateAndTimeNow
 [
 "Answer a two-element Array of (Date today, Time now)."
 
@@ -265,6 +268,11 @@ Time class ~> fromSeconds: secondCount
 	].
   ^ self seconds: integerSeconds nanoSeconds: nanos
 ]. 
+
+Time class ~> midnight
+[
+  ^ self seconds: 0
+].
 
 Time class ~> new
 [
@@ -319,9 +327,9 @@ Time class ~> afterMidnight: aDuration
   "Answer a Time aDuration after midnight.
   If aDuration is longer than a day, take the day fraction."
   | nanoCount secondCount |
-  secondCount := aDuration totalSeconds \\ self secondsInDay.
+  secondCount := aDuration seconds \\ self secondsInDay.
   nanoCount := aDuration nanoSeconds.
-  ^ self basicNew seconds: secondCount nanoSeconds: nanoCount  
+  ^ self basicNew initialize seconds: secondCount nanoSeconds: nanoCount  
 ].
 
 Time class ~> fromString: aString
@@ -352,7 +360,7 @@ Time class ~> midnight
   ^ self seconds: 0
 ].
 
-Time ~> noon
+Time class ~> noon
 [
   ^ self seconds: self secondsInDay / 2 
 ].
@@ -361,7 +369,7 @@ Time class ~> seconds: seconds
 [
 "Answer a Time from midnight."
 
-  ^ self afterMidnight: (Duration seconds: seconds) 
+  ^ self seconds: seconds nanoSeconds: 0
 ].
 
 Time class ~> seconds: seconds nanoSeconds: nanoCount

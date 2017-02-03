@@ -90,6 +90,12 @@
        (make-time 'time-duration nanos seconds)))
 
 (addSelector:withMethod:
+     (class Duration)
+     'seconds:
+     (lambda (self seconds)
+       (make-time 'time-duration 0 seconds)))
+
+(addSelector:withMethod:
      Duration
      'seconds:
      (lambda (self seconds)
@@ -164,6 +170,23 @@
 ;; (make-time 'time-duration 789 273906)
 ;; (Duration days: 3 hours: 4 minutes: 5 seconds: 6 nanoSeconds: 789) printString
 ;; -->  '3:04:05:06.000000789'
+
+(addSelector:withMethod:
+     Duration
+     'daysHoursMinutesSecondsNanosDo:
+     (lambda (self aBlockClosure)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           (let-values ( ((hours hours-rem)
+                          (floor/ days-rem secs/hour)) )
+             (let-values ( ((minutes seconds)
+                            (floor/ hours-rem secs/min)) )
+               (aBlockClosure days hours minutes seconds nanos)
+     ) ) ) ) )
+)
 
 (addSelector:withMethod:
      (class Duration)
@@ -367,6 +390,12 @@
 (addSelector:withMethod:
      DateAndTime
      'second
+     (lambda (self)
+       (date-second self)))
+
+(addSelector:withMethod:
+     DateAndTime
+     'seconds
      (lambda (self)
        (date-second self)))
 
