@@ -272,8 +272,11 @@
          ;; Answers a Duration
          )
         ((time-duration? other)
-         (subtract-duration self other)
-         ;; Answers a PointInTime
+         (time-utc->date (subtract-duration self other))
+         ;; Answers a DateAndTime
+         )
+        ((date? other)
+         (time-difference self (date->time-utc other))
          )
         (else
          (error "Expected a Duration or a PointInTime" other)))))
@@ -283,6 +286,12 @@
      'asDateAndTime
      (lambda (self)
        (time-utc->date self)))
+
+(addSelector:withMethod:
+     PointInTime
+     'printOn:
+     (lambda (self port)
+       ($: (time-utc->date self) 'printOn: port)))
 
 ;;; DateAndTime
 
@@ -302,6 +311,9 @@
 ;;           "June" "July" "August" "September" "October"
 ;;           "November" "December"))
 
+(define (check-date-and-time thing)
+  (unless (date? thing)
+    (error "Expected a DateAndTime:" thing)))
 
 (addSelector:withMethod:
      (class DateAndTime)
@@ -328,6 +340,23 @@
      'printOn:
      (lambda (self port)
        (display (date->string self "~Y-~m-~dT~H:~M:~S") port)))
+
+(addSelector:withMethod:
+     DateAndTime
+     '-  ;; DateAndTime - (DateAndTime OR Duration)
+     (lambda (self other)
+       ($: ($ self 'asPointInTime)
+           '-
+           other)))
+
+(addSelector:withMethod:
+     DateAndTime
+     '+  ;; DateAndTime + Duration -> DateAndTime
+     (lambda (self other)
+       ($ ($: ($ self 'asPointInTime)
+              '+
+              other)
+          'asDateAndTime)))
 
 (addSelector:withMethod:
      DateAndTime
