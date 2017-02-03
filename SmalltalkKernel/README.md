@@ -3,9 +3,10 @@
 ## Conventions
 
 The *.st files here augment those *.scm files to
- create a baseline for reading in more interesting SMalltalk code.
+ create a baseline for reading in more interesting
+ Smalltalk code.
 
-The convention is
+The pattern is
 ````Smalltalk
 SuperClass newSubclassName: #NewSub iVars: #(foo bar) cVars: nil.
 
@@ -21,6 +22,9 @@ NewSub ~> message-pattern
 ## Restrictions:
 + Must use setters and getters for instance variable access.
 + Capitalized identifier -> global (in Smalltalk dictionary)
-+ Lower case identifier -> local or (self|super|nil|true|false)
++ Lower case identifier -> defined local/block-formal or (self|super|nil|true|false)
 
+Note "sis.scm".  
+
+Use (add-st) which assumes a SiS/Temp directory exists.
 
