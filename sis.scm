@@ -170,6 +170,7 @@
      "ValueLink"
      "LinkedList"
      "Time"
+     "TimeSpan"
      ;;    @@@more to come...
     )
  )

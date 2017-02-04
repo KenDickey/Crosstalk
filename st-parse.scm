@@ -18,6 +18,7 @@
 (define-structure (astKeywordMessage selector arguments))
 (define-structure (astMessageSend receiver messages))
 (define-structure (astArray       elements)) ;; ??astLiteral
+(define-structure (astDynamicArray element-expressions))
 (define-structure (astSequence    statements))
 (define-structure (astMessageSequence messages))
 (define-structure (astLetTemps    temps statements))
@@ -335,26 +336,53 @@
         message)
 ) )
 
-
+;; Note: cascaded messages are a bit odd:
+;;   34 squared; printString. '34' 
+;;   34 squared + 2; printString. '1156' 
+;;   34 squared sqrt; printString.  '1156' 
+;;   34 squared sqrt + 2; printString. '34'
+;;   34 squared sqrt + 2 + 4; printString. '36'
+;; So the rule seems to be:
+;;   the cascade-receiver is the pen-ultimate expression before $;
 (define (parse-cascade receiver first-message)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-cascade)"))
   (unless (eq? 'cascade (curr-token-kind))
     (parse-error "parse-cascade: expected $;" curr-token))
-  (consume-token!)
-  (let loop ( (reversed-messages (list first-message)) )
-    (let ( (message (parse-messages)) )
-      (skip-whitespace)
-      (if (eq? 'cascade (curr-token-kind))
-          (begin
-            (consume-token!)
-            (loop (cons message reversed-messages)))
-          (astCascade receiver
-                      (reverse (cons message reversed-messages))))
-     )
+  (let-values ( ((cascade-rcvr cascade-first-msg)
+                 (cascade-fixup receiver first-message)) )
+    (consume-token!)
+    (let loop ( (reversed-messages (list cascade-first-msg)) )
+      (let ( (message (parse-messages)) )
+        (skip-whitespace)
+        (if (eq? 'cascade (curr-token-kind))
+            (begin
+              (consume-token!)
+              (loop (cons message reversed-messages)))
+            (astCascade cascade-rcvr
+                        (reverse (cons message reversed-messages))))
+    ) )
   )
 )
+
+(define (cascade-fixup receiver first-message)
+  (if (and (astMessageSend? first-message)
+           (astMessageSequence? (astMessageSend-messages first-message)))
+      (let ( (rev-msg-seq
+              (reverse (astMessageSequence-messages
+                        (astMessageSend-messages first-message))))
+           )
+;;      (format #t "~%rev-msg-seq: ~y~%" rev-msg-seq)
+        (values (astMessageSend
+                     receiver
+                     (astMessageSequence (reverse (cdr rev-msg-seq))))
+                (astMessageSend
+                     (astLiteral (token 'identifier "receiver" (list "receiver" 0 0))
+                                 'receiver)
+                     (car rev-msg-seq))))
+      (values receiver first-message)
+) )
 
 (define (pattern->ast selector args)
   (case (token-kind selector)
@@ -651,10 +679,26 @@
 ;;        (<= 0 (astLiteral-value ast) 256)))
 
 (define (parse-dynamic-array)
+  " { expr [. expr]* } "
   (when (trace-parse-methods)
     (newline)
     (display " (parse-dynamic-array)"))
-  (error "@@NYI:  (parse-dynamic-array)"))
+  (unless (eq? 'dynArrayStart (curr-token-kind))
+    (parse-error "parse-dynamic-array: expected ${" curr-token))
+  (consume-token!)
+  (let loop ( (expressions '()) )
+    (skip-whitespace)
+    (if (eq? 'dynArrayEnd (curr-token-kind))
+        (begin
+          (consume-token!) "#\}"
+          (astDynamicArray (reverse expressions)))
+        (let ( (exp (parse-expression)) )
+          (skip-whitespace)
+          (if (eq? 'period (curr-token-kind))
+              (consume-token!))
+          (loop (cons exp expressions)))
+  ) )
+)
 
 
 ;; <block constructor> ::= '[' <block body> ']'
@@ -733,6 +777,7 @@
             (unless (check-for-returns (astMessageSend-receiver ast))
               (check-for-returns (astMessageSend-messages ast))))
            ((astArray? ast) #false)
+           ((astDynamicArray? ast) #false)
            (else
             (error
              "check-for-returns: unhandled AST case" ast)

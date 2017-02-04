@@ -96,6 +96,18 @@
        (make-time 'time-duration 0 seconds)))
 
 (addSelector:withMethod:
+     (class Duration)
+     'hours:
+     (lambda (self hours)
+       (make-time 'time-duration 0 (* hours secs/hour))))
+
+(addSelector:withMethod:
+     Integer ;; Nota Bene!
+     'hours
+     (lambda (self)
+       (make-time 'time-duration 0 (* self secs/hour))))
+
+(addSelector:withMethod:
      Duration
      'seconds:
      (lambda (self seconds)
@@ -131,6 +143,12 @@
      (lambda (self)
        (copy-time self)))
 
+(addSelector:withMethod:
+     Duration
+     'zero
+     (lambda (self)
+       (make-time 'time-duration 0 0)))
+
 (define secs/min 60)
 (define secs/hour (* 60 secs/min))
 (define secs/day  (* 24 secs/hour))
@@ -162,8 +180,11 @@
                  ":"
                  (pad-two minutes)
                  ":"
-                 (if (< seconds 10) "0" "")
-                 (number->string (+ 0.0 seconds (/ nanos nanos/sec))))
+                 (if (zero? nanos)
+                     (pad-two seconds)
+                     (string-append
+                      (if (< seconds 10) "0" "")
+                      (number->string (+ 0.0 seconds (/ nanos nanos/sec))))))
                 port)
      ) ) ) ) )
 )
@@ -343,6 +364,16 @@
      'now
      (lambda (self)
        (current-date )))
+
+(addSelector:withMethod:
+     (class DateAndTime)
+     'clockPrecision
+     (lambda (self)
+       ;; Answer a Duration with nanoSeconds precision
+       ($:: Duration
+            'seconds:nanoSeconds:
+            0
+            (time-resolution 'time-utc))))
 
 (addSelector:withMethod:
      DateAndTime

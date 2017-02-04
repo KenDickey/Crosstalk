@@ -44,6 +44,9 @@
    ((astArray? ast)
     (xlateArray ast)
     )
+   ((astDynamicArray? ast)
+    (xlateDynamicArray ast)
+    )
    ;; ((astMethod ast) ...)
    (else
     (error
@@ -244,10 +247,11 @@
   )
 )
 
+
 (define (xlateCascade ast)
-  (let ( (rcvr (AST->scm (astCascade-receiver ast)))
-         (messages (astCascade-messages ast))
-       )
+  (let* ( (rcvr (AST->scm (astCascade-receiver ast)))
+          (messages (astCascade-messages ast))
+        )
 ;; Presume #super NEVER allowed in this context
     `(let ( (receiver ,rcvr) )
        ,(AST->scm (car messages))
@@ -414,6 +418,11 @@
 ;;; Static Array
 (define (xlateArray ast)
   (list->vector (map AST->scm (astArray-elements ast)))
+)
+
+
+(define (xlateDynamicArray ast)
+  `(vector ,@(map AST->scm (astDynamicArray-element-expressions ast)))
 )
 
 

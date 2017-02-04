@@ -118,6 +118,20 @@
        (display ")" port))
 )
 
+
+(addSelector:withMethod:
+     Array
+     'select:
+     (lambda (self predicate?)
+       (let ( (results '()) )
+         (vector-for-each
+          (lambda (each)
+            (when (predicate? each)
+              (set! results (cons each results))))
+          self)
+         (list->vector (reverse results))))
+)
+
 (addSelector:withMethod:
      Array
      'asArray
