@@ -82,6 +82,12 @@ Time ~> second
 	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | s ]
 ].
 
+Time ~> days
+[
+  ^ (self asDurationSinceMidnight) 
+	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | d ]
+].
+
 Time ~> hhmm24
 [
 "Return a string of the form 1123 (for 11:23 am), 2154 (for 9:54 pm),
@@ -385,7 +391,7 @@ Time class ~> now
  Precision is microsecond if the VM supports it, millisecond otherwise"
 
   | timeAtNow |
-  timeAtNow := PointInTime now.
+  timeAtNow := (DateAndTime now - DateAndTime midnight).
   ^ self seconds: timeAtNow seconds nanoSeconds: timeAtNow nanoSeconds
 ].
 

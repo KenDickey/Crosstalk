@@ -210,6 +210,19 @@
 )
 
 (addSelector:withMethod:
+     Duration
+     'days
+     (lambda (self aBlockClosure)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           days
+     ) ) )
+)
+
+(addSelector:withMethod:
      (class Duration)
      'days:hours:minutes:seconds:nanoSeconds:
      (lambda (self d h m s nanos)
@@ -363,7 +376,7 @@
      (class DateAndTime)
      'now
      (lambda (self)
-       (current-date )))
+       (current-date)))
 
 (addSelector:withMethod:
      (class DateAndTime)
@@ -374,6 +387,34 @@
             'seconds:nanoSeconds:
             0
             (time-resolution 'time-utc))))
+
+(addSelector:withMethod:
+     (class DateAndTime)
+     'midnight
+     (lambda (self)
+;"Answer a DateAndTime starting at midnight local time"
+       (let ( (dateNow (current-date)) )
+         (make-date 0 ;   nanos
+                    0 ;   seconds
+                    0 ;   minutes
+                    0 ;   hours
+                    (date-day    dateNow)
+                    (date-month  dateNow)
+                    (date-year   dateNow)
+                    (date-zone-offset dateNow)))))
+
+(addSelector:withMethod:
+     DateAndTime
+     'midnight
+     (lambda (self)
+       (make-date 0 ;   nanos
+                  0 ;   seconds
+                  0 ;   minutes
+                  0 ;   hours
+                  (date-day    self)
+                  (date-month  self)
+                  (date-year   self)
+                  (date-zone-offset self))))
 
 (addSelector:withMethod:
      DateAndTime
