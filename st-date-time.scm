@@ -188,8 +188,9 @@
                  (if (zero? nanos)
                      (pad-two seconds)
                      (string-append
-                      (if (< seconds 10) "0" "")
-                      (number->string (+ 0.0 seconds (/ nanos nanos/sec))))))
+                      (number->string seconds)
+                      "."
+                      (number->string nanos))))
                 port)
      ) ) ) ) )
 )
@@ -215,19 +216,6 @@
 )
 
 (addSelector:withMethod:
-     Duration
-     'days
-     (lambda (self aBlockClosure)
-       (let ( (secs  (time-second     self))
-              (nanos (time-nanosecond self))
-            )
-         (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
-           days
-     ) ) )
-)
-
-(addSelector:withMethod:
      (class Duration)
      'days:hours:minutes:seconds:nanoSeconds:
      (lambda (self d h m s nanos)
@@ -238,6 +226,19 @@
                (* m secs/min)
                s)
             nanos))
+)
+
+(addSelector:withMethod:
+     Duration
+     'days
+     (lambda (self)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           days
+     ) ) )
 )
 
 (addSelector:withMethod:
@@ -449,7 +450,7 @@
             (time-resolution 'time-utc))))
 
 (addSelector:withMethod:
-     (class DateAndTime)
+     (class DateAndTime) ;; NB: a Class method
      'midnight
      (lambda (self)
 ;"Answer a DateAndTime starting at midnight local time"
@@ -464,7 +465,7 @@
                     (date-zone-offset dateNow)))))
 
 (addSelector:withMethod:
-     DateAndTime
+     DateAndTime ;; NB: an Instance method
      'midnight
      (lambda (self)
        (make-date 0 ;   nanos
@@ -486,15 +487,28 @@
      DateAndTime
      'printString
      (lambda (self)
-       ;; @@FIXME: ANSI offset
-;;     (date->string self "~Y-~m-~dT~H:~M:~S")
-       (date->string self "~5"))) ;; same result
+       ;; ANSI offset is a Duration
+       (let* ( (offset-seconds (date-zone-offset self))
+               (date-string (date->string self "~5"))
+               ;; Above same as (date->string self "~Y-~m-~dT~H:~M:~S")
+               (abs-offset (abs offset-seconds))
+            )
+         (if (zero? offset-seconds)
+             date-string
+             (let-values ( ((hours minutes)
+                            (floor/ abs-offset secs/hour)) )
+               (string-append
+                date-string
+                (if (negative? offset-seconds) "-" "+")
+                (pad-two hours)
+                ":"
+                (pad-two minutes)))))))
 
 (addSelector:withMethod:
      DateAndTime
      'printOn:
      (lambda (self port)
-       (display (date->string self "~Y-~m-~dT~H:~M:~S") port)))
+       (display ($ self 'printString) port)))
 
 (addSelector:withMethod:
      DateAndTime

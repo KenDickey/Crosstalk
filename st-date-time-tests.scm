@@ -39,7 +39,7 @@
   "(Duration days: 3 hours: 4 minutes: 5 seconds: 6 nanoSeconds: 0) printString")
 
 (add-equal-test 'st-date-time
-  "3:04:05:06.70000089"
+  "3:04:05:06.700000890"
   (st-eval
 "(Duration days: 3 hours: 4 minutes: 5 seconds: 6.7 nanoSeconds: 890) printString")
 "(Duration days: 3 hours: 4 minutes: 5 seconds: 6.7 nanoSeconds: 890) printString")
