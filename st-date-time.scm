@@ -172,13 +172,16 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ 
+                         (if (negative? secs) (- secs) secs)
+                         secs/day)) )
            (let-values ( ((hours hours-rem)
-                          (floor/ days-rem secs/hour)) )
+                          (truncate/ days-rem secs/hour)) )
              (let-values ( ((minutes seconds)
-                            (floor/ hours-rem secs/min)) )
+                            (truncate/ hours-rem secs/min)) )
                (display
                 (string-append
+                 (if (negative? secs) "-" "")
                  (number->string days)
                  ":"
                  (pad-two hours)
@@ -187,10 +190,11 @@
                  ":"
                  (if (zero? nanos)
                      (pad-two seconds)
-                     (string-append
-                      (number->string seconds)
-                      "."
-                      (number->string nanos))))
+                     (let ( (nanos-string (number->string (+ nanos nanos/sec))) )
+                       (string-append
+                        (pad-two seconds)
+                        "."
+                        (substring nanos-string 1 (string-length nanos-string))))))
                 port)
      ) ) ) ) )
 )
@@ -206,11 +210,11 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ secs secs/day)) )
            (let-values ( ((hours hours-rem)
-                          (floor/ days-rem secs/hour)) )
+                          (truncate/ days-rem secs/hour)) )
              (let-values ( ((minutes seconds)
-                            (floor/ hours-rem secs/min)) )
+                            (truncate/ hours-rem secs/min)) )
                (aBlockClosure days hours minutes seconds nanos)
      ) ) ) ) )
 )
@@ -236,7 +240,7 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ secs secs/day)) )
            days
      ) ) )
 )
@@ -249,9 +253,9 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ secs secs/day)) )
            (let-values ( ((hours hours-rem)
-                          (floor/ days-rem secs/hour)) )
+                          (truncate/ days-rem secs/hour)) )
              hours
      ) ) ) )
 )
@@ -264,11 +268,11 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ secs secs/day)) )
            (let-values ( ((hours hours-rem)
-                          (floor/ days-rem secs/hour)) )
+                          (truncate/ days-rem secs/hour)) )
              (let-values ( ((minutes seconds)
-                            (floor/ hours-rem secs/min)) )
+                            (truncate/ hours-rem secs/min)) )
                minutes
      ) ) ) ) )
 )
@@ -281,11 +285,11 @@
               (nanos (time-nanosecond self))
             )
          (let-values ( ((days days-rem)
-                        (floor/ secs secs/day)) )
+                        (truncate/ secs secs/day)) )
            (let-values ( ((hours hours-rem)
-                          (floor/ days-rem secs/hour)) )
+                          (truncate/ days-rem secs/hour)) )
              (let-values ( ((minutes seconds)
-                            (floor/ hours-rem secs/min)) )
+                            (truncate/ hours-rem secs/min)) )
                seconds
      ) ) ) ) )
 )
@@ -440,6 +444,14 @@
        (current-date)))
 
 (addSelector:withMethod:
+     DateAndTime
+     'offset
+     (lambda (self)
+       ($: Duration
+           'seconds:
+           (date-zone-offset self))))
+
+(addSelector:withMethod:
      (class DateAndTime)
      'clockPrecision
      (lambda (self)
@@ -465,6 +477,20 @@
                     (date-zone-offset dateNow)))))
 
 (addSelector:withMethod:
+     (class DateAndTime) ;; NB: a Class method
+     'year:month:day:hour:minute:second:nanoSecond:offset:
+     (lambda (self year month day hours minutes seconds nanos offset)
+;"Answer a DateAndTime starting at midnight local time"
+       (make-date nanos
+                 seconds
+                 minutes
+                 hours
+                 day
+                 month
+                 year
+                 offset))) ;; offset is a Duration
+
+(addSelector:withMethod:
      DateAndTime ;; NB: an Instance method
      'midnight
      (lambda (self)
@@ -488,15 +514,15 @@
      'printString
      (lambda (self)
        ;; ANSI offset is a Duration
-       (let* ( (offset-seconds (date-zone-offset self))
-               (date-string (date->string self "~5"))
+       (let* ( (offset-seconds (time-second (date-zone-offset self)))
+               (abs-offset     (abs offset-seconds))
+               (date-string    (date->string self "~5"))
                ;; Above same as (date->string self "~Y-~m-~dT~H:~M:~S")
-               (abs-offset (abs offset-seconds))
             )
          (if (zero? offset-seconds)
              date-string
              (let-values ( ((hours minutes)
-                            (floor/ abs-offset secs/hour)) )
+                            (truncate/ abs-offset secs/hour)) )
                (string-append
                 date-string
                 (if (negative? offset-seconds) "-" "+")
