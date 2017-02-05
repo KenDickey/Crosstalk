@@ -5,7 +5,9 @@
  DATE: 02 Febuary 2017
 "
 
-Magnitude newSubclassName: #Time iVars: #(seconds nanos) cVars: nil.
+Magnitude newSubclassName: #Time iVars: #(totalSeconds nanos) cVars: nil.
+
+"@@ Used #totalSeconds to avoid privateSeconds confusion @@"
 
 Time category: #'Kernel-Chronology'.
 
@@ -18,15 +20,15 @@ Time comment:
 
 Time ~> initialize
 [
-  self seconds: 0.
-  self nanos:   0.
+  self totalSeconds: 0.
+  self nanos:        0.
 ].
 
 
 Time ~> < aTime
 [
-  ^(self seconds < aTime privateSeconds) or: [ 
-	(self seconds = aTime privateSeconds)
+  ^(self totalSeconds < aTime totalSeconds) or: [ 
+	(self totalSeconds = aTime totalSeconds)
  	    and: [self nanos < aTime privateNanos ]
   ]
 ].
@@ -38,13 +40,13 @@ Time ~> = aTime
 
   self class == aTime class ifFalse: [ ^false ].
 
-  ^ self seconds = aTime privateSeconds 
+  ^ self totalSeconds = aTime totalSeconds 
 	and: [ nanos = aTime privateNanos ] 
 ].
 
 Time ~> hash
 [
-  ^ self seconds bitXor: self nanos 
+  ^ self totalSeconds bitXor: self nanos 
 ].
 
 Time ~> hour
@@ -197,20 +199,11 @@ Time ~> storeOn: aStream
   aStream print: self printString; nextPutAll: ' asTime' 
 ].
 
-Time ~> nanoSecond
+Time ~> nanoSeconds
 [
   ^ self nanos
 ].
 
-Time ~> privateNanos
-[
-  ^self nanos 
-].
-
-Time ~> privateSeconds
-[
-  ^self seconds 
-].
 
 Time ~> seconds: secondCount nanoSeconds: nanoCount 
 [
@@ -277,7 +270,7 @@ Time class ~> fromSeconds: secondCount
 
 Time class ~> midnight
 [
-  ^ self seconds: 0
+  ^ self totalSeconds: 0
 ].
 
 Time class ~> new
@@ -392,7 +385,7 @@ Time class ~> now
 
   | timeAtNow |
   timeAtNow := (DateAndTime now - DateAndTime midnight).
-  ^ self seconds: timeAtNow seconds nanoSeconds: timeAtNow nanoSeconds
+  ^ self totalSeconds: timeAtNow totalSeconds nanoSeconds: timeAtNow nanoSeconds
 ].
 
 Time class ~> microsecondsInDay

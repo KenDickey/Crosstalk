@@ -87,7 +87,12 @@
      (class Duration)
      'seconds:nanoSeconds:
      (lambda (self seconds nanos)
-       (make-time 'time-duration nanos seconds)))
+       (let* ( (whole-secs (exact (truncate seconds)))
+               (frac-secs (- seconds whole-secs))
+             )
+       (make-time 'time-duration
+                  (+ nanos (exact (round (* frac-secs nanos/sec))))
+                  whole-secs))))
 
 (addSelector:withMethod:
      (class Duration)
@@ -226,12 +231,13 @@
      (class Duration)
      'days:hours:minutes:seconds:nanoSeconds:
      (lambda (self d h m s nanos)
-       (make-time 'time-duration
-                  nanos
-                  (+ (* d secs/day)
-                     (* h secs/hour)
-                     (* m secs/min)
-                     s)))
+       ($:: Duration
+            'seconds:nanoSeconds:
+            (+ (* d secs/day)
+               (* h secs/hour)
+               (* m secs/min)
+               s)
+            nanos))
 )
 
 (addSelector:withMethod:
@@ -269,7 +275,7 @@
 (addSelector:withMethod:
      Duration
      'seconds
-     (lambda (self aBlockClosure)
+     (lambda (self)
        (let ( (secs  (time-second     self))
               (nanos (time-nanosecond self))
             )
@@ -282,6 +288,11 @@
                seconds
      ) ) ) ) )
 )
+
+(addSelector:withMethod:
+     Duration
+     'nanoSeconds
+     (lambda (self) (time-nanosecond self)))
 
 
 ;;; PointInTime
