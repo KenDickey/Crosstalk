@@ -550,7 +550,6 @@
      (lambda (self)
        (date-year self)))
 
-
 ;;;;@@@FillMeIn
 
 ;; (provides st-date-time)
