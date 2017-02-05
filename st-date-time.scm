@@ -121,7 +121,7 @@
 
 (addSelector:withMethod:
      Duration
-     'seconds
+     'totalSseconds
      (lambda (self)
        (time-second self)))
 
@@ -234,6 +234,55 @@
                      s)))
 )
 
+(addSelector:withMethod:
+     Duration
+     'hours
+     (lambda (self)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           (let-values ( ((hours hours-rem)
+                          (floor/ days-rem secs/hour)) )
+             hours
+     ) ) ) )
+)
+
+(addSelector:withMethod:
+     Duration
+     'minutes
+     (lambda (self)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           (let-values ( ((hours hours-rem)
+                          (floor/ days-rem secs/hour)) )
+             (let-values ( ((minutes seconds)
+                            (floor/ hours-rem secs/min)) )
+               minutes
+     ) ) ) ) )
+)
+
+(addSelector:withMethod:
+     Duration
+     'seconds
+     (lambda (self aBlockClosure)
+       (let ( (secs  (time-second     self))
+              (nanos (time-nanosecond self))
+            )
+         (let-values ( ((days days-rem)
+                        (floor/ secs secs/day)) )
+           (let-values ( ((hours hours-rem)
+                          (floor/ days-rem secs/hour)) )
+             (let-values ( ((minutes seconds)
+                            (floor/ hours-rem secs/min)) )
+               seconds
+     ) ) ) ) )
+)
+
 
 ;;; PointInTime
 
@@ -259,7 +308,7 @@
      PointInTime
      'seconds
      (lambda (self)
-       (time-second self)))
+       (floor (/ (time-second self) secs/min))))
 
 (addSelector:withMethod:
      PointInTime
