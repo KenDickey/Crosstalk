@@ -23,6 +23,13 @@
      Array
      'category: '|Collections-Arrayed|)
 
+(addSelector:withMethod:
+     Array
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Array)
+           (superPerform:with: self 'is: symbol))))
+
 
 ;; Scheme Vectors
 (set! st-array-behavior (perform: Array 'methodDict))
@@ -169,6 +176,13 @@
    ArrayedCollection
    'ByteArray '() '())
 )
+
+(addSelector:withMethod:
+     ByteArray
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'ByteArray)
+           (superPerform:with: self 'is: symbol))))
 
 (perform:with:
      ByteArray

@@ -51,10 +51,46 @@
    'Integer '() '())
 )
 
-(set! st-integer-behavior (perform: Integer 'methodDict))
+(set! st-integer-behavior  (perform: Integer  'methodDict))
 (set! st-fraction-behavior (perform: Fraction 'methodDict))
-(set! st-real-behavior (perform: Float 'methodDict))
-(set! st-complex-behavior (perform: Complex 'methodDict))
+(set! st-real-behavior     (perform: Float    'methodDict))
+(set! st-complex-behavior  (perform: Complex  'methodDict))
+
+(addSelector:withMethod:
+     Number
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Number)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Complex
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Complex)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Float
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Float)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Fraction
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Fraction)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Integer
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Integer)
+           (superPerform:with: self 'is: symbol))))
+
 
 (define pi (* 2 (acos 0)))
 

@@ -233,6 +233,11 @@
         ) ) ) )
 )
 
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'is:
+        (lambda (self aSymbol) #false)) ; base case
+
 (primAddSelector:withMethod: ;; ANSI
  	st-object-behavior
         'isMemberOf:

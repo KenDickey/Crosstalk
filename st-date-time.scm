@@ -79,6 +79,27 @@
      "I represent a duration of time. I have nanosecond precision"
 )
 
+(addSelector:withMethod:
+     DateAndTime
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'DateAndTime)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     PointInTime
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'PointInTime)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Duration
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Duration)
+           (superPerform:with: self 'is: symbol))))
+
 ;;; Duration
 
 (define (time-duration? thing)

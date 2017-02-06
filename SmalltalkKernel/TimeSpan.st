@@ -20,18 +20,22 @@ Timespan category: #'Kernel-Chronology'.
 Timespan comment:
 'I represent a duration starting on a specific DateAndTime.'.
 
+Timespan ~> is: aSymbol
+[
+  ^aSymbol == #Timespan or: [ super is: aSymbol ]
+].
 
 Timespan ~> + aDuration
 [
   ^self class classDefinesDuration
-	ifTrue: [ self class including: self start + aDuration ]
+	ifTrue: [  self class including: self start + aDuration ]
 	ifFalse: [ self class starting: self start + aDuration duration: duration ]
 ].
 
 Timespan ~> - aDuration
 [
   ^self class classDefinesDuration
-	ifTrue: [ self class including: self start - aDuration ]
+	ifTrue: [  self class including: self start - aDuration ]
 	ifFalse: [ self class starting: self start - aDuration duration: duration ]
 ].
 
@@ -285,6 +289,10 @@ Date comment:
 'Instances of Date are Timespans with duration of 1 day.
 Their default creation assumes a start of midnight in the local time zone.'.
 
+Date ~> is: aSymbol
+[
+  ^aSymbol == #Date or: [ super is: aSymbol ]
+].
 
 Date ~> mmddyyyy
 [
@@ -803,6 +811,11 @@ Date class ~> including: aDateAndTime
 Year comment: 'I represent a year.'.
 
 
+Year ~> is: aSymbol
+[
+  ^aSymbol == #Year or: [ super is: aSymbol ]
+].
+
 Year ~> daysInMonth
 [
   self shouldNotImplement 
@@ -884,6 +897,12 @@ Year class ~> mustEncompassWholeDates
 " === Class Month === "
 
 Month comment: 'I represent a month.'.
+
+
+Month ~> is: aSymbol
+[
+  ^aSymbol == #Month or: [ super is: aSymbol ]
+].
 
 Month ~> daysInMonth
 [
@@ -1032,6 +1051,12 @@ Month class ~> mustEncompassWholeDates
 
 Week comment: 'I represent a week.'.
 
+
+Week ~> is: aSymbol
+[
+  ^aSymbol == #Week or: [ super is: aSymbol ]
+].
+
 Week ~> printOn: aStream
 [
   aStream nextPutAll: 'a Week starting: '.
@@ -1096,6 +1121,12 @@ name		-	String		- the name of the time zone.
 TimeZone class >> #timeZones returns an array of the known time zones
 TimeZone class >> #default returns the default time zone (Grenwich Mean Time)'.
 
+
+TimeZone ~> is: aSymbol
+[
+  ^aSymbol == #TimeZone or: [ super is: aSymbol ]
+].
+
 TimeZone ~> printOn: aStream
 [
   super printOn: aStream.
@@ -1117,13 +1148,13 @@ TimeZone class ~> default
 TimeZone class ~> timeZones
 [ "@@@FIXME: add others"
   ^ {
-	self offset:  0 hours name: 'Universal Time'              abbreviation: 'UTC'.
-	self offset:  0 hours name: 'Greenwich Mean Time'         abbreviation: 'GMT'.
-	self offset:  1 hours name: 'British Summer Time'         abbreviation: 'BST'.
-	self offset:  2 hours name: 'South African Standard Time' abbreviation: 'SAST'.
-	self offset: -8 hours name: 'Pacific Standard Time'       abbreviation: 'PST'.
-	self offset: -7 hours name: 'Pacific Daylight Time'       abbreviation: 'PDT'.
-    }
+  self offset:  0 hours name: 'Universal Time'              abbreviation: 'UTC'.
+  self offset:  0 hours name: 'Greenwich Mean Time'         abbreviation: 'GMT'.
+  self offset:  1 hours name: 'British Summer Time'         abbreviation: 'BST'.
+  self offset:  2 hours name: 'South African Standard Time' abbreviation: 'SAST'.
+  self offset: -8 hours name: 'Pacific Standard Time'       abbreviation: 'PST'.
+  self offset: -7 hours name: 'Pacific Daylight Time'       abbreviation: 'PDT'.
+  }
 ].
 
 TimeZone class ~> utc

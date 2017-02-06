@@ -11,6 +11,13 @@
    'BlockClosure '() '())
 )
 
+(addSelector:withMethod:
+     BlockClosure
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'BlockClosure)
+           (superPerform:with: self 'is: symbol))))
+
 (set! st-blockClosure-behavior
       (perform: BlockClosure 'methodDict))
 

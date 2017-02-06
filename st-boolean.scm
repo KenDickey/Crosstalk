@@ -26,6 +26,13 @@
    'False '() '())
 )
 
+(addSelector:withMethod:
+     Boolean
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Boolean)
+           (superPerform:with: self 'is: symbol))))
+
 (define UndefinedObject
   (newSubclassName:iVars:cVars:
    Object

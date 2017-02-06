@@ -16,6 +16,13 @@
 (set! st-character-behavior (perform: Character 'methodDict))
 
 
+(addSelector:withMethod:
+     Character
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Character)
+           (superPerform:with: self 'is: symbol))))
+
 (perform:with:
      Character
      'category: "Kernel-Text")

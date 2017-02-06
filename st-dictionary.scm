@@ -63,6 +63,21 @@
 )
 
 (addSelector:withMethod:
+     Dictionary
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Dictionary)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     IdentityDictionary
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'IdentityDictionary)
+           (superPerform:with: self 'is: symbol))))
+
+
+(addSelector:withMethod:
      (class Dictionary)
      'new:
      (lambda (self size) ;; eqv -> #=

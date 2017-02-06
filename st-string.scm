@@ -22,6 +22,13 @@
      'comment:
      "A String is an indexed collection of Characters.")
 
+(addSelector:withMethod:
+     String
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'String)
+           (superPerform:with: self 'is: symbol))))
+
 ;; (addSelector:withMethod: 
 ;;     String
 ;;     'printString

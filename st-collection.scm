@@ -21,6 +21,13 @@
      Collection
      'category: '|Collections-Abstract|)
 
+(addSelector:withMethod:
+     Collection
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Collection)
+           (superPerform:with: self 'is: symbol))))
+
 (define SequenceableCollection
   (newSubclassName:iVars:cVars:
    Collection
@@ -39,6 +46,13 @@
      SequenceableCollection
      'category: '|Collections-Abstract|)
 
+(addSelector:withMethod:
+     SequenceableCollection
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'SequenceableCollection)
+           (superPerform:with: self 'is: symbol))))
+
 (define ArrayedCollection
   (newSubclassName:iVars:cVars:
    SequenceableCollection
@@ -56,6 +70,12 @@
      ArrayedCollection
      'category: '|Collections-Abstract|)
 
+(addSelector:withMethod:
+     ArrayedCollection
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'ArrayedCollection)
+           (superPerform:with: self 'is: symbol))))
 
 (addSelector:withMethod:
      Collection
