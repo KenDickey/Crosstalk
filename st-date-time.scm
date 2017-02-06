@@ -61,6 +61,12 @@
      '|Kernel-Chronology|)
 
 (perform:with:
+     DateAndTime
+     'comment:
+"I represent a point in UTC time as defined by ISO 8601. I have zero duration."
+)
+
+(perform:with:
      PointInTime
      'comment:
 "This represents a particular point in time and is convertable to DateAndTime.
@@ -98,7 +104,12 @@
      (class Duration)
      'seconds:
      (lambda (self seconds)
-       (make-time 'time-duration 0 seconds)))
+       (let* ( (whole-secs (exact (truncate seconds)))
+               (frac-secs (- seconds whole-secs))
+             )
+       (make-time 'time-duration
+                  (exact (round (* frac-secs nanos/sec)))
+                  whole-secs))))
 
 (addSelector:withMethod:
      (class Duration)
@@ -126,7 +137,7 @@
 
 (addSelector:withMethod:
      Duration
-     'totalSseconds
+     'totalSeconds
      (lambda (self)
        (time-second self)))
 
@@ -135,12 +146,6 @@
      'nanoSeconds
      (lambda (self)
        (time-nanosecond self)))
-
-(addSelector:withMethod:
-     Duration
-     'totalSeconds
-     (lambda (self)
-       (time-second self)))
 
 (addSelector:withMethod:
      Duration
@@ -300,6 +305,19 @@
      (lambda (self) (time-nanosecond self)))
 
 
+(addSelector:withMethod:
+     Duration
+     '-
+     (lambda (self other)
+       (if (time-duration? other)
+           (make-time 'time-duration
+                      (- (time-nanosecond self)
+                         (time-nanosecond other))
+                      (- (time-second self)
+                         (time-second other)))
+           (error "-: Expected a Duration" other))))
+
+
 ;;; PointInTime
 
 (addSelector:withMethod:
@@ -446,10 +464,7 @@
 (addSelector:withMethod:
      DateAndTime
      'offset
-     (lambda (self)
-       ($: Duration
-           'seconds:
-           (date-zone-offset self))))
+     (lambda (self) ($: Duration 'seconds: (date-zone-offset self))))
 
 (addSelector:withMethod:
      (class DateAndTime)
@@ -488,7 +503,43 @@
                  day
                  month
                  year
-                 offset))) ;; offset is a Duration
+                 (cond
+                  ((integer? offset) offset) ; srfi-19 is integer seconds
+                  ((time? offset) (time-second offset))
+                  (else (error "Expected offset to be a Duration" offset))))))
+
+(addSelector:withMethod:
+     (class DateAndTime) ;; NB: a Class method
+     'year:month:day:hour:minute:second:
+     (lambda (self year month day hours minutes seconds)
+;"Answer a DateAndTime starting at midnight local time"
+       (make-date 0
+                 seconds
+                 minutes
+                 hours
+                 day
+                 month
+                 year
+                 (date-zone-offset (current-date)))))
+
+
+
+(addSelector:withMethod:
+     (class DateAndTime) ;; NB: a Class method
+     'year:month:day:hour:minute:second:offset:
+     (lambda (self year month day hours minutes seconds offset)
+;"Answer a DateAndTime starting at midnight local time"
+       (make-date 0
+                 seconds
+                 minutes
+                 hours
+                 day
+                 month
+                 year
+                 (cond
+                  ((integer? offset) offset) ; srfi-19 is integer seconds
+                  ((time? offset) (time-second offset))
+                  (else (error "Expected offset to be a Duration" offset))))))
 
 (addSelector:withMethod:
      DateAndTime ;; NB: an Instance method
@@ -504,6 +555,12 @@
                   (date-zone-offset self))))
 
 (addSelector:withMethod:
+     (class DateAndTime) ;; NB: a Class method
+     'localOffset
+     (lambda (self)
+       ($: Duration 'seconds: (date-zone-offset (current-date)))))
+
+(addSelector:withMethod:
      DateAndTime
      'asPointInTime
      (lambda (self)
@@ -514,7 +571,7 @@
      'printString
      (lambda (self)
        ;; ANSI offset is a Duration
-       (let* ( (offset-seconds (time-second (date-zone-offset self)))
+       (let* ( (offset-seconds (date-zone-offset self))
                (abs-offset     (abs offset-seconds))
                (date-string    (date->string self "~5"))
                ;; Above same as (date->string self "~Y-~m-~dT~H:~M:~S")

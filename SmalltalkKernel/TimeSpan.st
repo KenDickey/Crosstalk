@@ -241,6 +241,11 @@ Timespan class ~> starting: aDateAndTime duration: aDuration
 	yourself
 ].
 
+Timespan class ~> start: aDateAndTime duration: aDuration
+[
+  ^ self starting: aDateAndTime duration: aDuration
+].
+
 
 Timespan class ~> classDefinesDuration
 [

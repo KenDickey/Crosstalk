@@ -374,6 +374,11 @@
 
 (addSelector:withMethod: 
         Number
+        'truncated
+        (lambda (self) (exact (truncate self))))
+
+(addSelector:withMethod: 
+        Number
         'round round)
 
 (addSelector:withMethod: 
