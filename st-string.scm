@@ -272,6 +272,17 @@
 
 (addSelector:withMethod: 
     String
+    'copyWithout:
+    (lambda (self aChar)
+      (let loop ( (chars (string->list self)) (rev-chars '()) )
+        (cond
+         ((null? chars) (list->string (reverse rev-chars)))
+         ((char=? aChar (car chars)) (loop (cdr chars) rev-chars))
+         (else (loop (cdr chars) (cons (car chars) rev-chars)))))))
+
+
+(addSelector:withMethod: 
+    String
     'asCamalCase
     (lambda (self)
       (perform:with:

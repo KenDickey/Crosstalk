@@ -84,13 +84,6 @@ Time ~> second
 	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | s ]
 ].
 
-"
-Time ~> days
-[
-  ^ (self asDurationSinceMidnight) 
-	daysHoursMinutesSecondsNanosDo: [ :d :h :m :s :n | d ]
-].
-"
 Time ~> hhmm24
 [
 "Return a string of the form 1123 (for 11:23 am), 2154 (for 9:54 pm),
@@ -176,7 +169,10 @@ Time ~> print24: hr24 showSecondsFraction: showSecondsFraction on: aStream
  or 'h:mm:ss.ssssss am' 
  or, if showSecondsFraction is false, 'hh:mm:ss' or 'h:mm:ss am'"
 
-  ^self print24: hr24 showSeconds: true showSecondsFraction: showSecondsFraction on: aStream 
+  ^self print24: hr24 
+	showSeconds: true 
+	showSecondsFraction: showSecondsFraction 
+	on: aStream 
 ].
 
 Time ~> printMinutes
@@ -242,7 +238,7 @@ Time class ~> microsecondsToRun: timedBlock
   timedBlock value.
   endTime := PointInTime now.
   duration := endTime - startTime.
-  ^(duration nanos * 1000000000 + duration seconds) / 1000
+  ^(duration totalSeconds * 1000000000 + duration nanoSeconds) / 1000
 ].
 
 "Time ~> dateAndTimeFromSeconds: secondCount
@@ -314,25 +310,28 @@ Time ~> readFrom: aStream
   nanosBuffer := '000000000' copy.
   nanos := WriteStream on: nanosBuffer.
   (aStream peekFor: $:) 
-  	ifTrue: [
-  		minute := Integer readFrom: aStream.
-  		(aStream peekFor: $:) 
-  			ifTrue: [
-  				second := Integer readFrom: aStream].
-  				(aStream peekFor: $.)
-  					ifTrue: [
-  						[aStream atEnd not and: [aStream peek isDigit]]
-  							whileTrue: [nanos nextPut: aStream next]]].
+    ifTrue: [
+  	minute := Integer readFrom: aStream.
+  	(aStream peekFor: $:) 
+  	    ifTrue: [ second := Integer readFrom: aStream ].
+  	(aStream peekFor: $.)
+  	    ifTrue: [
+  		    [aStream atEnd not and: [aStream peek isDigit]]
+  			whileTrue: [nanos nextPut: aStream next]
+	    ]
+    ].
   aStream skipSeparators.
-  (aStream atEnd not and: [aStream peek isLetter]) ifTrue: 
-  	[ampm := aStream next asLowercase.
-  
-  (ampm = $p and: [hour < 12]) ifTrue: [hour := hour + 12].
+  (aStream atEnd not and: [aStream peek isLetter]) 
+     ifTrue: [
+  	ampm := aStream next asLowercase.
+	(ampm = $p and: [hour < 12]) ifTrue: [hour := hour + 12].
  	(ampm = $a and: [hour = 12]) ifTrue: [hour := 0].
   
-  (aStream peekFor: $m) ifFalse: [aStream peekFor: $M ]].
+        (aStream peekFor: $m) ifFalse: [aStream peekFor: $M ]
+     ].
+
   ^ self 
-  	hour: hour 
+  	hour:   hour 
   	minute: minute 
   	second: second 
   	nanoSecond: nanosBuffer asInteger
