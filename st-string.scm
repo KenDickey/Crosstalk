@@ -390,6 +390,12 @@
             (else (loop (+ 1 index)))))))
 )
 
+(addSelector:withMethod:
+     (class String)
+     'newline
+     (lambda (self) (string #\newline))
+)
+
 ;; (provide 'st-string)
 
 ;;;			--- E O F ---			;;;

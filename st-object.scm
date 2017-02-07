@@ -80,29 +80,111 @@
          (cons self (vector->list argsArray))))
 
 
+;;; "send to super"
+;
+; Message sent to a superclass method may invoke a message to
+; its superclass method, so one has to track the meaning of
+; "super" to allow multi-level super dispatch.
+;
+; Given multithreading, multiple comtexts may be active, so
+; one cannot use, e.g. a hidden ivar, as the same object may
+; me active in multiple threads.
+;
+; Two strategies are
+;  [1] Use an object wrapper, which would be per-thread to
+; keep track of super.
+;  [2] Use a dynamic thread-local variable to keep track of super.
+;
+; The strategy here is [2], using Scheme's parameter objects with
+; an association-list of (.. (obj super) ..) as per-thread stacks.
+; Per-thread stacks are required as multiple send-to-super's may be
+; used within a given thread.
+;
+; [2] has less mechanical involvement with dispatch where it is
+; not used.  So send-to-super pays no cost where it is not used.
+
+(define super-chain-alist (make-parameter '()))
+
+(define (next-super-for obj)
+  ;; Answer next superclass for obj
+  (superclass
+   (cond
+    ((assq obj (super-chain-alist)) => cdr)
+    (else (class obj))))
+)
+
 (define (superPerform: self selectorSym)
-  ((superLookupSelector: self selectorSym) self))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      ((primLookup: ($ the-super 'methodDict) selectorSym) self))))
 
 (define (superPerform:with: self selectorSym arg)
-  ((superLookupSelector: self selectorSym) self arg))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg))))
 
 (define (superPerform:with:with: self selectorSym arg1 arg2)
-  ((superLookupSelector: self selectorSym) self arg1 arg2))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2))))
 
 (define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
-  ((superLookupSelector: self selectorSym) self arg1 arg2 arg3))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3))))
 
 (define (superPerform:with:with:with:with:
          self selectorSym arg1 arg2 arg3 arg4)
-  ((superLookupSelector: self selectorSym) self arg1 arg2 arg3 arg4))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3 arg4))))
 
 (define (superPerform:withArguments: self selectorSym argsArray)
-  (apply (superLookupSelector: self selectorSym)
-         (cons self (vector->list argsArray))))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+             (cons self (vector->list argsArray))))))
 
 (define (superPerform:withArgsList: self selectorSym argsList)
-  (apply (superLookupSelector: self selectorSym)
-         (cons self argsList)))
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+             (cons self argsList)))))
 
 ;;; Shorter Syntax
 (define $     perform:)
