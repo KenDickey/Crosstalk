@@ -34,6 +34,13 @@ Here are some example of my protocol:
      Magnitude
      'category: '|Kernel-Magnitude|)
 
+(addSelector:withMethod:
+     Magnitude
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Magnitude)
+           (superPerform:with: self 'is: symbol))))
+
 (for-each
    (lambda (selector)
        (addSelector:withMethod: 

@@ -31,6 +31,13 @@
 )
 
 (addSelector:withMethod:
+     Stream
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Stream)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
         Stream
         'atEnd
         (lambda (self)
@@ -59,6 +66,13 @@
      'comment:
 "I am a stream of Unicode characters.  Use a ByteStream if you want bytes."
 )
+
+(addSelector:withMethod:
+     CharStream
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'CharStream)
+           (superPerform:with: self 'is: symbol))))
 
 (addSelector:withMethod:
         CharStream
@@ -123,6 +137,7 @@
    Stream
    'ByteStream '() '())
 )
+
 (set! st-byte-stream-behavior (perform: ByteStream 'methodDict))
 
 (perform:with:
@@ -135,6 +150,13 @@
      'comment:
 "I am a stream of bytes.  Use CharStream if you want Unicode characters."
 )
+
+(addSelector:withMethod:
+     ByteStream
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'ByteStream)
+           (superPerform:with: self 'is: symbol))))
 
 (addSelector:withMethod:
         ByteStream

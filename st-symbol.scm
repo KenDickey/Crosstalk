@@ -14,6 +14,13 @@
 
 (set! st-symbol-behavior (perform: Symbol 'methodDict))
 
+(addSelector:withMethod:
+     Symbol
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Symbol)
+           (superPerform:with: self 'is: symbol))))
+
 (addSelector:withMethod: 
     Symbol
     'printOn:

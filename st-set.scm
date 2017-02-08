@@ -28,6 +28,13 @@
 )
 
 (addSelector:withMethod:
+     Set
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Set)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
      (class Set)
      'new:
      (lambda (self size)

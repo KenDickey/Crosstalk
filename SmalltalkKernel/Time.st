@@ -1,5 +1,5 @@
 "FILE: 'Time.st'
- IMPLEMENTS: Class Time (NB: should be named #TimeOfDay)
+ IMPLEMENTS: Class Time  (Note: should be named #TimeOfDay)
  AUTHOR: Cuis [Juan Vuletich; MIT Licence]
  Modifications by: Ken Dickey
  DATE: 02 Febuary 2017
@@ -17,6 +17,12 @@ Time comment:
 
  If you need a point in time on a particular day, use DateAndTime. 
  If you need a duration of time, use Duration.'.
+
+
+Time ~> is: aSymbol
+[
+  ^aSymbol == #Time or: [ super is: aSymbol ]
+].
 
 Time ~> initialize
 [

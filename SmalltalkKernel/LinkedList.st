@@ -14,6 +14,11 @@ LinkedList comment:
  Using the message sequence addFirst:/removeLast causes the receiver to behave as a stack;
  using addLast:/removeFirst causes the receiver to behave as a queue.'.
 
+LinkedList ~> is: aSymbol
+[
+  ^aSymbol == #LinkedList or: [ super is: aSymbol ]
+].
+
 LinkedList ~> add: aLinkOrObject
 [
 "Add aLink to the end of the receiver's list. Answer aLink."

@@ -11,6 +11,11 @@ Interval category: #'Collections-Ordered'.
 
 Interval comment: 'I represent a finite arithmetic progression.'.
 
+Interval ~> is: aSymbol
+[
+  ^aSymbol == #Interval or: [ super is: aSymbol ]
+].
+
 Interval ~> = anInterval
 [
 "Answer true if my species and anInterval species are equal, and

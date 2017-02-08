@@ -11,6 +11,12 @@ Association category: #'Collections-Support'.
 Association comment:
 'I represent a pair of associated objects--a key and a value.'.
 
+Association ~> is: aSymbol
+[
+  ^aSymbol == #Association or: [ super is: aSymbol ]
+].
+
+
 Association ~> < aLookupKey
 [
   "For sort by keys."

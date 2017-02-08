@@ -390,13 +390,6 @@
         (primLookup: mDict selectorSym)
 ) ) )
 
-(define (superLookupSelector: self selectorSym) ;; Polymorphic
-  (let ( (mDict (perform: (superclass (class self)) 'methodDict)) )
-    (if (st-nil? mDict)
-        (error "Missing method dictionary for: " self selectorSym)
-        (primLookup: mDict selectorSym)
-) ) )
-
 
 ;; immediates, vector-like, bytevector-like
 
@@ -752,6 +745,11 @@
 ;;  (newline)
  )
 
+(define (stringify thunk)
+  (parameterize ( (current-output-port
+                   (open-output-string)) )
+    (thunk)
+    (get-output-string (current-output-port))))
 
 ;;;======================================================
 

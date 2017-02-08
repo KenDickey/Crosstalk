@@ -629,8 +629,6 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 	Object class superclass == Class."
 )
 
-
-
 ;;; Send to super
 (define (superPerform: self selectorSym)
   ((lookupSelector: (superclass (class self)) selectorSym) self))
@@ -723,6 +721,34 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 (addSelector:withMethod: (class (class Object)) ;; MetaClass
                          'addSelector:withMethod:
                          addSelector:withMethod:)
+
+(addSelector:withMethod:
+     Behavior
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Behavior)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     ClassDescription
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'ClassDescription)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Class
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Class)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     MetaClass
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'MetaClass)
+           (superPerform:with: self 'is: symbol))))
 
 ;; (provide 'st-core-classes)
 

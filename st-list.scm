@@ -23,6 +23,12 @@
      List
      'category: '|Collections-Sequenceable|)
 
+(addSelector:withMethod:
+     List
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'List)
+           (superPerform:with: self 'is: symbol))))
 
 ;; Scheme Vectors
 (set! st-list-behavior (perform: List 'methodDict))

@@ -16,6 +16,11 @@ ValueLink ~> = anotherObject
 		and: [ self nextLink == anotherObject nextLink ] ]
 ].
 
+ValueLink ~> is: aSymbol
+[
+  ^aSymbol == #ValueLink or: [ super is: aSymbol ]
+].
+
 ValueLink ~> asLink
 [
   ^ self

@@ -22,6 +22,13 @@
      'comment:
      "A String is an indexed collection of Characters.")
 
+(addSelector:withMethod:
+     String
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'String)
+           (superPerform:with: self 'is: symbol))))
+
 ;; (addSelector:withMethod: 
 ;;     String
 ;;     'printString
@@ -381,6 +388,12 @@
             ((char=? aChar (string-ref self index)) ;; match
              (+ 1 index))
             (else (loop (+ 1 index)))))))
+)
+
+(addSelector:withMethod:
+     (class String)
+     'newline
+     (lambda (self) (string #\newline))
 )
 
 ;; (provide 'st-string)
