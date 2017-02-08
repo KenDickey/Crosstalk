@@ -192,19 +192,14 @@ Be aware however that most of these methods are not sent as real messages
         (lambda (self) st-true))
 
 (addSelector:withMethod:
-        Object
-        'isNil
-        (lambda (self) st-false))
-
-(addSelector:withMethod:
         UndefinedObject
         'ifNil:
         (lambda (self thunk) (thunk)))
 
 (addSelector:withMethod:
         Object
-        'ifNil:
-        (lambda (self thunk) st-nil))
+        'ifNil:  ;; NB: return self  !!
+        (lambda (self thunk) self))
 
 (addSelector:withMethod:
         UndefinedObject

@@ -149,19 +149,51 @@
             self ; thunk
             afterThunk))) ;; after: always executed
 
+
+
 (addSelector:withMethod:
  	BlockClosure
         'on:do:
         (lambda (self exception action)
+; NB: exception can be a single class or a set
+          
           ;; @@FIXME: adapt condition hierarchy
           ;;  to class based system
           (with-exception-handler
              (lambda (condition)
-               (if (confirms-to? condition exception)
+               (if (conforms-to? condition exception)
                    (action)
-                   ;; reraise
              ) )
              self)))
+
+(define (conforms-to? condition exceptionClassOrSet)
+  (if (class? exceptionClassOrSet)
+      (isKindOf: condition exceptionClassOrSet) ;; @@Fixme: error-object?
+      ($: exceptionClassOrSet 'detect: (lambda (ex) (isKindOf: condition ex))))
+)
+
+(define (class? thing)
+  (cond
+   ((not (st-object? thing)) #false)
+   (else (isKindOf: thing Class))))
+
+(addSelector:withMethod:
+ 	BlockClosure
+        'ifCurtailed:
+        (lambda (self action)
+          ;;  to class based system
+          (let ( (curtailed? #true)
+                 (result '()) )
+            (dynamic-wind
+              (lambda () #false) ;; before
+              (lambda ()
+                (set! result (self))
+                (set! curtailed? #false))
+              (lambda ()
+                (if curtailed? (action))))
+            result)
+          ))
+            
 
 ;;@@@
 
