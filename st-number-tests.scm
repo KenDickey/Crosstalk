@@ -33,6 +33,21 @@
   "2 - 3")
 
 (add-equal-test 'st-number
+  #true
+  (perform:with: 2 'isKindOf: Number)
+  "2 isKindOf: Number")
+
+(add-equal-test 'st-number
+  #false
+  (perform:with: 1/2 'isKindOf: Integer)
+  "1/2 isKindOf: Integer")
+
+(add-equal-test 'st-number
+  #true
+  (perform:with: 1/2 'isKindOf: Magnitude)
+  "1/2 isKindOf: Magnitude")
+
+(add-equal-test 'st-number
   "3r1200201"
   (st-eval "1234 printStringRadix: 3")
   "1234 printStringRadix: 3")
