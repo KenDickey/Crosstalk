@@ -1,7 +1,7 @@
-;;; FILE: "st-array.scm"
+;;; FILE: "st-list.scm"
 ;;; IMPLEMENTS: Scheme Pair, List
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 21 Januanr 2017
+;;; DATE: 21 Januany 2017
 
 ;; (require 'st-collection)
 

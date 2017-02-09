@@ -128,6 +128,7 @@
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
      "st-boolean"      ;; Boolean True False UndefinedObject (nil)
+     "st-error-obj"    ;; Scheme error objects
      "st-character"    ;; Character
      "st-magnitude"
      "st-number"
