@@ -18,6 +18,14 @@
           (array-start-index (+ num-header-slots num-named-slots))
         )
   (set! test-behavior (make-mDict-placeholder 'Test))
+  (primAddSelector:withMethod:  ;; Testing context
+ 	test-behavior
+        'isKindOf:
+        (lambda ignored #false))
+  (primAddSelector:withMethod:  ;; Testing context
+ 	test-behavior
+        'superclass
+        (lambda ignored '()))
   (add-getters&setters test-behavior num-header-slots '(foo bar baz))
   (add-array-accessors test-behavior array-start-index) ;; (5)
   (set! indexed+named-slots-obj
@@ -125,7 +133,7 @@
   "obj baz -> $Z")
 
 (ensure-exception-raised 'st-kernel
-   (make-error-string-predicate  "Failed message send: #glerph to ")
+   (make-error-string-predicate  "Failed message send: #glerph to: ")
    (perform: indexed+named-slots-obj 'glerph)
    "obj glerph -> doesNotUnderstand")
 

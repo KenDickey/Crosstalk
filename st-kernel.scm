@@ -41,8 +41,10 @@
     (error (string-append
             "Failed message send: #"
             (symbol->string selector)
-            " to ")
-           receiver
+            " to: ")
+           (if (class? receiver)
+               ($ receiver 'name)
+               receiver)
            rest-args)
 ) )
 
@@ -93,6 +95,9 @@
   (let ( (mDict (make-method-dictionary)) )
     (primAddSelector:withMethod: mDict
                              'class
+                             (lambda (self) classNameSym))
+    (primAddSelector:withMethod: mDict
+                             'name
                              (lambda (self) classNameSym))
     mDict
 ) )

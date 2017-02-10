@@ -30,7 +30,7 @@
   "anObject Class -> 'Object")
 
 (ensure-exception-raised 'st-object
-   (make-error-string-predicate   "Failed message send: #glerph to ")
+   (make-error-string-predicate   "Failed message send: #glerph to: ")
    (perform: %%test-object 'glerph)
    "obj glerph -> doesNotUnderstand")
 
@@ -151,7 +151,7 @@
 ;;   "false notNil")
 
 (ensure-exception-raised 'st-object
-   (make-error-string-predicate  "Failed message send: #bogus: to ")
+   (make-error-string-predicate  "Failed message send: #bogus: to: ")
    (perform:with: %%test-object 'bogus: 666)
    "obj bogus: 666 -> doesNotUnderstand")
 

@@ -4,6 +4,7 @@
 ;;; DATE: 7 June 2016
 
 ;; (require 'st-kernel)  ; message send
+;; (require 'st-object)  ; root object
 
 ;; We want to instantiate classes and bootstrap reflection
 ;; via Classes, which are the management structure for object behaviors.
@@ -749,6 +750,52 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      (lambda (self symbol)
        (or (eq? symbol 'MetaClass)
            (superPerform:with: self 'is: symbol))))
+
+
+;;; debug
+
+(set! send-failed
+  (lambda (receiver selector rest-args) ;; messageSend)
+  ;; @@@@@FIXME: invoke debugger
+    (let ( (messageSend (make-messageSend receiver selector rest-args)) )
+      (error (string-append
+              "Failed message send: #"
+              (symbol->string selector)
+              " to: ")
+             (if (class? receiver)
+                 ($ receiver 'name)
+                 receiver)
+             rest-args)
+) ) )
+
+(define (isKindOf: self someClass)
+  (let loop ( (super-class (perform: self 'class)) )
+    (cond
+     ((null? super-class) #false)
+     ((eq? super-class someClass) #true)
+     (else (loop (perform: super-class 'superclass))))
+) )
+
+(primAddSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'isKindOf:
+        isKindOf:
+)
+
+(define (saferIsKindOf: self someClass)
+  (let loop ( (super-class (perform: self 'class)) )
+    (cond
+     ((null? super-class) #false)
+     ((eq? super-class someClass) #true)
+     ((not (st-object? super-class)) #false)
+     (else (loop (perform: super-class 'superclass))))
+) )
+
+(define (class? thing)
+  (cond
+   ((not (st-object? thing)) #false)
+   (else (saferIsKindOf: thing Class))))
+
 
 ;; (provide 'st-core-classes)
 

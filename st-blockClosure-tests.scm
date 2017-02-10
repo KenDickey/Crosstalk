@@ -75,6 +75,23 @@
   "[<error>] ensure: [4]")
   
 
+(add-equal-test 'st-blockClosure
+  "UnhandledError: WoW!"
+  (st-eval
+   "[37 squared. UnhandledError new signal: 'WoW!']
+	on: UnhandledError
+	do: [:ex | ex description ]")
+  "[...] on: UnhandledError do: [..].")
+
+(add-equal-test 'st-blockClosure
+  "UnhandledError: WoW!"
+  (st-eval
+   "[37 squared. UnhandledError new signal: 'WoW!']
+	on: ErrorObject, UnhandledError
+	do: [:ex | ex description ]")
+  "[...] on: ErrorObject, UnhandledError do: [..].")
+
+
 ;; (ensure-exception-raised 'st-blockClosure
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

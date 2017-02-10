@@ -4,6 +4,7 @@
 ;;; DATE: 16 July 2016
 
 ;; (requires 'st-core-classes)
+;; (requires 'st-error-obj)
 
 (define BlockClosure
   (newSubclassName:iVars:cVars:
@@ -156,36 +157,26 @@
             self ; thunk
             afterThunk))) ;; after: always executed
 
-
+;; NB: (Scm) raise is non-continuable and a caught exception
+;;   will cause a "handler returned" exception.
+;; Use (Scm) raise-continuable for on:to: to enable
+;; the handler to return a value.
 
 (addSelector:withMethod:
  	BlockClosure
         'on:do:
-        (lambda (self exception action)
-; NB: exception can be a single class or a set
-          
-          ;; @@FIXME: adapt condition hierarchy
-          ;;  to class based system
+        (lambda (self exceptionClassOrSet handler)
           (with-exception-handler
-             (lambda (condition)
-               (if (conforms-to? condition exception)
-                   (action)
-             ) )
+             (lambda (anException)
+               (if ($: exceptionClassOrSet 'handles: anException)
+                   (handler anException)
+                   (raise anException))
+             )
              self)))
 
-(define (conforms-to? condition exceptionClassOrSet)
-  (if (class? exceptionClassOrSet)
-      (isKindOf: condition exceptionClassOrSet) ;; @@Fixme: error-object?
-      ($: exceptionClassOrSet 'detect: (lambda (ex) (isKindOf: condition ex))))
-)
-
-(define (class? thing)
-  (cond
-   ((not (st-object? thing)) #false)
-   (else (isKindOf: thing Class))))
 
 (addSelector:withMethod:
- 	BlockClosure
+	BlockClosure
         'ifCurtailed:
         (lambda (self action)
           ;;  to class based system

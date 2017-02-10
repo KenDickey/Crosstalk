@@ -141,6 +141,21 @@
 
 (addSelector:withMethod:
      Array
+     'detect:  ;; here for testing
+     (lambda (self predicate?)
+       (let ( (myLen (vector-length self))
+              (result #false)
+            )
+         (let loop ( (index 0) )
+           (when (< index myLen)
+            (if (predicate? (vector-ref self index))
+                (set! result #true)
+                (loop (+ 1 index)))))
+         result))
+)
+
+(addSelector:withMethod:
+     Array
      'asArray
      (lambda (self) ;; called by subclasses
        (if (eq? (class self) Array)

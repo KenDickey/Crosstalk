@@ -300,19 +300,6 @@
 
 )
 
-(define (isKindOf: self someClass)
-  (let loop ( (super-class (perform: self 'class)) )
-    (cond
-     ((null? super-class) #false)
-     ((eq? super-class someClass) #true)
-     (else (loop (perform: super-class 'superclass))))
-) )
-
-(primAddSelector:withMethod: ;; ANSI
- 	st-object-behavior
-        'isKindOf:
-        isKindOf:
-)
 
 (primAddSelector:withMethod:
  	st-object-behavior

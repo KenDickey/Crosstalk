@@ -11,11 +11,11 @@
                 setup-st-error-obj
                 cleanup-st-error-obj)
 
-;; (add-equal-test 'st-error-obj
-;;   (vector 3)
-;;   (perform:with: Array
-;;                  'with: 3)
-;;   "Array with: 3")
+(add-equal-test 'st-error-obj
+  1
+  (st-eval "[1] ensure: [0]")
+  "[1] ensure: [0]")
+
 
 ;; (ensure-exception-raised 'st-error-obj
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
