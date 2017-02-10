@@ -13,7 +13,8 @@
     (xlateSequence ast))
    ;; ((astMessageSequence? ast) ...)
    ;; ((astTemporaries? ast) ...)
-   ;; ((astLetTemps? ast) ...)
+   ((astLetTemps? ast)
+    (xlateLetTemps ast))
    ((astSubexpression? ast)
     (AST->scm (astSubexpression-expression ast)))
    ((astReturn? ast)
@@ -65,6 +66,16 @@
   (and (token? t)
        (eq? 'identifier (token-kind t)))
 )
+
+
+;;; Temps Statements
+
+(define (xlateLetTemps ast)
+  (let ( (temps (->scm-temps (astLetTemps-temps ast)))
+         (statements (->scm-statements (astLetTemps-statements ast)))
+       )
+    `(let ,temps ,@statements)
+) )
 
 ;;; Sequence
 

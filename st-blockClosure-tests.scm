@@ -91,6 +91,20 @@
 	do: [:ex | ex description ]")
   "[...] on: ErrorObject, UnhandledError do: [..].")
 
+(add-equal-test 'st-blockClosure
+  3
+  (st-eval
+" | foo bar baz |
+   foo := 1.
+   bar := [ 
+      [foo := 2. ^ 37]
+      ifCurtailed: [ foo := 3].
+      foo := 4
+   ].
+   baz := bar value.
+   foo.")
+  "[...] ifCurtailed: [..].")
+
 
 ;; (ensure-exception-raised 'st-blockClosure
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
