@@ -169,8 +169,12 @@
           (with-exception-handler
              (lambda (anException)
                (if ($: exceptionClassOrSet 'handles: anException)
-                   (handler anException)
-                   (raise anException))
+                   ;; valueWithPossibleArgument:
+                   (if (= 1 (procedure-arity handler))
+                       (handler anException)
+                       (handler))
+                   ;; re-raise if not handled here
+                   ($ anException signal)) 
              )
              self)))
 
