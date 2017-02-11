@@ -91,6 +91,69 @@
           (apply self (vector->list args-array))))
 
 (addSelector:withMethod:
+ 	UndefinedObject
+        'valueWithArguments:
+        (lambda (self args-array) st-nil))
+
+(addSelector:withMethod:
+ 	BlockClosure
+        'valueWithPossibleArgument:  
+        (lambda (self anArg)
+          (if (= 1 (procedure-arity self))
+              (self anArg)
+              (self))))
+
+(addSelector:withMethod:
+ 	UndefinedObject
+        'valueWithPossibleArgument:  
+        (lambda (self anArg) st-nil))
+
+(addSelector:withMethod:
+ 	BlockClosure
+        'valueWithPossibleArgument:and:
+        (lambda (self anArg anotherArg)
+          (let ( (numArgs (procedure-arity self)) )
+            (cond
+             ((zero? numArgs) (self))
+             ((= 1 numArgs) (self anArg))
+             ((= 2 numArgs) (self anArg anotherArg))
+             (else
+              (error "valueWithPossibleArgument:and: bad arity" numArgs self)))))
+)              
+
+(addSelector:withMethod:
+ 	UndefinedObject
+        'valueWithPossibleArgument:and:
+        (lambda (self anArg anotherArg) st-nil))
+
+(addSelector:withMethod:
+ 	BlockClosure
+        'valueWithPossibleArgs:
+        (lambda (self anArray)
+          (let ( (numArgs (procedure-arity self))
+                 (vecLen  (vector-length anArray))
+               )
+            (cond
+             ((zero? numArgs) (self))
+             ((= numArgs vecLen)
+              (apply self (vector->list anArray)))
+             ((> numArgs vecLen) ; pad with nils
+              (apply self
+                     (vector->list
+                      (vector-append anArray
+                                     (make-vector (- numArgs vecLen) st-nil))))
+              )
+             (else ; (< numArgs vecLen) l drop
+              (apply self (vector->list (vector-copy anArray 0 numArgs)))))))
+)
+
+(addSelector:withMethod:
+ 	UndefinedObject
+        'valueWithPossibleArgs: 
+        (lambda (self anArray) st-nil))
+
+
+(addSelector:withMethod:
  	BlockClosure
         'whileFalse:
         (lambda (self thunk)
@@ -174,7 +237,7 @@
                        (handler anException)
                        (handler))
                    ;; re-raise if not handled here
-                   ($ anException signal)) 
+                   ($ anException 'signal)) 
              )
              self)))
 
@@ -196,9 +259,6 @@
             result)
           ))
             
-
-;;@@@
-
 
 
 ;; (provides st-blockClosure)

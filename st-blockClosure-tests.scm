@@ -105,6 +105,17 @@
    foo.")
   "[...] ifCurtailed: [..].")
 
+(add-equal-test 'st-blockClosure
+    "Error: error 1"
+    (st-eval "| result |
+  result := [ [ Error signal: 'error 1']
+	      on: ErrorObject
+	      do: [ :ex1 | Error signal: 'error 2']
+	    ]
+	    on: Exception
+	    do: [ :ex2 | ex2 description].
+result.")
+    "Re-thrown exception")
 
 ;; (ensure-exception-raised 'st-blockClosure
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
