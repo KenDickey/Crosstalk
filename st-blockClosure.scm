@@ -229,17 +229,21 @@
  	BlockClosure
         'on:do:
         (lambda (self exceptionClassOrSet handler)
-          (with-exception-handler
-             (lambda (anException)
-               (if ($: exceptionClassOrSet 'handles: anException)
-                   ;; valueWithPossibleArgument:
-                   (if (= 1 (procedure-arity handler))
-                       (handler anException)
-                       (handler))
+          (call/cc
+           (lambda (return)
+             (with-exception-handler
+              (lambda (anException)
+                (if ($: exceptionClassOrSet 'handles: anException)
+                    ;; valueWithPossibleArgument:
+                    (return (if (= 1 (procedure-arity handler))
+                                (handler anException)
+                                (handler)))
                    ;; re-raise if not handled here
-                   ($ anException 'signal)) 
-             )
-             self)))
+                   ($ anException 'signal))
+                   )
+              self)
+        ) ) )
+)
 
 
 (addSelector:withMethod:

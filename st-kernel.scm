@@ -34,12 +34,12 @@
 
 (define primSet:toValue: hashtable-set!)
 
-
+;;  -- redefined in "st-error-obj.scm"
 (define (send-failed receiver selector rest-args) ;; messageSend)
   ;; @@@@@FIXME: invoke debugger
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
     (error (string-append
-            "Failed message send: #"
+            "**Failed message send: #"
             (symbol->string selector)
             " to: ")
            (if (class? receiver)
@@ -529,6 +529,7 @@
 ) )
 
 ;; For Error Reporting (#doesNotUnderstand:)
+;;  -- redefined in "st-error-obj.scm"
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
 (add-getters&setters st-messageSend-behavior
@@ -649,12 +650,13 @@
     
 ;; Most useful..
 (define (display-ivars st-obj)
-  (if (st-object? st-obj)
+  (if (not (st-object? st-obj))
+      (write st-obj)
       (let* ( (obj-class (perform: st-obj 'class))
               (ivarNames
                (if (null? obj-class)
                    '()
-                   (perform: obj-class 'allInstVarNames)))
+                   ($ obj-class 'allInstVarNames)))
            )
         (cond
          ((null? obj-class)
@@ -662,53 +664,55 @@
           )
          (else
           (describe st-obj)
+          (newline)
           (for-each
            (lambda (ivarName)
-             (newline)
-             (display "  ")
-             (display ivarName)
-             (display " -> ")
-             (display-obj (perform: st-obj ivarName))
+             (format #t
+                     "~% ~a -> ~a"
+                     ivarName
+                     (safer-printString ($ st-obj ivarName)))
            )
            ivarNames))))
-      (write st-obj))
+      )
   (newline)
 )
 
-(define (display-obj obj)
-  (if (st-object? obj)
-       (cond
-        ((perform:with: obj 'respondsTo: 'name)
-         (format #t "'~a'" (perform: obj 'name))
-         )
-        ((perform:with: obj 'respondsTo: 'printString)
-         (format #t "'~a'" (perform: obj 'printString))
-         )
-        ((perform:with: obj 'respondsTo: 'class)
-         (let ( (class (perform: obj 'class)) )
-           (cond
-            ((symbol? class)
-             (format #t "instance of #~a" class)
-             )
-            ((perform:with: class 'respondsTo: 'name)
-             (format #t "instance of #~a" (perform: class 'name)))
-            (else (write obj))
-            )
-           ))
-        (else (write obj))
+(define (safer-printString obj)
+  (if (not (st-object? obj))
+      (format #f "~a" obj)
+      (cond ;; smalltalk object
+       ;; ((respondsTo: obj 'name)
+       ;;  (format #f "'~a'" (perform: obj 'name))
+       ;;  )
+       ((respondsTo: obj 'printString)
+        (perform: obj 'printString)
         )
-       (write obj)
+       ((respondsTo: obj 'class)
+        (let ( (class (perform: obj 'class)) )
+          (cond
+           ((symbol? class)
+            (format #f "<instance of #~a>" class)
+            )
+           ((respondsTo: class 'name)
+            (format #f "<instance of #~a>" (perform: class 'name)))
+           (else (format #f "~a" obj)))
+          ))
+       (else "#<object>")
+       )
 ) )
 
+(define (display-obj obj) (display (safer-printString obj)))
+  
 (define (describe obj)
   (cond
-   ((null? obj) (display 'nil)
+   ((null? obj) (display "nil")
     )
    ((list? obj)
     (display "a list of length ")
-    (display (length obj)))
+    (display (length obj))
+    )
    ((st-object? obj)
-    (display (perform: obj 'printString))
+    (display (safer-printString obj))
     )
    ((vector? obj)
     (display "an array of length ")
@@ -749,7 +753,7 @@
    ;; @@FIXME: ...
    (else (write obj)) ;; procedures..
    )
-;;  (newline)
+  (newline)
  )
 
 (define (stringify thunk)
@@ -757,6 +761,12 @@
                    (open-output-string)) )
     (thunk)
     (get-output-string (current-output-port))))
+
+
+(define (respondsTo: self selector)
+  (primIncludesSelector: (behavior self) selector))
+
+
 
 ;;;======================================================
 

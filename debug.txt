@@ -98,3 +98,7 @@
   procedure-source-position
   procedure?)
 )
+
+
+(st-eval "[Object new glerph] on: MessageNotUnderstood do: [ :ex |ex messageText]")
+-->  "Object doesNotUnderstand: #glerph"

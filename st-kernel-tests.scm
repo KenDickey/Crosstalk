@@ -132,8 +132,8 @@
   (perform: indexed+named-slots-obj 'baz)
   "obj baz -> $Z")
 
-(ensure-exception-raised 'st-kernel
-   (make-error-string-predicate  "Failed message send: #glerph to: ")
+(add-equal-test 'st-kernel
+   "send-failed recursion: Object >> doesNotUnderstand:"
    (perform: indexed+named-slots-obj 'glerph)
    "obj glerph -> doesNotUnderstand")
 

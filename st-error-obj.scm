@@ -1,6 +1,8 @@
 ;;; FILE: "st-error-obj.scm"
 ;;; IMPLEMENTS: Scheme: ErrorObject;
-;;;          Smalltalk: Exception, ExceptionSet, UnhandledError, Error
+;;;          Smalltalk: Exception, ExceptionSet, UnhandledError, Error,
+;;;                     Message, MessageSend, MessageNotUnderstood.
+;;; See also "st-blockClosure.scm" for exception handling code.
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 08 February 2017
 
@@ -34,6 +36,32 @@
    'UnhandledError '(exception) '())
 )
 
+(define MessageNotUnderstood
+  (newSubclassName:iVars:cVars:
+   Error
+   'MessageNotUnderstood '(message receiver reachedDefaultHandler) '())
+)
+
+(define MessageSend
+    (newSubclassName:iVars:cVars:
+    Object
+    'MessageSend
+    '(receiver selector arguments)
+    '())
+)
+
+(set! st-messageSend-behavior ($ MessageSend 'methodDict))
+
+(define Message
+    (newSubclassName:iVars:cVars:
+    Object
+    'Message
+    '(selector args lookupClass)
+    '())
+)
+
+;;; categoriy:
+
 (perform:with:
      ErrorObject
      'category: '|Exceptions Kernel|) ;; ?? '|Exceptions Scheme| ??
@@ -54,6 +82,20 @@
      UnhandledError
      'category: '|Exceptions Kernel|)
 
+(perform:with:
+     MessageNotUnderstood
+     'category: '|Exceptions Kernel|)
+
+(perform:with:
+     MessageSend
+     'category: '|Kernel-Objects|) ;; N.B.
+
+(perform:with:
+     Message
+     'category: '|Kernel-Methods|) ;;N.B.
+
+
+;;; comment:
 
 (perform:with:
      ErrorObject
@@ -122,6 +164,42 @@
 		on: UnhandledError
 		do: [:ex | ex return]"
 )
+
+(perform:with:
+     MessageNotUnderstood
+     'comment:
+ "This exception is provided to support Object>>doesNotUnderstand:.")
+ 
+(perform:with:
+     MessageSend
+     'comment:
+"Instances of MessageSend encapsulate message sends to objects.
+ Arguments can be either predefined or supplied when the
+ message send is performed.
+ MessageSends are used to implement the #when:send:to: event system.
+
+ Use #value to perform a message send with its predefined arguments
+ and #valueWithArguments: if additonal arguments have to supplied.
+
+Structure:
+ receiver		Object -- object receiving the message send
+ selector		Symbol -- message selector
+ arguments		Array -- bound arguments"
+)
+
+(perform:with:
+     Message
+     'comment:
+"I represent a selector and its argument values.
+	
+ Generally, the system does not use instances of Message for efficiency reasons.
+ However, when a message is not understood by its receiver, the runtime system
+ will make up an instance of me in order to capture the information
+ involved in an actual message transmission.
+ This instance is sent it as an argument with the message doesNotUnderstand:
+ to the receiver."
+)
+
 
 ;;; Scheme: ErrorObject
 
@@ -238,7 +316,7 @@
      (class ExceptionSet)
      'with:with:
      (lambda (self exClass1 exClass2)
-       (let ( (newInst ($ ($ self 'new) 'initialize)) )
+       (let ( (newInst ($ self 'new)) )
          ($: newInst 'exceptions: (vector exClass1 exClass2))
          newInst)))
 
@@ -274,6 +352,18 @@
            'detect:
            (lambda (ec) ($: ec 'handles: anException)))))
 
+(addSelector:withMethod:
+     ExceptionSet
+     'printOn:
+     (lambda (self aStream)
+       ($: aStream 'nextPutAll: (className: self))
+       ($: aStream 'nextPutAll: "( " )
+       ($: ($ self 'exceptions)
+           'do:
+           (lambda (elt) (format aStream "[~a] " (className: elt))))
+       ($: aStream 'nextPut: #\) ))
+)
+
 ;;; Exception
 
 (addSelector:withMethod:
@@ -297,7 +387,7 @@
      (class Exception)
      'signal
      (lambda (self)
-       (let ( (newEx ($ ($ self 'new) 'initialize)) )
+       (let ( (newEx ($ self 'new)) )
          ((if ($ newEx 'isResumable) raise-continuable raise) newEx))))
 
 (addSelector:withMethod:
@@ -311,9 +401,15 @@
      (class Exception)
      'signal:
      (lambda (self aMessage)
-       (let ( (newEx ($ ($ self 'new) 'initialize)) )
+       (let ( (newEx ($ self 'new)) )
          ($: newEx 'messageText: aMessage)
          ($ newEx 'signal))))
+
+(addSelector:withMethod:
+     (class Exception)
+     '|,|
+     (lambda (self exceptionClass)
+       ($:: ExceptionSet 'with:with: self exceptionClass)))
 
 (addSelector:withMethod:
      Exception
@@ -336,7 +432,7 @@
      'description
      (lambda (self)
        (let ( (msg ($ self 'messageText))
-              (name ($ ($ ($ self 'class) 'name) 'asString))
+              (name ($ (className: self) 'asString))
             )
          (if (st-nil? msg)
              name
@@ -353,9 +449,338 @@
      'defaultResumeValue
      (lambda (self) st-nil))
 
+(addSelector:withMethod:
+     Exception
+     'return
+     (lambda (self) st-nil))
+
+(addSelector:withMethod:
+     Exception
+     'return:
+     (lambda (self aValue) aValue))
+
+(addSelector:withMethod:
+     Exception
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Exception)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Exception
+     '=
+     (lambda (self other)
+       (and
+        (eq?  ($ self 'species )  ($ other 'species))
+        (eq?  ($ self 'receiver)  ($ other 'receiver))
+        (eq?  ($ self 'selector)  ($ other 'selector))
+        (eqv? ($ self 'arguments) ($ other 'arguments)))))
+
+(addSelector:withMethod:
+     Exception
+     'hash
+     (lambda (self)
+       (bitwise-xor ($ ($ self 'receiver) 'hash)
+                    ($ ($ self 'selector) 'hash))))
+
+(addSelector:withMethod:
+     Exception
+     'noHandler
+;; "No one has handled this error, but now give them a chance
+;; to decide how to debug it.
+;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
+     (lambda (self)
+       ($: UnhandledError 'signalForException: self)))
+
 
 
 ;;; Error
+
+(addSelector:withMethod:
+     Error
+     'defaultAction
+     (lambda (self) ($ self 'noHandler)))
+
+(addSelector:withMethod:
+     Error
+     'isResumable
+     (lambda (self) st-false))
+
+
+;;; UnhandledError
+
+(addSelector:withMethod:
+     (class UnhandledError)
+     'signalForException:
+     (lambda (self anException)
+       ($ ($: ($ self 'new) 'exception:  anException) 'signal)))
+
+(addSelector:withMethod:
+     UnhandledError
+     'defaultAction
+     (lambda (self)
+       ;; log to file or open debugger
+       (error ($ self 'description) self))) ;; open Scheme debugger
+
+(addSelector:withMethod:
+     UnhandledError
+     'isResumable
+     (lambda (self) st-false))
+
+;;; MessageNotUnderstood
+
+(addSelector:withMethod:
+     MessageNotUnderstood
+     'initialize
+     (lambda (self)
+       (superPerform: self 'initialize)
+       ($: self 'reachedDefaultHandler: st-false)
+       self))
+
+(addSelector:withMethod:
+     MessageNotUnderstood
+     'defaultAction
+     (lambda (self)
+       ($: self 'reachedDefaultHandler: st-true)
+       (superPerform: self 'defaultAction)))
+
+(addSelector:withMethod:
+     MessageNotUnderstood
+     'isResumable
+     (lambda (self) st-true))
+
+(addSelector:withMethod:
+     MessageNotUnderstood
+     'messageText
+     (lambda (self)
+       (let ( (myMessage ($ self 'message)) )
+         (if (not (null? myMessage))
+             (format #f
+                     "~a doesNotUnderstand: #~a"
+                     (className: ($ myMessage 'receiver))
+                     ($ myMessage 'selector))
+             (let ( (inherited-msg (superPerform: self 'messageText)) )
+               (if (null? inherited-msg)
+                   (format #f
+                           "~a doesNotUnderstand: <something>"
+                           (safer-printString ($ self 'receiver)) )
+                   inherited-msg)))))
+)
+
+;; redefine
+(addSelector:withMethod:
+     Object
+     'doesNotUnderstand:
+     (lambda (self aMessageSend) ;; NB: class == MessageSend
+       ;;@@DEBUG{
+;;       (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
+       ;;@@DEBUG}
+       (let ( (ex ($ MessageNotUnderstood 'new)) )
+         ($: ex 'message: aMessageSend)
+         ($: ex 'receiver: self)
+         ($: ex 'reachedDefaultHandler: st-false)
+         (let ( (resumeValue ($ ex 'signal)) )
+           ;;@@DEBUG{
+;;           (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
+           ;;@@DEBUG}
+           (if ($ ex 'reachedDefaultHandler)
+               ($: aMessageSend 'sendTo: self)
+               resumeValue)))))
+
+
+;;; MessageSend
+
+(addSelector:withMethod:
+     (class MessageSend)
+     'receiver:selector:arguments:
+     (lambda (self rcvr aSymbol anArray)
+       (let ( (newInst ($ self 'new)) )
+         ($: newInst 'receiver:  rcvr)
+         ($: newInst 'selector:  aSymbol)
+         ($: newInst 'arguments: anArray)
+         newInst)))
+
+(addSelector:withMethod:
+     (class MessageSend)
+     'receiver:selector:argument:
+     (lambda (self rcvr aSymbol anArg)
+       ($::: self
+             'receiver:selector:arguments:
+             rcvr
+             aSymbol
+             (vector anArg))))
+
+(addSelector:withMethod:
+     (class MessageSend)
+     'receiver:selector:
+     (lambda (self rcvr aSymbol)
+       ($::: self
+             'receiver:selector:arguments:
+             rcvr
+             aSymbol
+             '#())))
+
+(addSelector:withMethod:
+     MessageSend
+     'collectArguments: ;; PRIVATE
+     ;; Answer Array with first N args substituted from new
+     (lambda (self newArgArray)
+       (let* ( (origArgArray ($ self 'arguments))
+               (origArgsLen (vector-length origArgArray))
+               (newArgsLen  (vector-length newArgArray))
+             )
+         (cond
+          ((= origArgsLen newArgsLen)
+           newArgArray
+           )
+          ((> origArgsLen newArgsLen) ;; drop
+           (vector-copy newArgArray 0 origArgsLen))
+          (else ;; (> origArgsLen newArgsLen)
+           (vector-append newArgArray ;; augment
+                          (vector-copy origArgArray
+                                       newArgsLen
+                                       origArgsLen)))))))
+
+(addSelector:withMethod:
+     MessageSend
+     'resend
+     (lambda (self)
+       ($:: ($ self 'recevier)
+            'perform:withArguments:
+            ($ self 'selector)
+            ($ self 'args))))
+
+(addSelector:withMethod:
+     MessageSend
+     'sendTo:
+     (lambda (self newReceiver)
+       ($:: newReceiver 
+            'perform:withArguments:
+            ($ self 'selector)
+            ($ self 'args)))
+)
+
+(addSelector:withMethod:
+     MessageSend
+     'value  ;; resend
+     (lambda (self)
+       (if (zero? (vector-length ($ self 'arguments)))
+           (perform: ($ self 'receiver) ($ self 'selector))
+           (perform:withArguments:
+              ($ self 'recevier)
+              ($ self 'selector)
+              ($: self 'collectArguments: ($ self 'arguments))))))
+
+(addSelector:withMethod:
+     MessageSend
+     'value:withArguments: ;; resend with new arguments
+     (lambda (self anArray)
+       (perform:withArguments:
+          ($ self 'recevier)
+          ($ self 'selector)
+          ($: self 'collectArguments: anArray))))
+
+
+(addSelector:withMethod:
+     MessageSend
+     'printOn:
+     (lambda (self aStream)
+       ($: aStream 'nextPutAll: (className: self))
+       ($: aStream 'nextPutAll: "( " )
+       ($: ($ self 'selector) 'printOn: aStream)
+       ($: aStream 'nextPutAll: " -> ")
+       (if (isKindOf: ($ self 'receiver) MessageSend)
+           ($: aStream 'nextPutAll: "a MessageSend") ;; avoid recursion
+           ($: ($ self 'receiver) 'printOn: aStream))
+       ($: aStream 'nextPutAll: " )" ))
+)
+
+(addSelector:withMethod:
+     MessageSend
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'MessageSend)
+           (superPerform:with: self 'is: symbol))))
+
+
+
+;;; Message
+
+
+(addSelector:withMethod:
+     (class Message)
+     'selector:arguments:
+     (lambda (self selector argsArray)
+       (let ( (newInst ($ self 'new)) )
+         ($: newInst 'selector: selector)
+         ($: newInst 'args: argsArray)
+         newInst)))
+
+(addSelector:withMethod:
+     (class Message)
+     'lookupClass:selector:arguments:
+     (lambda (self aClass aSelector argsArray)
+       (let ( (newInst ($ self 'new)) )
+         ($: newInst 'lookupClass: aClass)
+         ($: newInst 'selector: aSelector)
+         ($: newInst 'args: argsArray)
+         newInst)))
+
+(addSelector:withMethod:
+     Message
+     'is:
+     (lambda (self symbol)
+       (or (eq? symbol 'Message)
+           (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Message
+     'sendTo:
+     (lambda (self receiver)
+; "answer the result of sending this message to receiver"
+       (let ( (someClass ($ self 'lookupClass)) )
+         (if (null? someClass)
+             ($:: receiver
+                  'perform:withArguments:
+                  ($ self 'args))
+             ($::: ($ self receiver)
+                   'perform:withArguments:inSuperclass:
+                   ($ self 'args)
+                   someClass))))
+)
+
+
+
+;;; send-failed
+
+(define in-send-failed? (make-parameter #false))
+
+(set! send-failed ;; def'ed in "st-kernel.scm"
+  (lambda (receiver selector rest-args)
+    ;;@@DEBUG{
+;    (format #t "~%send failed ~a >> ~a ~a~%"
+;            receiver selector (list->vector rest-args))
+    ;;@@DEBUG}
+    (cond
+     ((in-send-failed?)
+      (format #f "send-failed recursion: ~a >> ~a" (className: receiver) selector)
+     )
+    ((unspecified? receiver)
+     (%%escape%% (format #f "Unspecified reciever for #~a" selector))
+     )
+    (else
+     (parameterize ( (in-send-failed? #true) )
+      ($: receiver
+           'doesNotUnderstand:
+           ($::: MessageSend 'receiver:selector:arguments: receiver selector (list->vector rest-args)))
+     ))
+  ) )
+)
+
+
+(define (unspecified? thing)
+  (eq? thing #!unspecified))
+
 
 
 ;; (provide 'st-error-obj)

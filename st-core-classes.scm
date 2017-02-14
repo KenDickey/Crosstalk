@@ -754,19 +754,19 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 
 ;;; debug
 
-(set! send-failed
-  (lambda (receiver selector rest-args) ;; messageSend)
-  ;; @@@@@FIXME: invoke debugger
-    (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-      (error (string-append
-              "Failed message send: #"
-              (symbol->string selector)
-              " to: ")
-             (if (class? receiver)
-                 ($ receiver 'name)
-                 receiver)
-             rest-args)
-) ) )
+;; (set! send-failed
+;;   (lambda (receiver selector rest-args) ;; messageSend)
+;;   ;; @@@@@FIXME: invoke debugger
+;;     (let ( (messageSend (make-messageSend receiver selector rest-args)) )
+;;       (error (string-append
+;;               "Failed message send: #"
+;;               (symbol->string selector)
+;;               " to: ")
+;;              (if (class? receiver)
+;;                  ($ receiver 'name)
+;;                  receiver)
+;;              rest-args)
+;; ) ) )
 
 (define (isKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
@@ -796,6 +796,16 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
    ((not (st-object? thing)) #false)
    (else (saferIsKindOf: thing Class))))
 
+
+(define (className: thing)
+  (cond
+   ((respondsTo: thing 'class)
+    (let ( (thing-class (class thing)) )
+      (if (respondsTo: thing-class 'name)
+        ($ thing-class 'name)
+        thing-class))
+    )
+   (else "#<classless Object>")))
 
 ;; (provide 'st-core-classes)
 

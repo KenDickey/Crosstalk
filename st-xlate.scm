@@ -473,8 +473,20 @@
 ) ) )
 
 ;;; st-eval
+(define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
+
 (define (st-eval st-string)
-  (eval (st->scm st-string) (interaction-environment)))
+  (call/cc
+   (lambda (exit)
+     (parameterize ( (%%escape%% exit) ) ;; for send-failed
+       (with-exception-handler
+        (lambda (anException)
+          (if (isKindOf: anException Exception)
+              ($ anException 'messageText)
+              (error-object-message anException)))
+        (lambda () (eval (st->scm st-string)
+                         (interaction-environment))))
+) ) ) )
 
 ;; (define xlate
 ;;   (newSubclassName:iVars:cVars:

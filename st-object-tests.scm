@@ -15,6 +15,8 @@
 
   (set! %%test-object
         (make-st-object st-object-behavior 0))
+
+  (smalltalkAt:Put: 'TestObject %%test-object)
 )
 
 (define (cleanup-st-object)
@@ -26,12 +28,12 @@
 
 (add-eq-test 'st-object
   'Object
-  (perform: %%test-object 'class)
-  "anObject Class -> 'Object")
+  ($ ($ %%test-object 'class) 'name)
+  "anObject class name -> #Object")
 
-(ensure-exception-raised 'st-object
-   (make-error-string-predicate   "Failed message send: #glerph to: ")
-   (perform: %%test-object 'glerph)
+(add-equal-test 'st-object
+   "Object doesNotUnderstand: #glerph"
+   (st-eval "TestObject glerph")
    "obj glerph -> doesNotUnderstand")
 
 (add-eq-test 'st-object
@@ -150,9 +152,9 @@
 ;;   (perform: st-false 'notNil)
 ;;   "false notNil")
 
-(ensure-exception-raised 'st-object
-   (make-error-string-predicate  "Failed message send: #bogus: to: ")
-   (perform:with: %%test-object 'bogus: 666)
+(add-equal-test 'st-object
+   "Object doesNotUnderstand: #bogus:"
+   (st-eval "TestObject bogus: 666")
    "obj bogus: 666 -> doesNotUnderstand")
 
 (add-equal-test 'st-object

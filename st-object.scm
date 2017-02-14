@@ -14,12 +14,9 @@
 (define false #false)
 (define nil   '())
 
-;; @@FIXME: make continuable -- use Message object
+
 (define (doesNotUnderstand: self selector) ;; ANSI
-
-;; NOTE: (make-message-send self selector rest-args)
-;; @@FIXME: Conditions
-
+;; NB: redefined in "st-error-obj.scm"
   (error (string-append
                "#"
                (symbol->string selector)
@@ -245,12 +242,10 @@
         'doesNotUnderstand:    ;; ANSI
         doesNotUnderstand:)
 
-
 (primAddSelector:withMethod:
  	st-object-behavior
         'respondsTo:    ;; ANSI
-        (lambda (self selector)
-          (primIncludesSelector: (behavior self) selector)))
+        respondsTo:)
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -291,14 +286,15 @@
  	st-object-behavior
         'printOn:  ;; ANSI
         (lambda (self outport)
-          (if (perform:with: self 'respondsTo: 'name)
-              (display (perform: self 'name) outport)
-              (format outport
-                      "<instance of ~a>"
-                      (perform: (perform: self 'class)'name))
-       ) )
-
-)
+          (let ( (vowels (string->list "aeiouAEIOU"))
+                 (className ($ (className: self) 'asString))
+               )
+            (display
+             (string-append
+              (if (memq (string-ref className 0) vowels)
+                  "an " "a ")
+              className)
+             outport))))
 
 
 (primAddSelector:withMethod:
