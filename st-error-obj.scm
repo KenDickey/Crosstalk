@@ -569,23 +569,23 @@ Structure:
 
 ;; redefine
 (addSelector:withMethod:
-     Object
-     'doesNotUnderstand:
-     (lambda (self aMessageSend) ;; NB: class == MessageSend
-       ;;@@DEBUG{
-;;       (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
-       ;;@@DEBUG}
-       (let ( (ex ($ MessageNotUnderstood 'new)) )
-         ($: ex 'message: aMessageSend)
-         ($: ex 'receiver: self)
-         ($: ex 'reachedDefaultHandler: st-false)
-         (let ( (resumeValue ($ ex 'signal)) )
-           ;;@@DEBUG{
-;;           (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
-           ;;@@DEBUG}
-           (if ($ ex 'reachedDefaultHandler)
-               ($: aMessageSend 'sendTo: self)
-               resumeValue)))))
+  Object
+  'doesNotUnderstand:
+  (lambda (self aMessageSend) ;; NB: class == MessageSend
+;;@@DEBUG{
+ (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
+;;@@DEBUG}
+    (let ( (ex ($ MessageNotUnderstood 'new)) )
+      ($: ex 'message: aMessageSend)
+      ($: ex 'receiver: self)
+      ($: ex 'reachedDefaultHandler: st-false)
+      (let ( (resumeValue ($ ex 'signal)) )
+;;@@DEBUG{
+ (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
+;;@@DEBUG}
+        (if ($ ex 'reachedDefaultHandler)
+            ($: aMessageSend 'sendTo: self)
+            resumeValue)))))
 
 
 ;;; MessageSend
@@ -771,8 +771,12 @@ Structure:
     (else
      (parameterize ( (in-send-failed? #true) )
       ($: receiver
-           'doesNotUnderstand:
-           ($::: MessageSend 'receiver:selector:arguments: receiver selector (list->vector rest-args)))
+          'doesNotUnderstand:
+          ($::: MessageSend
+                'receiver:selector:arguments:
+                receiver
+                selector
+                (list->vector rest-args)))
      ))
   ) )
 )

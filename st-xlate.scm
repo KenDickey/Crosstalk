@@ -481,9 +481,10 @@
      (parameterize ( (%%escape%% exit) ) ;; for send-failed
        (with-exception-handler
         (lambda (anException)
-          (if (isKindOf: anException Exception)
-              ($ anException 'messageText)
-              (error-object-message anException)))
+          (exit
+           (if (isKindOf: anException Exception)
+               ($ anException 'messageText)
+               (error-object-message anException))))
         (lambda () (eval (st->scm st-string)
                          (interaction-environment))))
 ) ) ) )
