@@ -485,6 +485,10 @@ Be aware however that most of these methods are not sent as real messages
         (lambda (self size)
           (error "You may not create any more undefined objects--use nil" self)))
 
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'value
+        (lambda (self) st-nil))
 
 
 

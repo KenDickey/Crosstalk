@@ -401,6 +401,25 @@
               selfClass
               instanceVarsList))
           )
+      (for-each ;; give instances access to class vars
+        (lambda (getter-name)
+          (let* ( (setter-name
+                   (string->symbol
+                    (string-append
+                     (symbol->string getter-name) ":")))
+                )
+            (addSelector:withMethod:
+               newSubclass
+               getter-name
+               (lambda (self)
+                 (perform: (class self) getter-name)))
+            (addSelector:withMethod:
+               newSubclass
+               setter-name
+               (lambda (self newVal)
+                 (perform:with: (class self) setter-name newVal)))
+        ) )
+        classVarsList)
       (perform:with: newMetaClass 'thisClass: newSubclass)
       (smalltalkAt:Put: nameSym newSubclass)
       newSubclass		;; @@??@@ move initialize to here?
@@ -753,20 +772,6 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 
 
 ;;; debug
-
-;; (set! send-failed
-;;   (lambda (receiver selector rest-args) ;; messageSend)
-;;   ;; @@@@@FIXME: invoke debugger
-;;     (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-;;       (error (string-append
-;;               "Failed message send: #"
-;;               (symbol->string selector)
-;;               " to: ")
-;;              (if (class? receiver)
-;;                  ($ receiver 'name)
-;;                  receiver)
-;;              rest-args)
-;; ) ) )
 
 (define (isKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )

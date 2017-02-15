@@ -114,7 +114,9 @@
      (lambda (self key absentThunk)
        (if (hashtable-contains? self key)
            (hashtable-ref self key nil)
-           (absentThunk)))
+           (if (st-nil? absentThunk) ;; St ideom
+               st-nil
+               (absentThunk))))
 )
 
 (addSelector:withMethod:
@@ -132,7 +134,8 @@
      'at:ifAbsentPut:
      (lambda (self key valueThunk)
        (when (hashtable-contains? self key)
-         (hashtable-set! self key (valueThunk))))
+         (hashtable-set! self key (valueThunk)))
+       self)
 )
 
 (addSelector:withMethod:
@@ -150,7 +153,7 @@
      (lambda (self key presentThunk)
        (if (hashtable-contains? self key)
            (presentThunk)
-           st-nil))
+           self))
 )
 
 

@@ -664,11 +664,10 @@
           )
          (else
           (describe st-obj)
-          (newline)
           (for-each
            (lambda (ivarName)
              (format #t
-                     "~% ~a -> ~a"
+                     "  ~a -> ~a~%"
                      ivarName
                      (safer-printString ($ st-obj ivarName)))
            )

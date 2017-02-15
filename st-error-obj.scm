@@ -573,7 +573,7 @@ Structure:
   'doesNotUnderstand:
   (lambda (self aMessageSend) ;; NB: class == MessageSend
 ;;@@DEBUG{
- (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
+; (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
 ;;@@DEBUG}
     (let ( (ex ($ MessageNotUnderstood 'new)) )
       ($: ex 'message: aMessageSend)
@@ -581,7 +581,7 @@ Structure:
       ($: ex 'reachedDefaultHandler: st-false)
       (let ( (resumeValue ($ ex 'signal)) )
 ;;@@DEBUG{
- (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
+; (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
             ($: aMessageSend 'sendTo: self)

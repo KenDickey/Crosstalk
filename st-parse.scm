@@ -26,7 +26,7 @@
 (define-structure (astReturn        expression))
 
 (define (ident-token->astLiteral ident-tok)
-  (astLiteral ident-tok
+  (astLiteral ident-tok 
               `',(token->native ident-tok))
 )
 
@@ -603,8 +603,8 @@
            (loop (cons literal elts)))
          )
         ((identifier)
-         (let ( (identifier
-                 (ident-token->astIdentifier curr-token))
+         (let ( (identifier ;; a Symbol within an Array is unquoted
+                 (astLiteral curr-token (token->native curr-token)))
               )
            (consume-token!)
            (loop (cons identifier elts)))

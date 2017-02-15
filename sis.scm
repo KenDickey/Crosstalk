@@ -172,6 +172,8 @@
      "LinkedList"
      "Time"
      "TimeSpan"
+     "ActiveModel"
+     ;; "../SUnit/Tools-Testing"
      ;;    @@@more to come...
     )
  )
