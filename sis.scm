@@ -172,6 +172,7 @@
      "LinkedList"
      "Time"
      "TimeSpan"
+     "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "ActiveModel"
      ;; "../SUnit/Tools-Testing"
      ;;    @@@more to come...
