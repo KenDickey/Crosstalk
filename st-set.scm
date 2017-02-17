@@ -15,6 +15,12 @@
    'Set '(array tally) '())
 )
 
+(define IdentitySet
+  (newSubclassName:iVars:cVars:
+   Set
+   'IdentitySet '() '())
+)
+
 (perform:with:
      Set
      'category:
@@ -25,6 +31,18 @@
      'comment:
 "I am an unordered collection of non-nil objects
  which does not contain duplicates."
+)
+
+(perform:with:
+     IdentitySet
+     'category:
+     '|Collections-Unordered|)
+
+(perform:with:
+     IdentitySet
+     'comment:
+"I am the same as a Set,
+ but my comparisons are with #== not #="
 )
 
 (addSelector:withMethod:
@@ -173,7 +191,7 @@
 ;;             (newline) (display index)
              (cond
               ((st-nil? elt)    (+ 1 index)) ;; Scheme->ST index
-              ((equal? obj elt) (+ 1 index)) ;; Scheme->ST index
+              ((equal? obj elt) (+ 1 index)) ;; Scheme->ST index ;; equal?
               ((= index right-end)
                (let ( (mid-end (- start 1)) )
                  (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
@@ -181,8 +199,8 @@
   ;;                 (newline) (display index)
                    (let ( (elt (vector-ref array index)) )
                      (cond
-                      ((st-nil? elt) (+ 1 index))
-                      ((eq? obj elt) (+ 1 index))
+                      ((st-nil? elt)    (+ 1 index))
+                      ((equal? obj elt) (+ 1 index))
                       ((= index mid-end)
                        0) ;; failed
                       (else (left-loop (+ 1 index))))))
@@ -392,6 +410,39 @@
           self)
          newSet)))
 
+(addSelector:withMethod:
+     Set
+     'scanFor:
+     (lambda (self obj)
+       ; Scan key array for 1st slot containing nil
+       ; or an element matching obj.  Answer index or zero.
+       ; Subclasses may override me for different match predicates.
+       (let* ( (array (perform: self 'array))
+               (array-size (vector-length array))
+               (start (modulo (equal-hash obj) ;; hash fn
+                               array-size))
+               (right-end (- array-size 1)) ;; Scheme index 0 based
+             )
+         (let right-loop ( (index start) ) ;; start to end
+           (let ( (elt (vector-ref array index)) )
+;;             (newline) (display index)
+             (cond
+              ((st-nil? elt) (+ 1 index)) ;; Scheme->ST index
+              ((eq? obj elt) (+ 1 index)) ;; Scheme->ST index ;; eq?
+              ((= index right-end)
+               (let ( (mid-end (- start 1)) )
+                 (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
+                 ;; look 1 to start-1
+  ;;                 (newline) (display index)
+                   (let ( (elt (vector-ref array index)) )
+                     (cond
+                      ((st-nil? elt) (+ 1 index))
+                      ((eq? obj elt) (+ 1 index))
+                      ((= index mid-end)
+                       0) ;; failed
+                      (else (left-loop (+ 1 index))))))
+               ))
+              (else (right-loop (+ 1 index)))))))))
 
 ;; (provides st-set)
 

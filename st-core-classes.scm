@@ -770,6 +770,17 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
        (or (eq? symbol 'MetaClass)
            (superPerform:with: self 'is: symbol))))
 
+(addSelector:withMethod:
+     Behavior
+     'allSelectors
+     (lambda (self)
+       (let ( (selector-vec (hashtable-keys (behavior self)))
+              (iSet ($ IdentitySet 'new))
+            )
+         (vector-foreach
+          (lambda (sel) ($: iSet 'add: sel))
+          selectors-vec)
+         iSet)))
 
 ;;; debug
 
