@@ -153,7 +153,8 @@
     (for-each
      (lambda (sub)
        (display-subs sub (cons class shown) (+ delta indent) delta))
-     ($ class 'subclasses))
+     (list-sort (lambda (c1 c2) ($: ($ c1 'name) '< ($ c2 'name)))
+                ($ class 'subclasses)))
 ) )
 
 (define (display-subclasses class)
