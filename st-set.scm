@@ -411,6 +411,21 @@
          newSet)))
 
 (addSelector:withMethod:
+     Array
+     'asIdentitySet
+     (lambda (self)
+       (let ( (newSet
+               (perform:with: IdentitySet
+                              'new: (vector-length self)))
+            )
+         (vector-for-each
+          (lambda (elt)
+            (unless (st-nil? elt)
+              (perform:with: newSet 'add: elt)))
+          self)
+         newSet)))
+
+(addSelector:withMethod:
      Set
      'scanFor:
      (lambda (self obj)

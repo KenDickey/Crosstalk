@@ -212,6 +212,18 @@
 
 (addSelector:withMethod:
      Dictionary
+     'keys   ;; Answer an IdentitySet of Keys
+     ;; @@FIXME: this should answer the set
+     ;;          of non-inherited selectors.
+     (lambda (self)
+       (let ( (iSet ($ IdentitySet 'new)) )
+         ($: self
+             'keysDo:
+             (lambda (sel) ($: iSet 'add: sel)))))
+)
+
+(addSelector:withMethod:
+     Dictionary
      'valuesArray
      (lambda (self)
        (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )

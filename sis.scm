@@ -164,6 +164,7 @@
      "ArrayedCollection"
      "Dictionary"
      "OrderedCollection"
+     "SortedCollection"
      "String"
      "Character"
      "Interval"

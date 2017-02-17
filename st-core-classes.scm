@@ -774,13 +774,36 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      Behavior
      'allSelectors
      (lambda (self)
-       (let ( (selector-vec (hashtable-keys (behavior self)))
+       ($ (hashtable-keys (behavior self))
+          'asIdentitySet))) ;; vector->identSet
+
+(addSelector:withMethod:
+     Behavior
+     'selectors
+     ;; Answer identSet of non-inherited method selectors
+     (lambda (self)
+       (let ( (superDict
+               ($ (superclass self) 'methodDict))
+              (selfDict (behavior self))
               (iSet ($ IdentitySet 'new))
             )
-         (vector-foreach
-          (lambda (sel) ($: iSet 'add: sel))
-          selectors-vec)
-         iSet)))
+         ($: selfDict
+             'keysAndValuesDo:
+             (lambda (k v)
+               (cond
+                ((hashtable-contains? superDict k)
+                 (when (not  ;; not same v as super
+                        (eq? v
+                             (hashtable-ref superDict
+                                            k
+                                            nil)))
+                   ($ iSet 'add: k)))
+                ;; else must be local; add selector
+                (else ($ iSet 'add: k)))))
+       ) )
+)
+
+
 
 ;;; debug
 
