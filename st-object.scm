@@ -391,6 +391,12 @@
         (lambda (self aString)
           (error aString self))) ;;; @@FIXME: Debug!
 
+(primAddSelector:withMethod:
+ 	st-object-behavior
+        'value
+        (lambda (self) self)) ;; St ideom
+
+
 ;; From PharoCandle.  Don't know why these are in Object?!?
 (primAddSelector:withMethod:
  	st-object-behavior

@@ -50,6 +50,20 @@
     '())
 )
 
+(define Halt
+  (newSubclassName:iVars:cVars:
+   Exception
+   'Halt '() '())
+)
+
+
+(define AssertionFailure
+  (newSubclassName:iVars:cVars:
+   Halt
+   'AssertionFailure '() '())
+)
+
+
 (set! st-messageSend-behavior ($ MessageSend 'methodDict))
 
 (define Message
@@ -85,6 +99,14 @@
 (perform:with:
      MessageNotUnderstood
      'category: '|Exceptions Kernel|)
+
+(perform:with:
+     Halt
+     'category: '|Exceptions Extensions|)
+
+(perform:with:
+     AssertionFailure
+     'category: '|Exceptions Extensions|)
 
 (perform:with:
      MessageSend
@@ -198,6 +220,19 @@ Structure:
  involved in an actual message transmission.
  This instance is sent it as an argument with the message doesNotUnderstand:
  to the receiver."
+)
+
+(perform:with:
+     Halt
+     'comment:
+"Halt is provided to support Object>>halt."
+)
+
+(perform:with:
+     AssertionFailure
+     'comment:
+"AssertionFailure is the exception signaled from Object>>assert:
+ when the assertion block evaluates to false."
 )
 
 
@@ -749,6 +784,63 @@ Structure:
                    someClass))))
 )
 
+
+;;; HALT
+
+(addSelector:withMethod:
+     Halt
+     'isResumable
+     (lambda (self) st-true))
+
+(addSelector:withMethod:
+     Halt
+     'defaultAction
+     (lambda (self) ($ self 'noHandler)))
+
+(addSelector:withMethod:
+     Object
+     'halt
+     (lambda (self)
+       ($ Halt 'signal)))
+
+(addSelector:withMethod:
+     Object
+     'halt:
+     (lambda (self aMessage)
+       ($: Halt 'signal: aMessage)))
+
+;;; ASSERT
+
+(addSelector:withMethod:
+     Object
+     'assert:
+     (lambda (self aBlock)
+; "Throw an assertion error if aBlock does not evaluates to true."
+       (when (st-false? (aBlock)) ;; aBlock value == false
+          ($: AssertionFailure 'signal: "Assertion failed"))))
+
+
+(addSelector:withMethod:
+     BlockClosure
+     'assert
+     (lambda (self)
+       ($: self 'assert: self)))
+
+;; (addSelector:withMethod:
+;;      TestCase
+;;      'assert:description:resumable:
+;;      (lambda (self aBoolean aString resumableBoolean)
+;;        (when (st-false? aBoolean)
+;;          ($: self failureString: aString)
+;;          ($: self logFailure: aString)
+;;          ($: self exception: 
+;;                  (if (st-true? resumableBoolean)
+;;                      ($ TestResult 'resumableFailure)
+;;                      ($ TestResult 'failure)))
+    
+;;          ($: ($ self exception)
+;;              'signalWith:
+;;              aString))))
 
 
 ;;; send-failed

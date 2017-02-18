@@ -175,7 +175,7 @@
      "TimeSpan"
      "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "ActiveModel"
-     ;; "../SUnit/Tools-Testing"
+     "SUnit" 
      ;;    @@@more to come...
     )
  )
