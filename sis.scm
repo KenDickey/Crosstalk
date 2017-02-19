@@ -176,6 +176,7 @@
      "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "ActiveModel"
      "SUnit" 
+     "SUnitTests"
      ;;    @@@more to come...
     )
  )

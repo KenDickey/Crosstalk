@@ -945,5 +945,7 @@ TestSuite class ~> named: aString
 ].
 
 TestResource class initialize.
+
+
 			 
 "		E O F 		"
