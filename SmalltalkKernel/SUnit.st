@@ -556,8 +556,7 @@ Object  newSubclassName: #TestResource
 	iVars: #(name description) 
 	cVars: #(current).
 
-TestResource category: #'Tools-Testing'
-
+TestResource category: #'Tools-Testing'.
 
 TestResource ~> initialize
 [
@@ -659,7 +658,7 @@ Object  newSubclassName: #TestResult
 	iVars: #(failures errors passed) 
 	cVars: #().
 
-TestResult category: #'Tools-Testing'
+TestResult category: #'Tools-Testing'.
 
 TestResult comment:
 'This is a Collecting Parameter for the running of a bunch of tests.

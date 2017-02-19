@@ -128,7 +128,6 @@
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
      "st-boolean"      ;; Boolean True False UndefinedObject (nil)
-     "st-error-obj"    ;; Scheme error objects
      "st-character"    ;; Character
      "st-magnitude"
      "st-number"
@@ -138,6 +137,7 @@
      "st-list"         ;; proper, immutable lists (interoperate w Scheme)
      "st-blockClosure" ;; BlockClosure
      "st-array"        ;; Array
+     "st-error-obj"    ;; Scheme error objects
      "st-tokenizer"    ;; Stream -> tokens
      "st-parse"        ;; tokens -> AST
      "st-xlate"	       ;; AST -> Scheme
