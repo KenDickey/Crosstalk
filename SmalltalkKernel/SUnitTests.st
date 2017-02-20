@@ -12,7 +12,7 @@ TestCase newSubclassName: #SUnitTest
 	cVars: #().
 
 
-TestCase comment:
+SUnitTest comment:
 'This is both an example of writing tests and a self test for the SUnit.
  The tests here are pretty strange, since you want to make sure things blow up.
  You should not generally have to write tests this complicated in structure,

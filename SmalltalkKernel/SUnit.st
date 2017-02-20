@@ -324,9 +324,12 @@ TestCase ~> run
 
 TestCase ~> run: aResult
 [
- ChangeSet
+"@@FIXME: ChangeSet NYI"
+" ChangeSet
 	runningTest: self printString
-	do: [ aResult runCase: self ]
+	do: [ aResult runCase: self ]"
+  self printOn: Transcript.
+  aResult runCase: self
 ].
 
 TestCase ~> runCase
@@ -669,9 +672,9 @@ TestResult comment:
 
 TestResult ~> initialize
 [
-  self errors:   OrderedCollection new
-  self failures: OrderedCollection new
-  self passed:   OrderedCollection new
+  self errors:   OrderedCollection new.
+  self failures: OrderedCollection new.
+  self passed:   OrderedCollection new.
 ].
 
 TestResult ~> defects
@@ -760,7 +763,7 @@ TestResult ~> runCase: aTestCase
 [
   | testCasePassed |
 
- testCasePassed :=
+  testCasePassed :=
 	[ [ aTestCase runCase. true ]
 	   on: self class failure
 	   do: [ :signal |

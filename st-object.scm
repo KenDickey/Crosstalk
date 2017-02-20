@@ -17,12 +17,11 @@
 
 (define (doesNotUnderstand: self selector) ;; ANSI
 ;; NB: redefined in "st-error-obj.scm"
-  (error (string-append
-               "#"
-               (symbol->string selector)
-                " not understood by ")
+  (error (format #f "#~a not understood by ~a"
+                 selector
+                 self)
          self)
- )
+)
 
 
 (define make-subclassResponsibility

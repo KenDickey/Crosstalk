@@ -489,24 +489,11 @@
                          (interaction-environment))))
 ) ) ) )
 
-;; (define xlate
-;;   (newSubclassName:iVars:cVars:
-;;    Object
-;;    'xlate '() '())
-;; )
 
-;; (perform:with:
-;;      xlate
-;;      'category:
-;;      '|xlate@|)
+;;; DEBUG -- fake a Transcript
 
-;; (perform:with:
-;;      xlate
-;;      'comment:
-;;      "xlate@"
-;; )
+(smalltalkAt:Put: 'Transcript (current-output-port))
 
-;; @@@FillMeIn
 
 ;; (provides st-xlate)
 

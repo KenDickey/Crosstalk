@@ -35,16 +35,13 @@
 (define primSet:toValue: hashtable-set!)
 
 ;;  -- redefined in "st-error-obj.scm"
-(define (send-failed receiver selector rest-args) ;; messageSend)
-  ;; @@@@@FIXME: invoke debugger
+(define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-    (error (string-append
-            "**Failed message send: #"
-            (symbol->string selector)
-            " to: ")
-           (if (class? receiver)
-               ($ receiver 'name)
-               receiver)
+    (error (format #f "**Failed message send: #~a to: ~a"
+                   selector
+                   (if (class? receiver)
+                       ($ receiver 'name)
+                       receiver))
            rest-args)
 ) )
 
@@ -221,7 +218,7 @@
  	st-symbol-behavior
         'printOn:
         (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
-          (format port "#'~a'" (symbol->string self)))
+          (format port "#'~a'" self))
 )
 
 (primAddSelector:withMethod: 
