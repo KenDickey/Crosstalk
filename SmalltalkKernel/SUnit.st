@@ -1,6 +1,7 @@
 "FILE: 'SUnit.st'
  IMPLEMENTS: SUnit testing (less the GUI)
  AUTHOR: ported from Cuis 5.0r3035 [Juan Vuletich; MIT Licence]
+  appears to have come originally from the Camp Smalltalk code.
  Modifications by: Ken Dickey
  DATE: 18 Febuary 2017
 "
@@ -12,6 +13,7 @@ Exception newSubclassName: #TestFailure iVars: #() cVars: #().
 TestFailure newSubclassName: #ResumableTestFailure iVars: #() cVars: #().
 
 TestFailure category: #'Tools-Testing'.
+
 ResumableTestFailure category: #'Tools-Testing'.
 
 TestFailure comment:
@@ -24,9 +26,11 @@ TestFailure comment:
 
 TestFailure ~> defaultAction
 [
-	Processor activeProcess
-		debug: self signalerContext
-		title: self description 
+"  Processor activeProcess
+	debug: self signalerContext
+	title: self description "
+  "Punt to Scheme Debugger"
+  ErrorObject signal: self description
 ].
 
 TestFailure ~> isResumable
@@ -37,7 +41,7 @@ TestFailure ~> isResumable
 ResumableTestFailure comment: 
 'A ResumableTestFailure triggers a TestFailure,
  but lets execution of the TestCase continue.
- This is useful when iterating through collections, and #assert: ing
+ This is useful when iterating through collections, and #assert:ing
  on each element. 
  In combination with methods like testcase>>#assert:description:,
  this lets you run through a whole collection and note which tests pass.
@@ -59,7 +63,8 @@ ResumableTestFailure ~> isResumable
 
 ResumableTestFailure ~> sunitExitWith: aValue
 [
-  self resume: aValue 
+"  self resume: aValue "
+   self return: aValue
 ].
 
 

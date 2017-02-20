@@ -449,7 +449,7 @@ ExampleSetTest~> testOccurrences
   self assert: (self full occurrencesOf: 5) = 1
 ].
 
-ExampleSetTest~> testRemove
+ExampleSetTest ~> testRemove
 [
   self full remove: 5.
   self assert: (self full includes: #abc).
