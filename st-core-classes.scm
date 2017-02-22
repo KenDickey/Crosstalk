@@ -73,8 +73,6 @@
   (append combined-classDescription-var-names
           metaClass-added-var-names))
 
-
-
 ;; superclass           class               class class
 ;; ----------------------------------------------------
 ;; nil                  UndefinedObject  UndefinedObject class
@@ -103,6 +101,7 @@
         st-nil
         (append (allSuperclasses mySuper) (list mySuper)))
 ) )
+
 
 (define (allSubclasses a-class)
   ;; NB: Class/Object/.. wraps around
@@ -136,9 +135,6 @@
 (define (display-allSupers obj)
   (display-obj (allSuperclasses obj)))
 
-(define (display-subs obj) ;; direct subclasses
-  (display-obj (perform: obj 'subclasses)))
-
 (define (display-spaces n)
   (let loop ( (count 0) )
     (when (< count n)
@@ -160,7 +156,6 @@
 (define (display-subclasses class)
   (display-subs class '() 0 3))
   
-
 ;; Below basicNew: Make a new instance of some class
 (define (primNew: classSelf num-object-slots)
   (make-st-object
@@ -197,7 +192,8 @@
   (let ( (my-subclasses (perform: classSelf 'subclasses)) )
     (perform:with: classSelf
                    'subclasses:
-                   (cons subclass my-subclasses))
+                   (cons subclass
+                         my-subclasses))
 ) )
 
 (primAddSelector:withMethod:
@@ -513,17 +509,17 @@
 ;;; => behavior of instances, not class itself !!
 (define (subclassAddSelector:withMethod:
          classSelf selector method)
-  (let* ( (mDict      (perform: classSelf 'methodDict))
-          (subclasses (perform: classSelf 'subclasses))
+  (let* ( (mDict  ($ classSelf 'methodDict))
+          (subs   ($ classSelf 'subclasses))
         )
     (primAddSelector:withMethod: mDict selector method)
     (for-each
-     (lambda (subClass)
+       (lambda (subClass)
        ;; if not overriden, copy down
        ;; Non-standard: avoids dynamic super-chain lookup
-       (unless (memq selector (perform: subClass 'myMethodNames))
-         (subclassAddSelector:withMethod: subClass selector method)))
-     subclasses))
+         (unless (memq selector (perform: subClass 'myMethodNames))
+           (subclassAddSelector:withMethod: subClass selector method)))
+       subs))
   classSelf
 )
 
@@ -821,20 +817,6 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
         'isKindOf:
         isKindOf:
 )
-
-(define (saferIsKindOf: self someClass)
-  (let loop ( (super-class (perform: self 'class)) )
-    (cond
-     ((null? super-class) #false)
-     ((eq? super-class someClass) #true)
-     ((not (st-object? super-class)) #false)
-     (else (loop (perform: super-class 'superclass))))
-) )
-
-(define (class? thing)
-  (cond
-   ((not (st-object? thing)) #false)
-   (else (saferIsKindOf: thing Class))))
 
 
 (define (className: thing)

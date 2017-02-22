@@ -344,5 +344,11 @@ OrderedCollection class ~> newFrom: aCollection
 	yourself
 ].
 
+OrderedCollection ~> addAll: aCollection
+[
+  aCollection do: [ :elt | self add: elt ].
+  self
+].
+
 
 "		E O F 		"

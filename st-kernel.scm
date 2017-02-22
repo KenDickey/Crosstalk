@@ -34,6 +34,20 @@
 
 (define primSet:toValue: hashtable-set!)
 
+(define (saferIsKindOf: self someClass)
+  (let loop ( (super-class (perform: self 'class)) )
+    (cond
+     ((null? super-class) #false)
+     ((eq? super-class someClass) #true)
+     ((not (st-object? super-class)) #false)
+     (else (loop (perform: super-class 'superclass))))
+) )
+
+(define (class? thing)
+  (cond
+   ((not (st-object? thing)) #false)
+   (else (saferIsKindOf: thing Class))))
+
 ;;  -- redefined in "st-error-obj.scm"
 (define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )

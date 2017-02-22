@@ -36,6 +36,13 @@
    'UnhandledError '(exception) '())
 )
 
+
+(define IllegalResumeAttempt ;; internal/private
+  (newSubclassName:iVars:cVars:
+   Exception
+   'IllegalResumeAttempt '() '())
+)
+
 (define MessageNotUnderstood
   (newSubclassName:iVars:cVars:
    Error
@@ -94,6 +101,10 @@
 
 (perform:with:
      UnhandledError
+     'category: '|Exceptions Kernel|)
+
+(perform:with:
+     IllegalResumeAttempt
      'category: '|Exceptions Kernel|)
 
 (perform:with:
@@ -234,6 +245,13 @@ Structure:
 "AssertionFailure is the exception signaled from Object>>assert:
  when the assertion block evaluates to false."
 )
+
+(perform:with:
+      IllegalResumeAttempt
+      'comment:
+"This class is private to the exception implementation.
+ An instance of it is signaled whenever an attempt is made
+ to resume from an exception which answers false to #isResumable.")
 
 
 ;;; Scheme: ErrorObject
@@ -411,6 +429,21 @@ Structure:
      Exception
      'isResumable
      (lambda (self) st-true))
+
+(addSelector:withMethod:
+     Exception
+     'resume:
+     (lambda (self resumptionValue)
+;;   "Return resumptionValue as the value of the signal message."
+       (when (not ($ self 'isResumable))
+           ($ IllegalResumeAttempt signal)
+	($ self 'resumeUnchecked: resumptionValue))))
+
+(addSelector:withMethod:
+     Exception
+     'resumeUnchecked:
+     (lambda (self resumptionValue)
+       resumptionValue))  ;;@@@??@@@
 
 (addSelector:withMethod:
      Exception
@@ -826,21 +859,17 @@ Structure:
      (lambda (self)
        ($: self 'assert: self)))
 
-;; (addSelector:withMethod:
-;;      TestCase
-;;      'assert:description:resumable:
-;;      (lambda (self aBoolean aString resumableBoolean)
-;;        (when (st-false? aBoolean)
-;;          ($: self failureString: aString)
-;;          ($: self logFailure: aString)
-;;          ($: self exception: 
-;;                  (if (st-true? resumableBoolean)
-;;                      ($ TestResult 'resumableFailure)
-;;                      ($ TestResult 'failure)))
-    
-;;          ($: ($ self exception)
-;;              'signalWith:
-;;              aString))))
+;;; IllegalResumeAttempt
+
+(addSelector:withMethod:
+      IllegalResumeAttempt
+      'defaultAction
+      (lambda (self) ($ self 'noHandler)))
+
+(addSelector:withMethod:
+      IllegalResumeAttempt
+      'isResumable
+      (lambda (self) st-false))
 
 
 ;;; send-failed

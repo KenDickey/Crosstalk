@@ -18,7 +18,7 @@ ResumableTestFailure category: #'Tools-Testing'.
 
 TestFailure comment:
 'Signaled in case of a failed test (failure).
- The test framework distinguishes between failures and errors.\
+ The test framework distinguishes between failures and errors.
 
  A failure is anticipated and checked for with assertions.
  Errors are unanticipated problems like a division by 0
@@ -30,7 +30,7 @@ TestFailure ~> defaultAction
 	debug: self signalerContext
 	title: self description "
   "Punt to Scheme Debugger"
-  ErrorObject signal: self description
+  ErrorObject signal: self messageText
 ].
 
 TestFailure ~> isResumable
@@ -100,7 +100,7 @@ SUnitNameResolver class ~> notificationObject
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
 
-Object  newSubclassName: #TestCase 
+Object  newSubclassName: #TestCase
 	iVars: #(testSelector failureString raisedError) 
 	cVars: #().
 
@@ -117,9 +117,10 @@ When you discover a new fixture, subclass TestCase,
  override #setUp to initialize the variables, and possibly
  override #tearDown to deallocate any external resources allocated in #setUp.
 
-When you are writing a test case method, 
-send #assert: aBoolean when you want to check for an expected value. 
-For example, you might say "self assert: socket isOpen" to test
+ When you are writing a test case method, 
+ send    #assert: aBoolean
+ when you want to check for an expected value. 
+ For example, you might say "self assert: socket isOpen" to test
  whether or not a socket is open at a point in a test.'.
 
 TestCase ~> addDependentToHierachy: anObject 
@@ -137,7 +138,7 @@ TestCase ~> assert: aBoolean description: aStringOrBlock
   aBoolean ifFalse: [ | failureReason |
 	failureReason := aStringOrBlock value.
 	self failureString: failureReason.
-	self logFailure: failureReason.
+	self logFailure:    failureReason.
 	TestResult failure sunitSignalWith: failureReason
   ]
 ].			 
@@ -671,7 +672,9 @@ TestResult category: #'Tools-Testing'.
 TestResult comment:
 'This is a Collecting Parameter for the running of a bunch of tests.
  TestResult is an interesting object to subclass or substitute.
+
  #runCase: is the external protocol you need to reproduce.
+
  Kent has seen TestResults that recorded coverage information
  and that sent email when they were done.'.
 
@@ -753,7 +756,7 @@ TestResult ~> printOn: aStream
   aStream
 	nextPutAll: self runCount printString;
 	nextPutAll: ' run, ';
-	nextPutAll: self correctCount printString;
+	nextPutAll: self passedCount printString;
 	nextPutAll: ' passed, ';
 	nextPutAll: self failureCount printString;
 	nextPutAll: ' failed, ';
@@ -886,7 +889,9 @@ TestSuite category: #'Tools-Testing'.
 
 TestSuite comment:
 'This is a Composite of Tests, either TestCases or other TestSuites.
- The common protocol is #run: aTestResult and the dependencies protocol.'.
+ The common protocol is
+	 #run: aTestResult
+ and the dependencies protocol.'.
 
 TestSuite ~> addDependentToHierachy: anObject
 [
@@ -922,8 +927,8 @@ TestSuite ~> defaultResources
 
 TestSuite ~> initialize
 [
-  self resources: self defaultResources.
   self tests: OrderedCollection new.
+  self resources: self defaultResources.
   self name: self printString.
 ].
 

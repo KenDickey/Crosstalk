@@ -20,21 +20,21 @@ SUnitTest comment:
  more assertions, more complicated setup.
 
  Kent says: 
-    ''Never forget, however, that if the tests are hard 
-      to write, something is probably wrong with the design.'''.
+    "Never forget, however, that if the tests are hard 
+      to write, something is probably wrong with the design." '.
 
 SUnitTest ~>  
   assertForTestResult: aResult
   runCount: aRunCount
-  passed: aPassedCount
-  failed: aFailureCount
-  errors: anErrorCount
+  passed:   aPassedCount
+  failed:   aFailureCount
+  errors:   anErrorCount
 [
   self
-	assert: aResult runCount = aRunCount;
-	assert: aResult passedCount = aPassedCount;
+	assert: aResult     runCount = aRunCount;
+	assert: aResult  passedCount = aPassedCount;
 	assert: aResult failureCount = aFailureCount;
-	assert: aResult errorCount = anErrorCount
+	assert: aResult   errorCount = anErrorCount
 ].
 
 SUnitTest ~>  error
@@ -51,7 +51,7 @@ SUnitTest ~> errorShouldntRaise
 
 SUnitTest ~> fail
 [
-  self assert: false
+  self assert: [false]
 ].
 
 SUnitTest ~> noop
@@ -91,7 +91,7 @@ SUnitTest ~> testDefects
 
 SUnitTest ~> testDialectLocalizedException
 [
-  self
+  Self
 	should: [TestResult signalFailureWith: 'Foo']
 	raise: TestResult failure.
   self

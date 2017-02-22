@@ -14,7 +14,6 @@
 (define false #false)
 (define nil   '())
 
-
 (define (doesNotUnderstand: self selector) ;; ANSI
 ;; NB: redefined in "st-error-obj.scm"
   (error (format #f "#~a not understood by ~a"
@@ -22,7 +21,6 @@
                  self)
          self)
 )
-
 
 (define make-subclassResponsibility
   (lambda (selector)
@@ -36,7 +34,6 @@
                self
                selector)))
 ) )
-
 
 (define (subclassResponsibility self)
   (error "My subclass should have overwridden this method" self))

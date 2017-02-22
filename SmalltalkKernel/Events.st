@@ -1,4 +1,4 @@
-"FILE: 'ActiveModel.st'
+"FILE: 'Events.st'
  IMPLEMENTS: Object events & Class ActiveModel
  AUTHOR: ported from Cuis 5.0r3035 [Juan Vuletich; MIT Licence (note class comment)]
  Modifications by: Ken Dickey
@@ -295,6 +295,71 @@ ActiveModel class ~> initialize
 ].
 
 ActiveModel initialize. "Do the deed"
+
+
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+" Old Dependency Protocol "
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+Object ~> addDependent: anObject
+[
+"Make the given object one of the receiver's dependents."
+
+  self
+	when: #changed:
+	send: #update:
+	to: anObject.
+  ^anObject
+].
+
+Object ~> breakDependents
+[
+"Remove all of the receiver's dependents."
+
+  self removeActionsForEvent: #changed:
+].
+
+Object ~> changed
+[
+"Receiver changed in a general way; inform all the dependents by 
+ sending each dependent an update: message."
+
+  self changed: self
+].
+
+Object ~> changed: aParameter 
+[
+"Receiver changed. The change is denoted by the argument aParameter. 
+ Usually the argument is a Symbol that is part of the dependent's change 
+ protocol. Inform all of the dependents."
+
+  self 
+	triggerEvent: #changed:
+	with: aParameter
+].
+
+Object ~> removeDependent: anObject
+[
+"Remove the given object as one of the receiver's dependents."
+
+  self 
+	removeActionsWithReceiver: anObject
+	forEvent: #changed:.
+  ^ anObject
+].
+
+Object ~> update: aParameter 
+[
+"Receive a change notice from an object of whom the receiver is a 
+ dependent. The default behavior is to do nothing; a subclass might want 
+ to change itself in some way."
+
+  ^self
+].
+
+
+
 
 
 "		E O F 		"
