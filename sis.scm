@@ -38,17 +38,14 @@
     (scheme complex)
     (scheme time)
     (primitives
-       vector-like-ref
+       structure-printer structure? make-structure record?
+       vector-like-ref vector-like-set! vector-like-length
+       typetag typetag-set!
        load compile-file
        object-hash
-       equal-hash
-       string-hash
-       symbol-hash
-       procedure-name
-       procedure-name-set!
-       procedure-arity
-       port-position
-       port-has-set-port-position!?
+       equal-hash string-hash symbol-hash
+       procedure-name procedure-name-set! procedure-arity
+       port-position port-has-set-port-position!?
        ratnum?
        current-directory
        )

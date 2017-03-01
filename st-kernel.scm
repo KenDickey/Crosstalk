@@ -266,62 +266,46 @@
 ; See (define (behavior obj) ...) below
 ;	byte-tag + mask -> index into table of classes
 
-; Use tagged Vector as ST Object (named & indexed slots)
+; Use Larceny Structure as ST Object (named & indexed slots)
 ;   1st slot in Vector contains a mDict (method dictionary)
 ;	with a binding of 'class->(lambda (self) <class>)
 ;	to get the class
 
-;;; See file 'st-object.sch'
-;; (define st-object
-;;  (vector %%st-object-tag%% st-object-behavior))
+(define st-obj-behavior-index 0) ;; 1st slot in a st-object
 
-(define st-obj-tag-index      0)
-(define st-obj-behavior-index 1) ;; 2nd slot in a st-object
-
-;;; @@FIXME: Use typetag-set! and free one slot per object (adds up!)
-;; Present simplification is useful for bootstrap debug.
-(define %%st-object-tag%% (cons 'st-object '())) ;; not eq? to anything else
-
-(define (st-obj-tag      obj) (vector-ref obj st-obj-tag-index))
-(define (st-obj-behavior obj) (vector-ref obj st-obj-behavior-index))
+(define (st-obj-behavior obj) (vector-like-ref obj st-obj-behavior-index))
 (define (st-obj-behavior-set! obj new-behavior)
-  (vector-set! obj st-obj-behavior-index new-behavior))
+  (vector-like-set! obj st-obj-behavior-index new-behavior))
 
 (define (st-object? thing)
-  (and (vector? thing)
-       (< 1 (vector-length thing))
-       (eq? %%st-object-tag%% (st-obj-tag thing))))
+  (and (structure? thing) ;;@@Fixme marker/tag check
+       (< 0 (vector-like-length thing))
+       (not (record? thing))))
+
+(define (st-object-length obj)
+  ;; @@NB: Unchecked
+  (- (vector-like-length obj) 1))
 
 ;;; @@FIXME: convert to NATIVE TAG mask + index
 ;;;       ..into vector of behaviors :FIXME@@
-(define num-header-slots 2) ;; tag + behavior; @@remove tag@@
+(define num-header-slots 1) ;; behavior
 
 ;;; Generic ST Object representation:
-;;; (vector:  tag |  behavior | optional-named-slots.. | optional-indexed-slots.. )
+;;; (vector:  behavior | optional-named-slots.. | optional-indexed-slots.. )
+
+(define st-typetag     5) ;;  Structure (See larceny/src/Lib/Common/layouts.sch)
+(define vector-typetag 0)
 
 (define (make-st-object Behavior num-object-slots)
   (let ( (st-obj (make-vector
                    (+ num-header-slots num-object-slots)
-                   st-nil))
+                   st-nil)) ;; init slots to UndefinedObject
        )
     ;; @@Change when switch to native tags@@
-    (vector-set! st-obj st-obj-tag-index %%st-object-tag%%)
-    (vector-set! st-obj st-obj-behavior-index Behavior)
+    (typetag-set! st-obj st-typetag)
+    (vector-like-set! st-obj st-obj-behavior-index Behavior)
     st-obj)
 )
-;; TEST -- zeros in indexed slota
-;;     (if (zero? num-indexed-slots)
-;;         st-obj
-;;         (let* ( (vec-len (vector-length st-obj))
-;;                 (start-index (- vec-len num-indexed-slots))
-;;               )
-;;           (let loop ( (index start-index) )
-;;             (if (>= index vec-len)
-;;                 st-obj
-;;                 (begin
-;;                   (vector-set! st-obj index 0)
-;;                   (loop (+ 1 index)))))))
-;; ) )
 
 
 ;;; Behavior adds intelligence to structure
@@ -347,12 +331,7 @@
         ;; FIXME:: Scaled Decimal
         (else (error: "Unknown Scheme number representation" thing))
        ))
-      ((vector? thing)
-       (if (and (< 1 (vector-length thing))
-                (eq? %%st-object-tag%% (st-obj-tag thing)))
-           (vector-ref thing st-obj-behavior-index)
-           st-array-behavior) ;; Scheme vector ;; tag=0
-       )
+      ((vector? thing) st-array-behavior) ;; Scheme vector ;; tag=0
       ((string? thing)     st-string-behavior) ;; tag=5
       ((symbol? thing)     st-symbol-behavior) ;; tag=3
       ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
@@ -386,6 +365,7 @@
        )
       ((date? thing)          st-date+time-behavior)
       ((error-object? thing)  st-error-obj-behavior)
+      ((st-object? thing) (vector-like-ref thing st-obj-behavior-index))
       ;; input-file 4
       ;; output-file 4
       ;; output-string 4
@@ -476,13 +456,13 @@
            behavior
            getter-name
            (lambda (self)
-             (vector-ref self index)))
+             (vector-like-ref self index)))
           
           (primAddSelector:withMethod:
            behavior
            setter-name
            (lambda (self newVal)
-             (vector-set! self index newVal)
+             (vector-like-set! self index newVal)
              self))
           
           (loop (+ index 1) (cdr slot-names))))
@@ -498,8 +478,8 @@
      (lambda (self user-index)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-length self))
-             (vector-ref self vec-index)
+         (if (< pre-start vec-index (vector-like-length self))
+             (vector-like-ref self vec-index)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
    )
 
@@ -509,9 +489,9 @@
      (lambda (self user-index newVal)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-length self))
+         (if (< pre-start vec-index (vector-like-length self))
              (begin
-               (vector-set! self vec-index newVal)
+               (vector-like-set! self vec-index newVal)
                self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
      )
@@ -522,9 +502,9 @@
      (lambda (self user-index aBlock)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-length self))
-             (let ( (original-elt (vector-ref self vec-index)) )
-               (vector-set! self
+         (if (< pre-start vec-index (vector-like-length self))
+             (let ( (original-elt (vector-like-ref self vec-index)) )
+               (vector-like-set! self
                             vec-index
                             (aBlock original-elt))
                self)
@@ -535,7 +515,7 @@
      behavior
      'basicSize
      (lambda (self)
-       (- (vector-length self) start-index))
+       (- (vector-like-length self) start-index))
      )
 ) )
 
@@ -580,17 +560,19 @@
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
   (let* ( (argArray    (ensure-st-array args-list))
-;;          (messageSend (make-st-object st-messageSend-behavior 3))
-        )
+;;        (messageSend (make-st-object st-messageSend-behavior 3))
     ;; (perform:with: messageSend 'receiver:  receiver)
     ;; (perform:with: messageSend 'selector:  selector)
     ;; (perform:with: messageSend 'arguments: argArray)
     ;; messageSend)
-    (vector %%st-object-tag%%
-            st-messageSend-behavior
-            receiver
-            selector
-            argArray)
+          (messageSend
+           (vector st-messageSend-behavior
+                   receiver
+                   selector
+                   argArray))
+         )
+    (typetag-set! messageSend st-typetag)
+    messageSend
 ) )
 
 
@@ -776,6 +758,17 @@
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
+(define old-structure-printer (structure-printer))
+
+(structure-printer
+     (lambda (obj port quote?)
+       (if (st-object? obj)
+           (format port
+                   (if quote? "~s" "~a")
+                   (if (respondsTo: obj 'printString)
+                       (perform: obj 'printString)
+                       "#<an Object>"))
+           (old-structure-printer obj port quote?))))
 
 
 ;;;======================================================

@@ -324,12 +324,8 @@
         'basicSize ;; number of indexable slots in basic object
         (lambda (self)
           (cond
-            ((vector? self)
-             (if (and (< 1 (vector-length self))
-                      (eq? %%st-object-tag%% (st-obj-tag self)))
-                 (- (vector-length self) num-header-slots)
-                 (vector-length self))
-             )
+            ((st-object? self)  (st-object-length self))
+            ((vector? self)     (vector-length self))
             ((string? self)     (string-length self))
             ((symbol? self)     (symbol-length self))
             ((bytevector? self) (bytevector-length self))
@@ -337,11 +333,20 @@
         ) )
 )
 
+(define (st-obj-copy st-obj)
+  (unless (st-object? st-obj)
+    (error "st-object-copy: not a Smalltalk object!" st-obj))
+  (set-typetag! st-obj vector-typetag)
+  (let ( (result (vector-copy st-obj)) )
+    (set-typetag st-obj st-typetag)
+    (set-typetag result st-typetag)
+    result))
+
 (primAddSelector:withMethod:
  	st-object-behavior
         'shallowCopy  
         ;; A shallow copy shares slot-values
-        (lambda (self) (vector-copy self))
+        (lambda (self) (st-obj-copy self))
 )
 
 (primAddSelector:withMethod:
@@ -369,13 +374,14 @@
         (lambda (self)
           (cond
             ;; NB: vector-copy works for all St objects
+            ((st-object? self)  (st-obj-copy self))
             ((vector? self)     (vector-copy self)) 
             ((string? self)     (string-copy self))
             ((symbol? self)     (symbol-copy self))
             ((procedure?  self) (procedure-copy  self))
             ((bytevector? self) (bytevector-copy self))
             ((hashtable?  self) (hashtable-copy  self))
-            ((list? self)       (list-copy self)) ;; @@ Not St; Error?
+            ((list? self)       (list-copy self))
             ;;@@ environment, port, ..?
             (else self) ;; immediates not copyable!
         ) )
@@ -393,7 +399,8 @@
         (lambda (self) self)) ;; St ideom
 
 
-;; From PharoCandle.  Don't know why these are in Object?!?
+
+;; @@@ From PharoCandle.  Don't know why these are in Object?!? @@@
 (primAddSelector:withMethod:
  	st-object-behavior
         'putAscii:
