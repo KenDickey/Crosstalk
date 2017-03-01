@@ -48,7 +48,7 @@
    ((not (st-object? thing)) #false)
    (else (saferIsKindOf: thing Class))))
 
-;;  -- redefined in "st-error-obj.scm"
+;;  Nota Bene: send-failed is redefined in "st-error-obj.scm"
 (define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
     (error (format #f "**Failed message send: #~a to: ~a"
@@ -273,7 +273,9 @@
 
 (define st-obj-behavior-index 0) ;; 1st slot in a st-object
 
-(define (st-obj-behavior obj) (vector-like-ref obj st-obj-behavior-index))
+(define (st-obj-behavior obj)
+  (vector-like-refv obj st-obj-behavior-index))
+
 (define (st-obj-behavior-set! obj new-behavior)
   (vector-like-set! obj st-obj-behavior-index new-behavior))
 
@@ -293,7 +295,7 @@
 ;;; Generic ST Object representation:
 ;;; (vector:  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define st-typetag     5) ;;  Structure (See larceny/src/Lib/Common/layouts.sch)
+(define st-typetag     5) ;;  a Structure (See larceny/src/Lib/Common/layouts.sch)
 (define vector-typetag 0)
 
 (define (make-st-object Behavior num-object-slots)
@@ -301,7 +303,6 @@
                    (+ num-header-slots num-object-slots)
                    st-nil)) ;; init slots to UndefinedObject
        )
-    ;; @@Change when switch to native tags@@
     (typetag-set! st-obj st-typetag)
     (vector-like-set! st-obj st-obj-behavior-index Behavior)
     st-obj)
@@ -311,9 +312,13 @@
 ;;; Behavior adds intelligence to structure
 
 ;;; (behavior obj)
+
+;; @@FIXME: optimize to use primitive tag dispatch
+;;   (See larceny/src/Lib/Common/layouts.sch)
+
 (define (behavior thing)
   (case thing  
-    ;; immediates -- err
+    ;; immediates -- tagtype -> err
     ((#true)  st-true-behavior)
     ((#false) st-false-behavior)
     (( () )   st-nil-behavior)
@@ -372,10 +377,9 @@
       ;; (current-*-port) 4
       ;; output-bytevector 4
       ;; hashtable; other records & record types 5
-      ;; @@FIXME port -> FileStream
       ;; @@FIXME ...
       (else (error "#behavior can't deal with other Scheme types yet"
-                 thing)) ;; st-nil
+                 thing))
     ))
 ) )
 
@@ -389,8 +393,7 @@
 ) ) )
 
 
-;; immediates, vector-like, bytevector-like
-
+;; Scheme immediates, vector-like, bytevector-like
 
 (define (make-st-bytevector numBytes initialValue)
   (let ( (initVal (if (and (integer? initialValue)
