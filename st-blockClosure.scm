@@ -225,17 +225,12 @@
 ;; Use (Scm) raise-continuable for on:to: to enable
 ;; the handler to return a value.
 
-(define on:do:context
-  (make-parameter
-   (lambda (exn) (error "Handler returned" exn))))
-                    
 (addSelector:withMethod:
  	BlockClosure
         'on:do:
         (lambda (self exceptionClassOrSet handler)
           (call/cc
            (lambda (return-from-on:do:)
-             (on:do:context return-from-on:do:)
              (with-exception-handler
               (lambda (anException)
                 (if ($: exceptionClassOrSet 'handles: anException)
