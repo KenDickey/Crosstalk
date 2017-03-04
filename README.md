@@ -45,7 +45,9 @@ This is very much a work in progress.
      + needs to inline primops (e.g. +, ifTrue:)
      + convert procedures into syntaxtic transforms (macros) for speed
 
-# Object behaviors are dictionaries/hash-tables ````Scheme
+
+# Object behaviors are dictionaries/hash-tables 
+````Scheme
 (define (perform: self selectorSym)
   ((lookupSelector: self selectorSym) self))
 
