@@ -115,7 +115,7 @@ result :=
   #(6 7)
   (st-eval "| result a |
    result :=
-	[ [ a := 0. Warning signal: 'error 1' ]
+	[ [ a := 0. Error signal: 'error 1' ]
 	  on: Exception
 	  do: [ :ex | a := 3. ex outer. a := 6. a + 1 ] ]
         on: Exception do: [ :ex | ex resume: 5 ].
