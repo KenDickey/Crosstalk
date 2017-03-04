@@ -13,10 +13,6 @@ This is very much a work in progress.
 ## Basics:
   - Message send 
     - Object behaviors are dictionaries/hash-tables
-````Scheme
-(define (perform: self selectorSym)
-  ((lookupSelector: self selectorSym) self))
-````
   - Leverage Scheme runtime
     - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
     - Closures, GC, exceptions, finalization
@@ -53,7 +49,16 @@ This is very much a work in progress.
 ````Scheme
 (define (perform: self selectorSym)
   ((lookupSelector: self selectorSym) self))
+
+(define (perform:with: self selectorSym arg)
+  ((lookupSelector: self selectorSym) self arg))
+...
+(define (lookupSelector: self selectorSym) ;; Polymorphic
+  (primLookup: (behavior self) selectorSym))
+...
 (define $ perform:)
+(define $: perform:with:)
+...
 
 (define st-source
  "[|d| 
@@ -67,6 +72,7 @@ This is very much a work in progress.
 
 (st-eval st-source)
 ==>  "Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
+
 
 (st->scm st-source)
 ==> 

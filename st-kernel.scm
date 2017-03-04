@@ -386,11 +386,7 @@
 ;;; Message lookup
 
 (define (lookupSelector: self selectorSym) ;; Polymorphic
-  (let ( (mDict (behavior self)) )
-    (if (st-nil? mDict)
-        (error "Missing method dictionary for: " self selectorSym)
-        (primLookup: mDict selectorSym)
-) ) )
+  (primLookup: (behavior self) selectorSym))
 
 
 ;; Scheme immediates, vector-like, bytevector-like
