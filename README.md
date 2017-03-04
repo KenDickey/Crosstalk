@@ -13,7 +13,8 @@ This is very much a work in progress.
 ## Basics:
   - Message send 
     - Object behaviors are dictionaries/hash-tables
-  - Leverage Scheme runtime
+    - Scheme values are presented as Smalltalk Objects by supplying their behaviors
+  - Leverage Scheme runtime system
     - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
     - Closures, GC, exceptions, finalization
     - Dynamic compilation to native machine code
@@ -21,7 +22,6 @@ This is very much a work in progress.
     - Comprehension over speed, but don't be odiously dumb
 
 ## Open Questions/Problems:
-  - Can Larceny Scheme's *Environments* be leveraged to provide cleanly separated Scheme and Smalltalk namespaces?
   - #thisContext: How to introduce decent debugging?
   - What kinds of caching would make significant performance difference?
       + Cache single assignment multiple use (behavior, method)
@@ -90,31 +90,34 @@ This is very much a work in progress.
    'printString)
 ````
 
-## Upcoming
+t## Upcoming
   - Fill in the class structure (approx ANSI)
     + Present Scheme native objects [**Basics working; needs fill-in**]
   - Parsing Smalltalk with location/position info [**Mostly working**]
-    + Need to pass location info thru for debug [to do!]
+    + Need to pass location info thru for debug [TO DO!]
   - Read and execute Smalltalk code directly
     + Fill in bootstrap by transliterating Smalltalk runtime [*in progress*]
     + Check baseline by porting ANSI unit test suite.
   - Look at runtime issues
-  - _Bootstrap Morphic_
+  - Develop sensible combined Foreign Function Interface & Debugging infrastructure
+  - _Bootstrap Morphic_ !
     
 ## Processing Notes
-  - The control file is "sis.scm".  This imports Scheme functions and loads the system.
-  - There are two phases: the Scheme bootstrap and the Smalltalk bootstrap
+  - The control file is "sis.scm".  This imports Scheme functions and code to load the system.
+  - There are two phases: the Scheme bootstrap (load-source-bootstrap) and the Smalltalk bootstrap (add-st).
     + The Scheme bootstrap implements St code function and exposes Scheme datatypes.
     This code also includes a St parser and translator into Scheme which allows for the St bootstrap to be translated.
     + The Smalltalk bootstrap is the St kernel code which is xlated and loaded. 
 
-The main idea here is to minimize the Scheme code and max the Smalltalk code.
+One goal is to maximize the Smalltalk code and keep the Scheme kernel small.
 
 How small can we make the Scheme support core?
 
 How best to stage in Smalltalk functionality?
   - Compiling (St in St)
-  - Debug (w St sources)
   - Unit testing; ANSI & system self test
+  - Debug (w St sources)
+  - Foreign Function Interface
   - Morphic UI/graphic framework
   - Host Cuis Smalltalk on top of this St kernel
+
