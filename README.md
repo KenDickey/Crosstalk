@@ -108,6 +108,8 @@ This is very much a work in progress.
 (st-eval "(Array new: 3) printString")
 --> "#( nil nil nil )" ;; As seen in Smalltalk
 
+($ (vector 1 2 3 'a "bee" #\c) 'printString)
+--> "#( 1 2 3 #'a' 'bee' $c )"  ;; Scheme values are St Objects
 
 (st->scm "ArrayedCollection ~> includes: anObject
 [
