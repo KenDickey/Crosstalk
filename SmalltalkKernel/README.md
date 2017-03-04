@@ -26,5 +26,5 @@ NewSub ~> message-pattern
 
 Note "sis.scm".  
 
-Use (add-st) which assumes a SiS/Temp directory exists.
+Use (add-st) which assumes a Crosstalk/Temp directory exists.
 
