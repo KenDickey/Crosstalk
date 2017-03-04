@@ -107,6 +107,32 @@ This is very much a work in progress.
 
 (st-eval "(Array new: 3) printString")
 --> "#( nil nil nil )" ;; As seen in Smalltalk
+
+
+(st->scm "ArrayedCollection ~> includes: anObject
+[
+\"Answer whether anObject is one of the receiver's elements.\"
+  self do: [ :each | 
+		anObject = each
+			ifTrue: [ ^ true ] 
+  ].
+  ^ false
+]")
+
+-->
+($:: (smalltalkAt: 'ArrayedCollection)
+     'addSelector:withMethod:
+     'includes:
+     (lambda (self anObject)
+       (call/cc
+         (lambda (return)
+           ($: self
+               'do:
+               (lambda (each)
+                 ($: ($: anObject '= each)
+                     'ifTrue:
+                     (lambda () (return true)))))
+           (return false)))))
 ````
 
 ## Upcoming
