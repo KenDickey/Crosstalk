@@ -24,9 +24,9 @@ NewSub ~> message-pattern
 + Lower case identifier -> defined local/block-formal or (self|super|nil|true|false)
 + A period is required after method blocks (note that the message pattern preceeds a method block).
 
-Note: the #'~>' syntax was chosen to avoid confusing use of the #'>>' selector sent to a class to return a method.  Also, #'~>' is a clue that the syntax differs slightly from that in GNU Smalltak and PharoCandle/PharoKernel.
+Note: the **#'~>'** syntax was chosen to avoid confusing use of the **#'>>'** selector sent to a class to return a method.  Also, **#'~>'** is a clue that the syntax differs slightly from that used in GNU Smalltak, PharoCandle, or PharoKernel.
 
-Note "sis.scm".  
+Note driver file **"sis.scm"** in our containing directory.  
 
-Use (add-st) which assumes a Crosstalk/Temp directory exists.
+Use **(add-st)** which assumes a Crosstalk/Temp directory exists.
 

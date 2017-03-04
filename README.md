@@ -122,8 +122,8 @@ This is very much a work in progress.
   - _Bootstrap Morphic_ !
     
 ## Processing Notes
-  - The control file is "sis.scm".  This imports Scheme functions and code to load the system.
-  - There are two phases: the Scheme bootstrap *(load-source-bootstrap)* and the Smalltalk bootstrap *(add-st)*.
+  - The control file is **"sis.scm"**.  This imports Scheme functions and code to load the system.
+  - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk bootstrap **(add-st)**.
     + The Scheme bootstrap implements St code function and exposes Scheme datatypes.
     This code also includes a St parser and translator into Scheme which allows for the St bootstrap to be translated.
     + The Smalltalk bootstrap is the St kernel code which is xlated and loaded. 
