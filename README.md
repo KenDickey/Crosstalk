@@ -61,6 +61,7 @@ This is very much a work in progress.
 ...
 
 (define st-source
+````
 ````Smalltalk
  "[|d| 
       d := Dictionary new. 
