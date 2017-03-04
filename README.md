@@ -61,6 +61,7 @@ This is very much a work in progress.
 ...
 
 (define st-source
+````Smalltalk
  "[|d| 
       d := Dictionary new. 
       d at: #a put: 1;
@@ -69,7 +70,7 @@ This is very much a work in progress.
       d collect: [ :val | val squared ]
    ] value printString."
 )
-
+````
 (st-eval st-source)
 ==>  "Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
 
