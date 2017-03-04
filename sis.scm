@@ -1,5 +1,5 @@
 ;;; FILE: "sis.scm"
-;;; IMPLEMENTS: Smalltalk in Scheme -- kernel ST bootstrap
+;;; IMPLEMENTS: Crosstalk: Smalltalk in Scheme -- kernel ST bootstrap
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 May 2016
 
@@ -111,7 +111,7 @@
 
 ;;;
 
-(define scm-root-directory-prefix "/home/kend/SiS/")
+(define scm-root-directory-prefix "/home/kend/Crosstalk/")
 
 (define st-kernel-prefix
   (string-append scm-root-directory-prefix

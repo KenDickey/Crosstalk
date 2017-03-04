@@ -449,7 +449,10 @@ Structure:
      Exception
      'signal
      (lambda (self)
-       ((if ($ self 'isResumable) raise-continuable raise) self)))
+       (call/cc
+        (lambda (returnToSignal)
+          ($: self signalContext: returnToSignal)
+          ((if ($ self 'isResumable) raise-continuable raise) self)))))
 
 (addSelector:withMethod:
      (class Exception)
@@ -462,8 +465,11 @@ Structure:
      Exception
      'signal:
      (lambda (self aMessage)
-       ($: self 'messageText: aMessage)
-       ($ self 'signal)))
+       (call/cc
+        (lambda (returnToSignal)
+          ($: self signalContext: returnToSignal)
+          ($: self 'messageText: aMessage)
+          ($ self 'signal)))))
 
 (addSelector:withMethod:
      (class Exception)
@@ -520,12 +526,21 @@ Structure:
 (addSelector:withMethod:
      Exception
      'return
-     (lambda (self) st-nil))
+     (lambda (self)
+       (let ( (returnToSignal ($ self 'signalContext)) )
+         (if (null? returnToSignal)
+             st-nil
+             (returnToSignal st-nil)))))
 
 (addSelector:withMethod:
      Exception
      'return:
-     (lambda (self aValue) aValue))
+     (lambda (self aValue)
+       (let ( (returnToSignal ($ self 'signalContext)) )
+         (if (null? returnToSignal)
+             aValue
+             (returnToSignal aValue)))))
+
 
 (addSelector:withMethod:
      Exception

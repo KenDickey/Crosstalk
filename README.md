@@ -1,4 +1,4 @@
-# SiS
+# Crosstalk
 
 ## Smalltalk in Scheme -- clean room bootstrap of Smalltalk kernel in R7RS Larceny Scheme
 
@@ -13,6 +13,10 @@ This is very much a work in progress.
 ## Basics:
   - Message send 
     - Object behaviors are dictionaries/hash-tables
+````Scheme
+(define (perform: self selectorSym)
+  ((lookupSelector: self selectorSym) self))
+````
   - Leverage Scheme runtime
     - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
     - Closures, GC, exceptions, finalization
@@ -45,8 +49,13 @@ This is very much a work in progress.
      + needs to inline primops (e.g. +, ifTrue:)
      + convert procedures into syntaxtic transforms (macros) for speed
 
+# Object behaviors are dictionaries/hash-tables
 ````Scheme
-(st-eval 
+(define (perform: self selectorSym)
+  ((lookupSelector: self selectorSym) self))
+(define $ perform:)
+
+(define st-source
  "[|d| 
       d := Dictionary new. 
       d at: #a put: 1;
@@ -56,7 +65,23 @@ This is very much a work in progress.
    ] value printString."
 )
 
- "Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
+(st-eval st-source)
+==>  "Dictionary( (#'c'->9) (#'a'->1) (#'b'->4) )"
+
+(st->scm st-source)
+==> 
+($ ($ (lambda ()
+        (let ((d nil))
+          (let ((%%val%% ($ (smalltalkAt: 'Dictionary) 'new)))
+            (set! d %%val%%)
+            %%val%%)
+          (let ((receiver d))
+            ($:: d 'at:put: 'a 1)
+            ($:: receiver 'at:put: 'b 2)
+            ($:: receiver 'at:put: 'c 3))
+          ($: d 'collect: (lambda (val) ($ val 'squared)))))
+      'value)
+   'printString)
 ````
 
 ## Upcoming
