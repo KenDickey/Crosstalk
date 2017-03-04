@@ -45,8 +45,7 @@ This is very much a work in progress.
      + needs to inline primops (e.g. +, ifTrue:)
      + convert procedures into syntaxtic transforms (macros) for speed
 
-# Object behaviors are dictionaries/hash-tables
-````Scheme
+# Object behaviors are dictionaries/hash-tables ````Scheme
 (define (perform: self selectorSym)
   ((lookupSelector: self selectorSym) self))
 
@@ -88,9 +87,27 @@ This is very much a work in progress.
           ($: d 'collect: (lambda (val) ($ val 'squared)))))
       'value)
    'printString)
+...
+(addSelector:withMethod:
+     Array
+     'basicSize
+     (lambda (self)
+       (vector-length self)))
+
+(addSelector:withMethod:
+     (class Array)
+     'basicNew:
+     (lambda (self size)
+       (make-vector size st-nil)))
+
+(st-eval "(Array new: 3)")
+--> #(() () ())  ;; Scheme value
+
+(st-eval "(Array new: 3) printString")
+--> "#( nil nil nil )" ;; As seen in Smalltalk
 ````
 
-t## Upcoming
+## Upcoming
   - Fill in the class structure (approx ANSI)
     + Present Scheme native objects [**Basics working; needs fill-in**]
   - Parsing Smalltalk with location/position info [**Mostly working**]
