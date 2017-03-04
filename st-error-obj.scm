@@ -21,8 +21,12 @@
 (define Exception
   (newSubclassName:iVars:cVars:
    Object
-   'Exception '(messageText myTag signalContext handlerContexts outerContext) '())
+   'Exception '(messageText myTag signalContext handlerContext outerContext) '())
 )
+
+; signalContext  -- Continuation captured at point of #signal 
+; handlerContext -- Continuation captured at handler invocation in #on:do:
+; outerContext -- ??
 
 (define Error
   (newSubclassName:iVars:cVars:
@@ -451,7 +455,7 @@ Structure:
      (lambda (self)
        (call/cc
         (lambda (returnToSignal)
-          ($: self signalContext: returnToSignal)
+          ($: self 'signalContext: returnToSignal)
           ((if ($ self 'isResumable) raise-continuable raise) self)))))
 
 (addSelector:withMethod:
@@ -467,7 +471,7 @@ Structure:
      (lambda (self aMessage)
        (call/cc
         (lambda (returnToSignal)
-          ($: self signalContext: returnToSignal)
+          ($: self 'signalContext: returnToSignal)
           ($: self 'messageText: aMessage)
           ($ self 'signal)))))
 
@@ -527,7 +531,7 @@ Structure:
      Exception
      'return
      (lambda (self)
-       (let ( (returnToSignal ($ self 'signalContext)) )
+       (let ( (returnToSignal ($ self 'handlerContext)) )
          (if (null? returnToSignal)
              st-nil
              (returnToSignal st-nil)))))
@@ -536,10 +540,46 @@ Structure:
      Exception
      'return:
      (lambda (self aValue)
+       (let ( (returnToSignal ($ self 'handlerContext)) )
+         (if (null? returnToSignal)
+             aValue
+             (returnToSignal aValue)))))
+
+(addSelector:withMethod:
+     Exception
+     'resume
+     (lambda (self)
+       (let ( (returnToSignal ($ self 'signalContext)) )
+         (if (null? returnToSignal)
+             st-nil
+             (returnToSignal st-nil)))))
+
+(addSelector:withMethod:
+     Exception
+     'resume:
+     (lambda (self aValue)
        (let ( (returnToSignal ($ self 'signalContext)) )
          (if (null? returnToSignal)
              aValue
              (returnToSignal aValue)))))
+
+(addSelector:withMethod:
+     Exception
+     'pass   ;; re-raise
+     (lambda (self) 
+       (raise-continuable self)))
+
+(addSelector:withMethod:
+     Exception
+     'outer   ;; re-raise, but come back here
+     (lambda (self)
+       (let ( (oldSignalContext ($ self 'signalContext)) )
+         (call/cc
+          (lambda (return-here)
+            ($: self 'signalContext: return-here)
+            (raise-continuable self)
+            ($: self 'signalContext: oldSignalContext)))))
+)
 
 
 (addSelector:withMethod:

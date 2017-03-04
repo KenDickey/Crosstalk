@@ -234,17 +234,20 @@
         'on:do:
         (lambda (self exceptionClassOrSet handler)
           (call/cc
-           (lambda (return)
-             (on:do:context return)
+           (lambda (return-from-on:do:)
+             (on:do:context return-from-on:do:)
              (with-exception-handler
               (lambda (anException)
                 (if ($: exceptionClassOrSet 'handles: anException)
-                    ;; valueWithPossibleArgument:
-                    (return (if (= 1 (procedure-arity handler))
-                                (handler anException)
-                                (handler)))
+                    (begin
+                       ($: anException 'handlerContext: return-from-on:do:)
+                       (return-from-on:do:
+                        (if (= 1 (procedure-arity handler))
+                            ;; valueWithPossibleArgument:
+                            (handler anException)
+                            (handler))))
                    ;; re-raise if not handled here
-                   ($ anException 'signal))
+                   (raise-continuable anException))
                    )
               self)
         ) ) )

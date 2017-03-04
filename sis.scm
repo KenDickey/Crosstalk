@@ -15,13 +15,16 @@
 ;;   (import (scheme load))
 ;;   (load "sis.scm")
 ;;   (load-source-bootstrap)
+
 ;; Optional:
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
-;;
+
 ;; (xlate-st-bootstrap)
 ;; (load-st-bootstrap)
-;;
+;; OR
+;; (add-st)
+
 ;; (display-subclasses Object)
 
 

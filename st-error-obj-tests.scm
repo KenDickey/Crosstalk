@@ -16,6 +16,11 @@
   (st-eval "[1] ensure: [0]")
   "[1] ensure: [0]")
 
+(add-equal-test 'st-error-obj
+  0
+  (st-eval "| a | [a := 1] ensure: [a := 0]. a")
+  "[..] ensure: [a := 0]")
+
 ;; See also tests in "st-blockClosure-tests.scm"
 
 (add-equal-test 'st-error-obj
@@ -58,6 +63,65 @@ result :=
 	do: [ :ex2 | ex2 description ].
    result.")
   "Nested exceptions C")
+
+
+
+(add-equal-test 'st-error-obj
+  #(3 4)
+  (st-eval "| result a |
+   result :=
+	( [ a := 0. Error signal: 'error 1'. a := 2]
+	  on: Exception
+	  do: [ :ex | a := 3. ex return: 4. a := 5 ] ).
+   { a. result. }")
+  "ex return: 4"
+)
+
+(add-equal-test 'st-error-obj
+  #(2 2)
+  (st-eval "| result a |
+   result :=
+	( [ a := 0. Error signal: 'error 1'. a := 2]
+	  on: Exception
+	  do: [ :ex | a := 3. ex resume: 4. a := 5 ] ).
+   { a. result. }")
+  "ex resume: 4"
+)
+
+(add-equal-test 'st-error-obj
+  #(3 5)
+  (st-eval "| result a |
+   result :=
+	( [ a := 0. Error signal: 'error 1' ]
+	  on: Exception
+	  do: [ :ex | a := 3. ex resume: 5. a := 6 ] ).
+   { a. result. }")
+  "ex resume: 5"
+)
+
+(add-equal-test 'st-error-obj
+  #(3 5)
+  (st-eval "| result a |
+   result :=
+	[ [ a := 0. Error signal: 'error 1' ]
+	  on: Exception
+	  do: [ :ex | a := 3. ex pass. a := 6 ] ]
+        on: Exception do: [ :ex | ex resume: 5 ].
+   { a. result. }")
+  "ex pass"
+)
+
+(add-equal-test 'st-error-obj
+  #(6 7)
+  (st-eval "| result a |
+   result :=
+	[ [ a := 0. Warning signal: 'error 1' ]
+	  on: Exception
+	  do: [ :ex | a := 3. ex outer. a := 6. a + 1 ] ]
+        on: Exception do: [ :ex | ex resume: 5 ].
+   { a. result. }")
+  "ex outer"
+)
 
 
 ;; (ensure-exception-raised 'st-error-obj
