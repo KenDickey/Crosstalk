@@ -71,7 +71,8 @@ SUnitTest ~> setUp
 SUnitTest ~> testAssert
 [
   self assert: true.
-  self deny: false
+  self deny: false.
+  true
 ].
 
 SUnitTest ~> testDefects
@@ -456,19 +457,5 @@ ExampleSetTest ~> testRemove
   self deny: (self full includes: 5)
 ].
 
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-" Exception additions "
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
-
-Exception ~> sunitExitWith: aValue
-[
-   self return: aValue
-].
-
-Exception class ~> sunitSignalWith: aString
-[
-   ^self signal: aString
-].
 			 
 "		E O F 		"

@@ -961,5 +961,21 @@ TestSuite class ~> named: aString
 TestResource class initialize.
 
 
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+" Exception additions "
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+Exception ~> sunitExitWith: aValue
+[
+   self return: aValue
+].
+
+Exception class ~> sunitSignalWith: aString
+[
+   ^self signal: aString
+].
+
+
 			 
 "		E O F 		"
