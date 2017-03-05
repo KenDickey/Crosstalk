@@ -34,6 +34,18 @@
    'Error '() '())
 )
 
+(define Notification
+  (newSubclassName:iVars:cVars:
+   Exception
+   'Notification '() '())
+)
+
+(define Warning
+  (newSubclassName:iVars:cVars:
+   Notification
+   'Warning '() '())
+)
+
 (define UnhandledError
   (newSubclassName:iVars:cVars:
    Exception
@@ -104,6 +116,14 @@
      'category: '|Exceptions Kernel|)
 
 (perform:with:
+     Notification
+     'category: '|Exceptions Kernel|)
+
+(perform:with:
+     Warning
+     'category: '|Exceptions Kernel|)
+
+(perform:with:
      UnhandledError
      'category: '|Exceptions Kernel|)
 
@@ -168,9 +188,21 @@
  normal continuation of processing.
 
  Actual error exceptions used by an application may be subclasses of this class.
- As Error is explicitly specified  to be subclassable, conforming implementations
+ As Error is explicitly specified to be subclassable, conforming implementations
  must implement its behavior in a non-fragile manner."
 )
+
+(perform:with:
+     Notification
+     'comment:
+"A Notification is an indication that something interesting has occurred.
+ If it is not handled, it will pass by without effect.")
+
+(perform:with:
+     Warning
+     'comment:
+"A Warning is a Notification which by default should be brought
+ to the attention of the user.")
 
 (perform:with:
      UnhandledError
@@ -629,6 +661,31 @@ Structure:
      'isResumable
      (lambda (self) st-false))
 
+
+;;; Notification
+
+(addSelector:withMethod:
+     Notification
+     'defaultAction
+;; "No action is taken. The value nil is returned as the value
+;; of the message that signaled the exception."
+     (lambda (self)
+       ($: self 'resume: st-nil)))
+
+(addSelector:withMethod:
+     Notification
+     'isResumable
+     (lambda (self) st-true))
+
+;;; Warning
+
+(addSelector:withMethod:
+     Warning
+     'defaultAction
+     (lambda (self)
+       (format #f "Warning: ~a" ($ self 'messageText))
+       ($ self 'resume))
+)
 
 ;;; UnhandledError
 

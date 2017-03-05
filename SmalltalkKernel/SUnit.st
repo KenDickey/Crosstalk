@@ -63,8 +63,7 @@ ResumableTestFailure ~> isResumable
 
 ResumableTestFailure ~> sunitExitWith: aValue
 [
-"  self resume: aValue "
-   self return: aValue
+  self resume: aValue
 ].
 
 
@@ -689,7 +688,8 @@ TestResult ~> defects
 [
   ^OrderedCollection new
 	addAll: self errors;
-	addAll: self failures; yourself
+	addAll: self failures;
+        yourself
 ].			 
 
 TestResult ~> errorCount
@@ -775,8 +775,9 @@ TestResult ~> runCase: aTestCase
 	[ [ aTestCase runCase. true ]
 	   on: self class failure
 	   do: [ :signal |
-		(self failures isEmpty or: [ (failures last == aTestCase) not ])
-		ifTrue: [ failures add: aTestCase ].
+		(self failures isEmpty 
+		  or: [ (self failures last == aTestCase) not ])
+		ifTrue: [ self failures add: aTestCase ].
 		signal sunitExitWith: false ]
 	]
 	 on: self class error
@@ -806,12 +807,12 @@ TestResult class ~> exError
   ^SUnitNameResolver errorObject
 ].			 
 
-TestResult ~> failure
+TestResult class ~> failure
 [
   ^TestFailure
 ].			 
 
-TestResult ~> resumableFailure
+TestResult class ~> resumableFailure
 [
   ^ResumableTestFailure
 ].			 

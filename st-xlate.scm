@@ -303,10 +303,10 @@
      
      )
     (else         
-     `($&
+     `($*
        ,rcvr
        ',selector
-       ,(list->vector arguments))
+       ,(cons 'list arguments))
      )
   )
 )

@@ -24,42 +24,42 @@
 ;; See also tests in "st-blockClosure-tests.scm"
 
 (add-equal-test 'st-error-obj
-  "Error: error 2"
+  "Warning: error 2"
   (st-eval "| result |
 result :=
-	[ [ Error signal: 'error 1']
-	  on: Exception
-	  do: [ :ex1 | Error signal: 'error 2']
+	[ [ Warning signal: 'error 1']
+	  on: Warning
+	  do: [ :ex1 | Warning signal: 'error 2']
 	]
-	on: Exception
+	on: Warning
 	do: [ :ex2 | ex2 description].
  result.")
   "Nested exceptions A")
 
 (add-equal-test 'st-error-obj
-  "Error: error 2"
+  "Warning: error 2"
   (st-eval
 "| result |
   result :=
-	[ [ Error signal: 'error 1']
-	  on: Exception
-	  do: [ :ex1 | Error signal: 'error 2']
+	[ [ Warning signal: 'error 1']
+	  on: Warning
+	  do: [ :ex1 | Warning signal: 'error 2']
 	]
-	on: Exception
+	on: Warning
 	do: [ :ex2 | ex2 description ].
    result.")
   "Nested exceptions B")
 
 (add-equal-test 'st-error-obj
-  "Error: error 2"
+  "Warning: error 2"
   (st-eval
 "| result |
   result :=
-	[ [ Error signal: 'error 1']
-	  on: Exception
-	  do: [ Error signal: 'error 2'] \"Zero ARGS\"
+	[ [ Warning signal: 'error 1']
+	  on: Warning
+	  do: [ Warning signal: 'error 2'] \"Zero ARGS\"
 	]
-	on: Exception
+	on: Warning
 	do: [ :ex2 | ex2 description ].
    result.")
   "Nested exceptions C")
@@ -70,8 +70,8 @@ result :=
   #(3 4)
   (st-eval "| result a |
    result :=
-	( [ a := 0. Error signal: 'error 1'. a := 2]
-	  on: Exception
+	( [ a := 0. Warning signal: 'error 1'. a := 2]
+	  on: Warning
 	  do: [ :ex | a := 3. ex return: 4. a := 5 ] ).
    { a. result. }")
   "ex return: 4"
@@ -81,8 +81,8 @@ result :=
   #(2 2)
   (st-eval "| result a |
    result :=
-	( [ a := 0. Error signal: 'error 1'. a := 2]
-	  on: Exception
+	( [ a := 0. Warning signal: 'error 1'. a := 2]
+	  on: Warning
 	  do: [ :ex | a := 3. ex resume: 4. a := 5 ] ).
    { a. result. }")
   "ex resume: 4"
@@ -92,8 +92,8 @@ result :=
   #(3 5)
   (st-eval "| result a |
    result :=
-	( [ a := 0. Error signal: 'error 1' ]
-	  on: Exception
+	( [ a := 0. Warning signal: 'error 1' ]
+	  on: Warning
 	  do: [ :ex | a := 3. ex resume: 5. a := 6 ] ).
    { a. result. }")
   "ex resume: 5"
@@ -103,10 +103,10 @@ result :=
   #(3 5)
   (st-eval "| result a |
    result :=
-	[ [ a := 0. Error signal: 'error 1' ]
-	  on: Exception
+	[ [ a := 0. Warning signal: 'error 1' ]
+	  on: Warning
 	  do: [ :ex | a := 3. ex pass. a := 6 ] ]
-        on: Exception do: [ :ex | ex resume: 5 ].
+        on: Warning do: [ :ex | ex resume: 5 ].
    { a. result. }")
   "ex pass"
 )
@@ -115,10 +115,10 @@ result :=
   #(6 7)
   (st-eval "| result a |
    result :=
-	[ [ a := 0. Error signal: 'error 1' ]
-	  on: Exception
+	[ [ a := 0. Warning signal: 'error 1' ]
+	  on: Warning
 	  do: [ :ex | a := 3. ex outer. a := 6. a + 1 ] ]
-        on: Exception do: [ :ex | ex resume: 5 ].
+        on: Warning do: [ :ex | ex resume: 5 ].
    { a. result. }")
   "ex outer"
 )

@@ -34,7 +34,8 @@ SUnitTest ~>
 	assert: aResult     runCount = aRunCount;
 	assert: aResult  passedCount = aPassedCount;
 	assert: aResult failureCount = aFailureCount;
-	assert: aResult   errorCount = anErrorCount
+	assert: aResult   errorCount = anErrorCount.
+  true
 ].
 
 SUnitTest ~>  error
@@ -440,7 +441,6 @@ ExampleSetTest~> testIncludes
   self assert: (self full includes: #abc)
 ].
 
-
 ExampleSetTest~> testOccurrences
 [
   self assert: (self empty occurrencesOf: 0) = 0.
@@ -456,5 +456,19 @@ ExampleSetTest ~> testRemove
   self deny: (self full includes: 5)
 ].
 
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+" Exception additions "
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+Exception ~> sunitExitWith: aValue
+[
+   self return: aValue
+].
+
+Exception class ~> sunitSignalWith: aString
+[
+   ^self signal: aString
+].
 			 
 "		E O F 		"
