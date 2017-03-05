@@ -91,6 +91,27 @@
        (display ")" port)))
 
 
+(addSelector:withMethod:
+     SequenceableCollection
+     'beginsWith:
+     (lambda (self aSequenceableCollection)
+       (if (or ($ aSequenceableCollection 'isEmpty)
+               (< ($ self 'size)
+                  ($ aSequenceableCollection 'size)))
+           st-false
+           (let ( (max ($ aSequenceableCollection 'size)) )
+             (let loop ( (index 1) )
+               (cond
+                ((> index max)
+                 st-true) ;; all match
+                (($: ($: self 'at: index)
+                     '=
+                     ($: aSequenceableCollection 'at: index))
+                 (loop (+ index 1)))
+                (else st-false)))
+        ) ) )
+)
+
 ;; (provide 'st-collection)
 
 ;;;			--- E O F ---			;;;

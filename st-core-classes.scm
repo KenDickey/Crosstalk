@@ -794,10 +794,45 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
                              (hashtable-ref superDict
                                             k
                                             nil)))
-                   ($ iSet 'add: k)))
+                   ($ iSet: 'add: k)))
                 ;; else must be local; add selector
-                (else ($ iSet 'add: k)))))
+                (else ($: iSet 'add: k)))))
+         iSet
        ) )
+)
+
+(addSelector:withMethod:
+     (class Behavior)
+     'allSelectors
+     (lambda (self)
+       ($ (hashtable-keys (behavior self))
+          'asIdentitySet))) ;; vector->identSet
+
+(addSelector:withMethod:
+     (class Behavior)
+     'selectors
+     ;; Answer identSet of non-inherited method selectors
+     (lambda (self)
+       (let ( (superDict
+               ($ (superclass self) 'methodDict))
+              (selfDict (behavior self))
+              (iSet ($ IdentitySet 'new))
+            )
+         ($: selfDict
+             'keysAndValuesDo:
+             (lambda (k v)
+               (cond
+                ((hashtable-contains? superDict k)
+                 (when (not  ;; not same v as super
+                        (eq? v
+                             (hashtable-ref superDict
+                                            k
+                                            nil)))
+                   ($: iSet 'add: k)))
+                ;; else must be local; add selector
+                (else ($: iSet 'add: k)))))
+         iSet
+      ) )
 )
 
 

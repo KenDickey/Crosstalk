@@ -16,7 +16,7 @@
 ;;   (load "sis.scm")
 ;;   (load-source-bootstrap)
 
-;; Optional:
+;; Scheme core unit tests:
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
 

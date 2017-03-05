@@ -334,6 +334,7 @@ TestCase ~> run: aResult
 	runningTest: self printString
 	do: [ aResult runCase: self ]"
   self printOn: Transcript.
+  Transcript newLine.
   aResult runCase: self
 ].
 

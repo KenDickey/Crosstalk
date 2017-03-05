@@ -91,7 +91,6 @@
      'size ;; self basicSize
      (lambda (self) (string-length (symbol->string self))))
 
-
 (addSelector:withMethod: 
     Symbol
     '|,|
@@ -100,6 +99,18 @@
                      (if (symbol? aString)
                          (symbol->string aString)
                          aString))))
+
+(addSelector:withMethod: 
+    Symbol
+    'at:
+    (lambda (self index)
+      (string-ref (symbol->string self) (- index 1))))
+
+(addSelector:withMethod: 
+    String
+    'do:
+    (lambda (self aBlock)
+      (string-for-each aBlock (symbol->string self))))
 
 ;;; symbol@FillMeIn
 
