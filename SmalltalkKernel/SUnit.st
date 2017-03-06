@@ -579,7 +579,6 @@ TestResource ~> initialize
 [
   self description: ' '.
   self name: self printString.
-
   self setUp
 ].
 
@@ -985,6 +984,7 @@ Exception class ~> sunitSignalWith: aString
 
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+" Class initializers "
 
 TestResource initialize.
 

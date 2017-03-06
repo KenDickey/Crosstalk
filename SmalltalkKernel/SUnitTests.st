@@ -23,6 +23,14 @@ SUnitTest comment:
     "Never forget, however, that if the tests are hard 
       to write, something is probably wrong with the design." '.
 
+SUnitTest ~> initialize
+[
+  super initialize.
+  self hasRun:     false.
+  self hasSetup:   false.
+  self hasRanOnce: false.
+].
+
 SUnitTest ~>  
   assertForTestResult: aResult
   runCount: aRunCount
@@ -162,7 +170,7 @@ SUnitTest ~> testRan
   case := self class selector: #setRun.
   case run.
   self assert: case hasSetup.
-  self assert: case hasRun
+  self assert: case hasRun.
 ].
 
 SUnitTest ~> testRanOnlyOnce
@@ -227,6 +235,15 @@ TestResource newSubclassName: #SimpleTestResource
 	iVars: #(runningState hasRun hasSetup hasRanOnce) 
 	cVars: #().
 
+SimpleTestResource ~> initialize
+[
+  self hasRun:       false.
+  self hasSetup:     false.
+  self hasRanOnce:   false.
+  self runningState: #neverRun.
+  super initialize.
+].
+
 SimpleTestResource ~> isAvailable
 [
   ^self runningState == self startedStateSymbol
@@ -267,14 +284,13 @@ SimpleTestResource ~> tearDown
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
 
 TestCase newSubclassName: #SimpleTestResourceTestCase
-	iVars: #()
+	iVars: #(resource)
 	cVars: #().
 
 SimpleTestResourceTestCase class ~> resources
 [
   ^Set new add: SimpleTestResource; yourself
 ].
-
 
 SimpleTestResourceTestCase ~> dummy
 [
@@ -285,7 +301,6 @@ SimpleTestResourceTestCase ~> error
 [
   'foo' odd
 ].
-
 
 SimpleTestResourceTestCase ~> fail
 [
@@ -299,9 +314,9 @@ SimpleTestResourceTestCase ~> setRun
 
 SimpleTestResourceTestCase ~> setUp
 [
-  self resource: SimpleTestResource current
+  self resource: SimpleTestResource current.
+  super setUp.
 ].
-
 
 SimpleTestResourceTestCase ~> testRan
 [
@@ -309,8 +324,8 @@ SimpleTestResourceTestCase ~> testRan
 
   case := self class selector: #setRun.
   case run.
-  self assert: resource hasSetup.
-  self assert: resource hasRun
+  self assert: self resource hasSetup.
+  self assert: self resource hasRun.
 ].
 
 SimpleTestResourceTestCase ~> testResourceInitRelease
@@ -321,13 +336,13 @@ SimpleTestResourceTestCase ~> testResourceInitRelease
   suite addTest: (failure := self class selector: #fail).
   suite addTest: (self class selector: #dummy).
   result := suite run.
-  self assert: resource hasSetup
+  self assert: self resource hasSetup
 ].
 
 SimpleTestResourceTestCase ~> testResourcesCollection
 [
   | collection |
-  collection := self resources.
+  collection := self class resources.
   self assert: collection size = 1
 ].
 
@@ -456,6 +471,12 @@ ExampleSetTest ~> testRemove
   self assert: (self full includes: #abc).
   self deny: (self full includes: 5)
 ].
+
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+" Class initializers"
+
+SimpleTestResource initialize.
 
 "
  SUnitTest run: #errorShouldntRaise.
