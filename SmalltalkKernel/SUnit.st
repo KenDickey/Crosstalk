@@ -666,7 +666,8 @@ TestResource class ~> reset
 
 TestResource class ~> signalInitializationError
 [
-  ^TestResult signalErrorWith: 'Resource ' , self name , ' could not be initialized'
+  ^TestResult signalErrorWith:
+     'Resource ' , self name , ' could not be initialized'
 ].			 
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
@@ -967,9 +968,6 @@ TestSuite class ~> named: aString
 	yourself
 ].
 
-TestResource class initialize.
-
-
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
 " Exception additions "
@@ -985,6 +983,10 @@ Exception class ~> sunitSignalWith: aString
    ^self signal: aString
 ].
 
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
+TestResource initialize.
 
 			 
 "		E O F 		"
