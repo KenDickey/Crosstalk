@@ -110,7 +110,7 @@
     String
     'do:
     (lambda (self aBlock)
-      (string-for-each aBlock (symbol->string self))))
+      (string-for-each aBlock (if (string? self) self (symbol->string self)))))
 
 ;;; symbol@FillMeIn
 

@@ -21,9 +21,12 @@
 )
 
 (define (run-source-tests)
-  (remove-all-test-suites) ;; start afresh
-  (for-each load (source-test-files))
-  (run-all-tests)
+  (call/cc
+   (lambda (exit)
+     (parameterize ( (%%escape%% exit) )
+       (remove-all-test-suites) ;; start afresh
+       (for-each load (source-test-files))
+       (run-all-tests))))
 )
 
 ;; (define (compile-tests)

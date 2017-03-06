@@ -222,4 +222,7 @@
   (xlate-st-bootstrap)
   (load-st-bootstrap))
 
+;; for send-failed (see st-err-obj.scm)
+(define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
+
 ;;;			--- E O F ---			;;;

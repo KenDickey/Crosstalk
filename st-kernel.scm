@@ -172,6 +172,12 @@
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
+        'asSymbol
+        (lambda (self) 'nil)) ;; @@?? UndefinedObject ??@@
+
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
         'isNil
         (lambda (self)
           #true))
@@ -681,7 +687,7 @@
        ((respondsTo: obj 'class)
         (let ( (class (perform: obj 'class)) )
           (cond
-           ((symbol? class)
+           ((or (symbol? class) (string? class))
             (format #f "<instance of #~a>" class)
             )
            ((respondsTo: class 'name)

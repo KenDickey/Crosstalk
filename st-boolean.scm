@@ -258,6 +258,11 @@ Be aware however that most of these methods are not sent as real messages
         'basicCopy
         (lambda (self) self))
 
+(addSelector:withMethod:
+        UndefinedObject
+        'asSymbol
+        (lambda (self) 'nil))
+
 ;;; Boolean True False
 
 (addSelector:withMethod: 

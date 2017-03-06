@@ -771,7 +771,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      Behavior
      'allSelectors
      (lambda (self)
-       ($ (hashtable-keys (behavior self))
+       ($ (hashtable-keys ($ self 'methodDict))
           'asIdentitySet))) ;; vector->identSet
 
 (addSelector:withMethod:
@@ -781,7 +781,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      (lambda (self)
        (let ( (superDict
                ($ (superclass self) 'methodDict))
-              (selfDict (behavior self))
+              (selfDict ($ self 'methodDict))
               (iSet ($ IdentitySet 'new))
             )
          ($: selfDict
@@ -805,7 +805,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      (class Behavior)
      'allSelectors
      (lambda (self)
-       ($ (hashtable-keys (behavior self))
+       ($ (hashtable-keys ($ self 'methodDict))
           'asIdentitySet))) ;; vector->identSet
 
 (addSelector:withMethod:
@@ -815,7 +815,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      (lambda (self)
        (let ( (superDict
                ($ (superclass self) 'methodDict))
-              (selfDict (behavior self))
+              (selfDict ($ self 'methodDict))
               (iSet ($ IdentitySet 'new))
             )
          ($: selfDict
@@ -860,7 +860,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
     (let ( (thing-class (class thing)) )
       (if (respondsTo: thing-class 'name)
         ($ thing-class 'name)
-        thing-class))
+        (format #f "~a" thing-class)))
     )
    (else "#<classless Object>")))
 

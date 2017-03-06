@@ -428,10 +428,12 @@ TestCase class ~> sunitVersion
 TestCase class ~> testSelectors
 [
   ^(self selectors asArray 
-	select: [ :each | 
- 	  (each beginsWith: 'test') and: [ each numArgs isZero ] 
-	])
-    sort
+	select: [ :each |
+	    (each ~= #testSelectors)
+ 	      and: [ (each beginsWith: 'test') 
+	 	and: [ (each numArgs isZero) ] ]
+	]
+    ) sort
 ].
 
 TestCase class ~> addTestsFor: classNameString toSuite: suite
@@ -554,6 +556,12 @@ TestCase class ~> shouldInheritSelectors
 ].			 
 
 TestCase class ~> allTestSelectors
+[
+  ^(self allSelectors asArray select: [ :each | 
+	(each beginsWith: 'test') and: [ each numArgs isZero ] ]) sort
+].			 
+
+TestCase ~> allTestSelectors
 [
   ^(self allSelectors asArray select: [ :each | 
 	(each beginsWith: 'test') and: [ each numArgs isZero ] ]) sort
@@ -800,7 +808,7 @@ TestResult ~> forDebuggingAndInspection
 
 TestResult class ~> error
 [
-	^self exError
+  ^self exError
 ].			 
 
 TestResult class ~> exError

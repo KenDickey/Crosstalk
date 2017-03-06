@@ -64,8 +64,6 @@ result :=
    result.")
   "Nested exceptions C")
 
-
-
 (add-equal-test 'st-error-obj
   #(3 4)
   (st-eval "| result a |
@@ -123,6 +121,18 @@ result :=
   "ex outer"
 )
 
+
+(add-equal-test 'st-error-obj
+  'ok
+   (st-eval
+"[nil zork]
+  on: MessageNotUnderstood
+  do: [:ex|
+	(ex message selector == #zork)
+	   ifTrue: [ex resume: #ok].
+	ex pass
+  ]")
+   "handle MessageNotUnderstood")
 
 ;; (ensure-exception-raised 'st-error-obj
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

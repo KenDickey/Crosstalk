@@ -132,10 +132,10 @@
   (perform: indexed+named-slots-obj 'baz)
   "obj baz -> $Z")
 
-(add-equal-test 'st-kernel
-   "send-failed recursion: Object >> doesNotUnderstand:"
-   (perform: indexed+named-slots-obj 'glerph)
-   "obj glerph -> doesNotUnderstand")
+;; (add-equal-test 'st-kernel
+;;    "send-failed recursion: Object >> doesNotUnderstand:"
+;;    (perform: indexed+named-slots-obj 'glerph)
+;;    "obj glerph -> doesNotUnderstand")
 
 (add-equal-test 'st-kernel 
   11

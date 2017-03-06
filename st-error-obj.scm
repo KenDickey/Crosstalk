@@ -342,7 +342,8 @@ Structure:
       (display (error-object-message self) port)
       (for-each
        (lambda (irritant)
-         (display " ") (display irritant))
+         (display " " port)
+         (display irritant port))
        (error-object-irritants self)))
 )
 
@@ -350,6 +351,11 @@ Structure:
 
 (addSelector:withMethod:
      (class Class)
+     'handles:  ;; base case
+     (lambda (self anException) st-false))
+
+(addSelector:withMethod:
+     Object
      'handles:  ;; base case
      (lambda (self anException) st-false))
 
@@ -645,6 +651,9 @@ Structure:
 ;; to decide how to debug it.
 ;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
      (lambda (self)
+;;@@DEBUG{
+       (format #t "~%Exception>>noHandler ~a~%" self)
+;;@@DEBUG}
        ($: UnhandledError 'signalForException: self)))
 
 
@@ -699,6 +708,7 @@ Structure:
      UnhandledError
      'defaultAction
      (lambda (self)
+       (format #t "~%UnhendledError>>defaultAction ~a ~%" self)
        ;; log to file or open debugger
        (error ($ self 'description) self))) ;; open Scheme debugger
 
@@ -722,6 +732,9 @@ Structure:
      'defaultAction
      (lambda (self)
        ($: self 'reachedDefaultHandler: st-true)
+;;@@DEBUG{
+(format #t "~%MessageNotUnderstood defaultAction")
+;;@@DEBUG}
        (superPerform: self 'defaultAction)))
 
 (addSelector:withMethod:
@@ -737,7 +750,7 @@ Structure:
          (if (not (null? myMessage))
              (format #f
                      "~a doesNotUnderstand: #~a"
-                     (className: ($ myMessage 'receiver))
+                     (safer-printString ($ myMessage 'receiver))
                      ($ myMessage 'selector))
              (let ( (inherited-msg (superPerform: self 'messageText)) )
                (if (null? inherited-msg)
@@ -747,13 +760,13 @@ Structure:
                    inherited-msg)))))
 )
 
-;; redefine
+;;;; redefine Object>>doesNotUnderstand:
 (addSelector:withMethod:
   Object
   'doesNotUnderstand:
   (lambda (self aMessageSend) ;; NB: class == MessageSend
 ;;@@DEBUG{
-; (format #t "~%doesNotUnderstand: ~a ~%" (safer-printString aMessageSend))
+;;(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
 ;;@@DEBUG}
     (let ( (ex ($ MessageNotUnderstood 'new)) )
       ($: ex 'message: aMessageSend)
@@ -761,11 +774,20 @@ Structure:
       ($: ex 'reachedDefaultHandler: st-false)
       (let ( (resumeValue ($ ex 'signal)) )
 ;;@@DEBUG{
-; (format #t "~%doesNotUnderstand>>signal returned: ~a ~%" resumeValue)
+;;(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
+;;(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
+;;       ($ ex 'reachedDefaultHandler))
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
-            ($: aMessageSend 'sendTo: self)
+            ($: aMessageSend 'sendTo: self) ;; retry
             resumeValue)))))
+
+;;;; redefine Object>>error:
+(addSelector:withMethod:
+  Object
+  'error:
+  (lambda (self aString)
+    ($: Error 'signal: aString)))
 
 
 ;;; MessageSend
@@ -834,6 +856,12 @@ Structure:
      MessageSend
      'sendTo:
      (lambda (self newReceiver)
+;;@@DEBUG{
+       (format #t
+               "** ~a sentTo: ~a"
+               (safer-printString self)
+               (safer-printString newReceiver))
+;;@@DEBUG}
        ($:: newReceiver 
             'perform:withArguments:
             ($ self 'selector)
@@ -865,14 +893,13 @@ Structure:
      MessageSend
      'printOn:
      (lambda (self aStream)
-       ($: aStream 'nextPutAll: (className: self))
-       ($: aStream 'nextPutAll: "( " )
-       ($: ($ self 'selector) 'printOn: aStream)
-       ($: aStream 'nextPutAll: " -> ")
-       (if (isKindOf: ($ self 'receiver) MessageSend)
-           ($: aStream 'nextPutAll: "a MessageSend") ;; avoid recursion
-           ($: ($ self 'receiver) 'printOn: aStream))
-       ($: aStream 'nextPutAll: " )" ))
+       (format aStream
+               "~a( ~a -> ~a )"
+               (className: self)
+               ($ self 'selector)
+               (if (isKindOf: ($ self 'receiver) MessageSend)
+                   "a MessageSend" ;; avoid recursion
+                   ($ ($ self 'receiver) 'printString))))
 )
 
 (addSelector:withMethod:
@@ -991,12 +1018,16 @@ Structure:
 (set! send-failed ;; def'ed in "st-kernel.scm"
   (lambda (receiver selector rest-args)
     ;;@@DEBUG{
-;    (format #t "~%send failed ~a >> ~a ~a~%"
-;            receiver selector (list->vector rest-args))
+    (format #t "~%send failed: ~a >> ~a ~a~%"
+            receiver selector (list->vector rest-args))
     ;;@@DEBUG}
     (cond
      ((in-send-failed?)
-      (format #f "send-failed recursion: ~a >> ~a" (className: receiver) selector)
+      (%%escape%%
+       (format #f
+               "send-failed recursion: ~a >> ~a"
+               (className: receiver)
+               selector))
      )
     ((unspecified? receiver)
      (%%escape%% (format #f "Unspecified reciever for #~a" selector))

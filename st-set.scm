@@ -282,10 +282,28 @@
 
 (addSelector:withMethod:
      Set
+     'occurrencesOf:
+     (lambda (self elt)
+       (if ($: self 'includes: elt)
+           1
+           0)))
+
+(addSelector:withMethod:
+     Set
      'keyAt:
      (lambda (self index)
        (perform:with:
           (perform: self 'array) 'at: index)))
+
+(addSelector:withMethod:
+     Set
+     'addAll:
+     (lambda (self aCollection)
+       ($: aCollection
+           'do:
+           (lambda (elt) ($: self 'add: elt)))
+       self))
+
 
 (addSelector:withMethod:
      Set

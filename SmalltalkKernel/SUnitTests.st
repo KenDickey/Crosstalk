@@ -93,7 +93,7 @@ SUnitTest ~> testDefects
 
 SUnitTest ~> testDialectLocalizedException
 [
-  Self
+  self
 	should: [TestResult signalFailureWith: 'Foo']
 	raise: TestResult failure.
   self
@@ -188,7 +188,7 @@ SUnitTest ~> testResult
 
 SUnitTest ~> testRunning
 [
-  (SUnitDelay forSeconds: 2) wait
+  (SUnitDelay forSeconds: 2) wait "@@FIXME: NYI @@@"
 ].
 
 SUnitTest ~> testShould
@@ -411,7 +411,7 @@ TestCase newSubclassName: #ExampleSetTest
 ExampleSetTest ~> setUp
 [
   self empty: Set new.
-  self full:  Set with: 5 with: #abc
+  self full:  (Set with: 5 with: #abc)
 ].
 
 ExampleSetTest~> testAdd
@@ -423,7 +423,7 @@ ExampleSetTest~> testAdd
 ExampleSetTest~> testGrow
 [
   self empty addAll: (1 to: 100).
-  self assert: self empty size = 100 "@@?? 101 ??@@"
+  self assert: self empty size = 100
 ].
 
 ExampleSetTest~> testIllegal
@@ -445,7 +445,7 @@ ExampleSetTest~> testIncludes
 ExampleSetTest~> testOccurrences
 [
   self assert: (self empty occurrencesOf: 0) = 0.
-  self assert: (self full occurrencesOf: 5) = 1.
+  self assert: (self full  occurrencesOf: 5) = 1.
   self full add: 5.
   self assert: (self full occurrencesOf: 5) = 1
 ].
@@ -456,6 +456,14 @@ ExampleSetTest ~> testRemove
   self assert: (self full includes: #abc).
   self deny: (self full includes: 5)
 ].
+
+"
+ SUnitTest run: #errorShouldntRaise.
+ SUnitTest buildSuite run.
+ SimpleTestResourceTestCase buildSuite run.
+ ResumableTestFailureTestCase buildSuite run.
+ ExampleSetTest buildSuite run.
+"
 
 			 
 "		E O F 		"

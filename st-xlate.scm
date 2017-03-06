@@ -473,7 +473,9 @@
 ) ) )
 
 ;;; st-eval
-(define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
+
+;; In sis.scm
+;;(define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
 
 (define (st-eval st-string)
   (call/cc
