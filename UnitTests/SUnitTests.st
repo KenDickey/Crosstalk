@@ -160,7 +160,7 @@ SUnitTest ~> testIsNotRerunOnDebug
 
   case := self class selector: #testRanOnlyOnce.
   case run.
-  case debug
+  case debug   "@@@FIXME: debug NYI @@@"
 ].
 
 SUnitTest ~> testRan
@@ -196,7 +196,7 @@ SUnitTest ~> testResult
 
 SUnitTest ~> testRunning
 [
-  (SUnitDelay forSeconds: 2) wait "@@FIXME: NYI @@@"
+  (SUnitDelay forSeconds: 2) wait "@@@FIXME: Delay NYI @@@"
 ].
 
 SUnitTest ~> testShould
