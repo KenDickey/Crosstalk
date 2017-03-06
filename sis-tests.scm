@@ -14,10 +14,10 @@
 (break-on-test-error? #false)
 (verbose-test-output? #false)
 
-(define (source-test-files)
+(define (source-test-file-names)
   (map (lambda (file-name)
          (string-append scm-root-directory-prefix file-name "-tests.scm"))
-       scm-bootstrap-files)
+       scm-bootstrap-file-names)
 )
 
 (define (run-source-tests)
@@ -25,22 +25,22 @@
    (lambda (exit)
      (parameterize ( (%%escape%% exit) )
        (remove-all-test-suites) ;; start afresh
-       (for-each load (source-test-files))
+       (for-each load (source-test-file-names))
        (run-all-tests))))
 )
 
 ;; (define (compile-tests)
-;;   (for-each compile-file (source-test-files)))
+;;   (for-each compile-file (source-test-file-names)))
 
-;; (define (compiled-test-files)
+;; (define (compiled-test-file-names)
 ;;   (map (lambda (file-name)
 ;;          (string-append st-root-directory-prefix file-name "-tests.fasl"))
-;;        st-bootstrap-files)
+;;        st-bootstrap-file-names)
 ;; )
   
 ;; (define (run-compiled-tests)
 ;;   (remove-all-test-suites) ;; start afresh
-;;   (for-each load (compiled-test-files))
+;;   (for-each load (compiled-test-file-names))
 ;;   (run-all-tests)
 ;; )
 

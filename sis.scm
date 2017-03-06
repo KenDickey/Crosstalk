@@ -20,10 +20,8 @@
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
 
-;; (xlate-st-bootstrap)
-;; (load-st-bootstrap)
-;; OR
 ;; (add-st)
+;; (add-and-run-st-unit-tests)
 
 ;; (display-subclasses Object)
 
@@ -120,10 +118,14 @@
   (string-append scm-root-directory-prefix
                  "SmalltalkKernel/"))
 
+(define st-unit-test-prefix
+  (string-append scm-root-directory-prefix
+                 "UnitTests/"))
+
 (define temp-dir-prefix
   (string-append scm-root-directory-prefix "Temp/"))
 
-(define scm-bootstrap-files
+(define scm-bootstrap-file-names
   '( "st-kernel"       ;; message mechanics
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
@@ -145,17 +147,16 @@
      "st-set"          ;; Set
      "st-dictionary"   ;; Dictionary
      "st-date-time"    ;; PointInTime Duration DateAndTime
-;;     @@@more to come...
     )
  )
 
-(define (source-scm-files)
+(define (source-scm-file-names)
   (map (lambda (file-name)
          (string-append scm-root-directory-prefix file-name ".scm"))
-       scm-bootstrap-files)
+       scm-bootstrap-file-names)
 )
 
-(define st-bootstrap-files
+(define st-bootstrap-file-names
   '( "Object"
      "Behavior"
      "Association"
@@ -176,10 +177,16 @@
      "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "Events"   ;; ActiveModel; when:send:to:
      "SUnit" 
-     "SUnitTests"
      ;;    @@@more to come...
     )
  )
+
+
+(define st-unit-test-file-names
+  '( "SUnitTests"
+  ;; "ExceptionTests"
+) )
+
 
 (define (xlate-st-file fname)
   (format #t "~%St->Scm translate ~a" fname)
@@ -188,27 +195,33 @@
    (string-append temp-dir-prefix fname ".scm"))
 )
     
+(define (xlate-st-unit-test-file fname)
+  (format #t "~%St->Scm translate ~a" fname)
+  (xlate-st-file->scm-file
+   (string-append st-unit-test-prefix fname ".st")
+   (string-append temp-dir-prefix fname ".scm"))
+)
 
-(define (compiled-files)
+(define (compiled-file-names)
   (map (lambda (file-name)
          (string-append scm-root-directory-prefix file-name ".fasl"))
-       scm-bootstrap-files)
+       scm-bootstrap-file-names)
 )
 
 (define (remove-compiled)
-  (for-each delete-file (compiled-files)))
+  (for-each delete-file (compiled-file-names)))
 
 (define (compile-bootstrap)
-  (for-each (lambda (fn) (compile-file fn)) (source-scm-files)))
+  (for-each (lambda (fn) (compile-file fn)) (source-scm-file-names)))
 
 (define (load-source-bootstrap)
-  (for-each load (source-scm-files)))
+  (for-each load (source-scm-file-names)))
 
 (define (load-compiled-bootstrap)
-  (for-each load (compiled-files)))
+  (for-each load (compiled-file-names)))
 
 (define (xlate-st-bootstrap)
-  (for-each xlate-st-file  st-bootstrap-files))
+  (for-each xlate-st-file  st-bootstrap-file-names))
 
 (define (load-st-bootstrap)
   (format #t "~%Loading translated files:~%")
@@ -216,11 +229,47 @@
    (lambda (fn)
      (format #t "~t~a~%" fn)
      (load (string-append temp-dir-prefix fn ".scm")))
-   st-bootstrap-files))
+   st-bootstrap-file-names))
+
+(define (xlate-st-unit-tests)
+  (for-each xlate-st-unit-test-file st-unit-test-file-names))
+
+(define (load-st-unit-tests)
+  (format #t "~%Loading translated files:~%")
+  (for-each
+   (lambda (fn)
+     (format #t "~t~a~%" fn)
+     (load (string-append temp-dir-prefix fn ".scm")))
+   st-unit-test-file-names))
+
+;; By convention, each UnitTest suite has a 'Run' block 
+;; which corresponds to its name symbol in Smalltalk.
+;; E.g. "SUnitTests.st" -> #RunSUnitTests
+(define (run-st-unit-tests)
+  (for-each
+   (lambda (name)
+     (let ( (st-runCommand
+             (format #f "(Smalltalk at: #Run~a) value." name))
+          )
+       (format #t "~%~a~%" st-runCommand)
+       (st-eval st-runCommand)))
+   st-unit-test-file-names)
+)
+
+
+
+;;;
 
 (define (add-st)
   (xlate-st-bootstrap)
   (load-st-bootstrap))
+
+(define (add-and-run-st-unit-tests)
+  (xlate-st-unit-tests)
+  (load-st-unit-tests)
+  (run-st-unit-tests))
+
+
 
 ;; for send-failed (see st-err-obj.scm)
 (define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))

@@ -481,10 +481,21 @@ SimpleTestResource initialize.
 "
  SUnitTest run: #errorShouldntRaise.
  SUnitTest buildSuite run.
- SimpleTestResourceTestCase buildSuite run.
- ResumableTestFailureTestCase buildSuite run.
- ExampleSetTest buildSuite run.
 "
 
+"File 'SUnitTests' -> #RunSUnitTests block"
+Smalltalk at: #RunSUnitTests put:
+[
+  { SUnitTest.
+    SimpleTestResourceTestCase.
+    ResumableTestFailureTestCase.
+    ExampleSetTest.
+   } do: [ :testCase |
+	Transcript 
+		newLine;
+		nextPutAll: (testCase buildSuite run)
+   ].
+   Transcript newLine.
+].
 			 
 "		E O F 		"

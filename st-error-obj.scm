@@ -1018,8 +1018,8 @@ Structure:
 (set! send-failed ;; def'ed in "st-kernel.scm"
   (lambda (receiver selector rest-args)
     ;;@@DEBUG{
-    (format #t "~%send failed: ~a >> ~a ~a~%"
-            receiver selector (list->vector rest-args))
+    ;; (format #t "~%send failed: ~a >> ~a ~a~%"
+    ;;         receiver selector (list->vector rest-args))
     ;;@@DEBUG}
     (cond
      ((in-send-failed?)
