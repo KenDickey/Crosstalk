@@ -93,6 +93,20 @@
 
 (addSelector:withMethod:
      SequenceableCollection
+     'withIndexDo:
+     (lambda (self elementAndIndexBlock)
+;; "Just like with:do: except that the iteration index
+;;   supplies the second argument to the block."
+       (let ( (limit ($ self 'size)) )
+         (let loop ( (index 1) )
+           (when (<= index limit)
+             (elementAndIndexBlock
+                 ($: self 'at: index)
+                 index)
+             (loop (+ index 1)))))))
+
+(addSelector:withMethod:
+     SequenceableCollection
      'beginsWith:
      (lambda (self aSequenceableCollection)
        (if (or ($ aSequenceableCollection 'isEmpty)
@@ -111,6 +125,35 @@
                 (else st-false)))
         ) ) )
 )
+
+($:: (smalltalkAt: 'SequenceableCollection)
+     'addSelector:withMethod:
+     'endsWith:
+     (lambda (self aSequenceableCollection)
+       (call/cc
+         (lambda (return)
+           (let ((start nil))
+             ($: ($: ($ aSequenceableCollection 'isEmpty)
+                     'or:
+                     (lambda ()
+                       ($: ($ self 'size)
+                           '<
+                           ($ aSequenceableCollection 'size))))
+                 'ifTrue:
+                 (lambda () (return false)))
+             (let ((%%val%%
+                     ($: ($ self 'size)
+                         '-
+                         ($ aSequenceableCollection 'size))))
+               (set! start %%val%%)
+               %%val%%)
+             ($: aSequenceableCollection
+                 'withIndexDo:
+                 (lambda (each index)
+                   ($: ($: ($: self 'at: ($: start '+ index)) '~= each)
+                       'ifTrue:
+                       (lambda () (return false)))))
+             (return true))))))
 
 ;; (provide 'st-collection)
 

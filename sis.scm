@@ -20,7 +20,7 @@
 ;;   (load "sis-tests.scm")
 ;;   (run-source-tests)
 
-;; (add-st)
+;; (add-st-kernel)
 ;; (add-and-run-st-unit-tests)
 
 ;; (display-subclasses Object)
@@ -184,7 +184,7 @@
 
 (define st-unit-test-file-names
   '( "SUnitTests"
-  ;; "ExceptionTests"
+     "ExceptionTests"
 ) )
 
 
@@ -260,7 +260,7 @@
 
 ;;;
 
-(define (add-st)
+(define (add-st-kernel)
   (xlate-st-bootstrap)
   (load-st-bootstrap))
 
