@@ -57,6 +57,10 @@
     ;; For st-eval (in "st-xlate.scm")
     (scheme eval) 
     (scheme repl) ; (interaction-environment)
+    (rnrs conditions)
+;;  (rnrs records syntactic)
+    (rnrs records procedural)
+    (rnrs records inspection)
 )
 
 ;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
