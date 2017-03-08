@@ -144,6 +144,8 @@
 (define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))
 (define st-time-behavior         (make-mDict-placeholder 'Time))
 (define st-duration-behavior     (make-mDict-placeholder 'Duration))
+(define st-condition-behavior    (make-mDict-placeholder 'Condition))
+;;(define st-record-behavior    (make-mDict-placeholder 'Record))
 (define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
 (define st-identity-dictionary-behavior (make-mDict-placeholder 'IdentityDictionary))
 
@@ -376,6 +378,7 @@
        )
       ((date? thing)          st-date+time-behavior)
       ((error-object? thing)  st-error-obj-behavior)
+      ((condition? thing)     st-condition-behavior)
       ((st-object? thing) (vector-like-ref thing st-obj-behavior-index))
       ;; input-file 4
       ;; output-file 4
@@ -611,6 +614,18 @@
     (list->st-array (reverse reversed-args))
 ) )
 
+(primAddSelector:withMethod:
+     st-condition-behavior
+     'asException  ;; def'ed in "st-condition.scm"
+     (lambda (self)
+       (asException self)))
+
+(primAddSelector:withMethod:
+     st-condition-behavior
+     'asDictionary  ;; def'ed in "st-condition.scm"
+     (lambda (self)
+       (condition->dictionary self)))
+
 ;;;
 
 (define (primSetClass: behavior class)
@@ -619,6 +634,7 @@
 (define (setClass: obj class)
   (primSetClass: (behavior obj) class))
 
+;;;
 ;;;======================================================
 ;;; What do we have here?
 
@@ -759,13 +775,15 @@
     (thunk)
     (get-output-string (current-output-port))))
 
-
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
 (define old-structure-printer (structure-printer))
 
-(structure-printer
+;; Only setup structure-printer once
+(unless structure-printer-set
+  (set! structure-printer-set #true)
+  (structure-printer
      (lambda (obj port quote?)
        (if (st-object? obj)
            (format port
@@ -773,7 +791,10 @@
                    (if (respondsTo: obj 'printString)
                        (perform: obj 'printString)
                        "#<an Object>"))
-           (old-structure-printer obj port quote?))))
+           (old-structure-printer obj port quote?)))))
+
+(define (unspecified? thing)
+  (eq? thing #!unspecified))
 
 
 ;;;======================================================

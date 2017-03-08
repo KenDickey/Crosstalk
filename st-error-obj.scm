@@ -1,8 +1,10 @@
 ;;; FILE: "st-error-obj.scm"
 ;;; IMPLEMENTS: Scheme: ErrorObject;
-;;;          Smalltalk: Exception, ExceptionSet, UnhandledError, Error,
+;;;          Smalltalk: Exception, ExceptionSet, UnhandledError,
+;;;                     Error, Notification, Warning,
 ;;;                     Message, MessageSend, MessageNotUnderstood.
 ;;; See also "st-blockClosure.scm" for exception handling code.
+;;; See "st-conditions.scm" for #asException
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 08 February 2017
 
@@ -21,12 +23,14 @@
 (define Exception
   (newSubclassName:iVars:cVars:
    Object
-   'Exception '(messageText myTag signalContext handlerContext outerContext) '())
+   'Exception
+   '(receiver messageText myTag signalContext handlerContext)
+   '())
 )
 
 ; signalContext  -- Continuation captured at point of #signal 
 ; handlerContext -- Continuation captured at handler invocation in #on:do:
-; outerContext -- ??
+;                   See "st-blockClosure.scm"
 
 (define Error
   (newSubclassName:iVars:cVars:
@@ -1044,12 +1048,6 @@ Structure:
      ))
   ) )
 )
-
-
-(define (unspecified? thing)
-  (eq? thing #!unspecified))
-
-
 
 ;; (provide 'st-error-obj)
 

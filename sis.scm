@@ -151,6 +151,7 @@
      "st-set"          ;; Set
      "st-dictionary"   ;; Dictionary
      "st-date-time"    ;; PointInTime Duration DateAndTime
+     "st-conditions"   ;; Map Scheme Conditions to St Exceptions
     )
  )
 
@@ -277,5 +278,7 @@
 
 ;; for send-failed (see st-err-obj.scm)
 (define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
+
+(define structure-printer-set #false) ;; to set once
 
 ;;;			--- E O F ---			;;;
