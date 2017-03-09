@@ -232,8 +232,10 @@
           (call/cc
            (lambda (return-from-on:do:)
              (with-exception-handler
-              (lambda (anException)
-                (if ($: exceptionClassOrSet 'handles: anException)
+              (lambda (exceptionOrCondition)
+                (let ( (anException ($ exceptionOrCondition 'asException)) )
+                  ;; Note file "st-conditions.scm"
+                  (if ($: exceptionClassOrSet 'handles: anException)
                     (begin
                        ($: anException 'handlerContext: return-from-on:do:)
                        (return-from-on:do:
@@ -243,7 +245,7 @@
                             (handler))))
                    ;; re-raise if not handled here
                    (raise-continuable anException))
-                   )
+                 ) )
               self)
         ) ) )
 )

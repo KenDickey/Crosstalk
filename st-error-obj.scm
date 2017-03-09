@@ -24,13 +24,32 @@
   (newSubclassName:iVars:cVars:
    Object
    'Exception
-   '(receiver messageText myTag signalContext handlerContext)
+   '(receiver messageText myTag
+     signalContext handlerContext
+     conditionDict)
    '())
 )
 
+; receiver -- nil or the receiver
 ; signalContext  -- Continuation captured at point of #signal 
 ; handlerContext -- Continuation captured at handler invocation in #on:do:
 ;                   See "st-blockClosure.scm"
+; conditionDict -- nil or an IdentityDictionary/eqHashtable of condition values
+
+;;; Exception>>doesNotUnderstand:
+; Allow conditionDict identifiers as selectors to Exceptions
+(addSelector:withMethod:
+     Exception
+     'doesNotUnderstand:
+     (lambda (self aMessageSend)
+       (let (  (condDict ($ self 'conditionDict))
+                 (selector ($ aMessageSend 'selector))
+              )
+         (if (and (hashtable? condDict)
+                  (hashtable-contains? condDict selector))
+             (hashtable-ref condDict selector st-nil)
+             (@:  self 'doesNotUnderstand: aMessageSend)))) 
+)
 
 (define Error
   (newSubclassName:iVars:cVars:
@@ -470,6 +489,21 @@ Structure:
      'handles:
      (lambda (self anException)
        (isKindOf: anException self)))
+
+(addSelector:withMethod:
+     Exception
+     'asException  
+     (lambda (self) self))
+;; See BlockClosure>>on:do: in "st-blockClosure.scm"
+
+(addSelector:withMethod:
+     Object
+     'asException
+     (lambda (self)
+       (let ( (ex ($ Error 'new)) )
+         ($: ex 'receiver: self)
+         ($: ex 'messageText: "Huh?: non-exception object asException")
+         ex)))
 
 (addSelector:withMethod:
      Exception

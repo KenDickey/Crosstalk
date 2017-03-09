@@ -11,19 +11,28 @@
 ;; Nota Bene:
 ;;   Scheme compound-conditions differ from St ExceptionSets
 ;; They are more like a Bag.  No one-to-one mapping exists.
-;; We do the simple thing here..
+;; We try to do the simple thing here..
 
-(define condition-transducers (make-eq-hashtable))
+; Exception>>doesNotUnderstand: (See file "st-error-obj.scm")
+; Allows conditionDict identifiers as selectors to Exceptions
 
-(define (asException condition)
-  (let ( (exception-transducer
-          (hashtable-ref
-           	condition-transducers
-                (condition-name condition)
-                (lambda (self . ignored-rest)
-                   (send-failed condition 'asException))))
-       )
-    (exception-transducer condition)))
+(define (asException aCondition)
+  (unless (condition? aCondition)
+    (error "Non-condtion passed to #asException" aCondition))
+  (let ( (cDict (condition->dictionary aCondition)) )
+    (cond
+     ((error? aCondition)
+      (let ((receiver ($ (smalltalkAt: 'Error) 'new)))
+        ($: receiver 'conditionDict: cDict)
+        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+      )
+     ((warning? aCondition)
+      (let ((receiver ($ (smalltalkAt: 'Warning) 'new)))
+        ($: receiver 'conditionDict: cDict)
+        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+      )
+     (else (error "@@NYI@@" aCondition))))
+ )
 
 (define (condition-name simple-condition)
   (record-type-name

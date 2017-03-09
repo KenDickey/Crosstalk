@@ -23,7 +23,7 @@
         (capture-condition (/ 3 0)))
   (set! frob-error
         (capture-condition
-         (error "frob" 'a "bee" $c 47)))
+         (error "frob" 'a "bee" #\c 47)))
   (set! write-to-non-port
         (capture-condition (write 3 0)))
 )
@@ -51,6 +51,15 @@
    (who . "/"))
  (dict->alist (condition->dictionary zero-divide))
  "zero-divide condition asDictionary")
+
+(add-equal-test 'st-conditions
+  #((isMessage . #t)
+      (isError . #t)
+      (message . "frob")
+      (irritants a "bee" #\c 47)
+      (isIrritants . #t))
+ (dict->alist (condition->dictionary frob-error))
+ "Scheme error condition asDictionary")
 
 (add-equal-test 'st-conditions
  #((isMessage . #t)
