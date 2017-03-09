@@ -290,7 +290,7 @@
 (define (st-object? thing)
   (and (structure? thing) ;;@@Fixme marker/tag check
        (< 0 (vector-like-length thing))
-       (not (record? thing))))
+       (hashtable? (vector-like-ref thing 0))))
 
 (define (st-object-length obj)
   ;; @@NB: Unchecked

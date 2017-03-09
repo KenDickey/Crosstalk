@@ -6,6 +6,7 @@
 
 (define zero-divide #f)
 (define frob-error  #f)
+(define write-to-non-port #f)
 
 (define-syntax capture-condition ;; to explore
   (syntax-rules ()
@@ -23,11 +24,14 @@
   (set! frob-error
         (capture-condition
          (error "frob" 'a "bee" $c 47)))
+  (set! write-to-non-port
+        (capture-condition (write 3 0)))
 )
 
 (define (cleanup-st-conditions)
   (set! zero-divide #f)
   (set! frob-error  #f)
+  (set! write-to-non-port #f)
 )
 
 (add-test-suite 'st-conditions
@@ -46,7 +50,23 @@
                      zero-divide)))
              )
    (vector-map cons keys-vec vals-vec))
- "zero-divide exception asDictionary")
+ "zero-divide condition asDictionary")
+
+(add-equal-test 'st-conditions
+ #((isMessage . #t)
+   (isError . #t)
+   (message . "not a textual output port")
+   (isWho . #t)
+   (who . write-char)
+   (irritants 0)
+   (isIrritants . #t))
+ (let-values ( ((keys-vec vals-vec)
+                 (hashtable-entries
+                  (condition->dictionary
+                     write-to-non-port)))
+             )
+   (vector-map cons keys-vec vals-vec))
+ "write-to-non-port condition asDictionary")
 
 ;; (ensure-exception-raised 'st-conditions
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

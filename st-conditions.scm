@@ -17,19 +17,31 @@
 
 (define (asException condition)
   (let ( (exception-transducer
-          (hashtable-ref condition-transducers
-                 symbol
-                 (lambda (self . ignored-rest)
+          (hashtable-ref
+           	condition-transducers
+                (condition-name condition)
+                (lambda (self . ignored-rest)
                    (send-failed condition 'asException))))
-         )
+       )
     (exception-transducer condition)))
+
+(define (condition-name simple-condition)
+  (record-type-name
+   (record-rtd simple-condition)))
+
+(define (condition-names condition)
+  (map condition-name
+       (simple-conditions condition)))
+
+(define (simple-condition? condition)
+  (and (condition? condition)
+       (= 1 (length (simple-conditions condition)))))
 
 (define (condition-name->predicate-symbol simple-condition)
   (let loop ( (source-chars
                (string->list
                 (symbol->string
-                 (record-type-name
-                  (record-rtd simple-condition)))))
+                 (condition-name simple-condition))))
               (dest-chars '(#\s #\i))
               (char-case-fn char-upcase)
             )
@@ -55,7 +67,9 @@
 (define (condition->dictionary condition)
   (let ( (dict (make-eq-hashtable))
          (conditions
-          ;; first use of name predominates..
+          ;; In case of same field names,
+          ;; first use of field name predominates,
+          ;; so add back to front..
           (reverse (simple-conditions condition)))
        )
       (for-each
@@ -81,8 +95,74 @@
       dict)
 )
 
+;;; Conditions
 
-;;;            (record-type-name rtd)
+;; &condition condition simple-conditions condition?
+;; condition-predicate condition-accessor
+
+;; &message make-message-condition message-condition? condition-message
+
+;; &warning make-warning warning?
+
+;; &serious make-serious-condition serious-condition?
+
+;; &error make-error error?
+
+;; &violation make-violation violation?
+
+;; &assertion make-assertion-violation assertion-violation?
+
+;; &irritants make-irritants-condition irritants-condition? condition-irritants
+
+;; &who make-who-condition who-condition? condition-who
+
+;; &non-continuable make-non-continuable-violation non-continuable-violation?
+
+;; &implementation-restriction make-implementation-restriction-violation
+;; implementation-restriction-violation?
+
+;; &lexical make-lexical-violation lexical-violation?
+
+;; &syntax make-syntax-violation syntax-violation?
+;; syntax-violation-form syntax-violation-subform
+
+;; &undefined make-undefined-violation undefined-violation?
+
+;; &i/o make-i/o-error i/o-error?
+
+;; &i/o-read make-i/o-read-error i/o-read-error?
+
+;; &i/o-write make-i/o-write-error i/o-write-error?
+
+;; &i/o-invalid-position make-i/o-invalid-position-error
+;; i/o-invalid-position-error? i/o-error-position
+
+;; &i/o-filename make-i/o-filename-error i/o-filename-error?
+;; i/o-error-filename
+
+;; &i/o-file-protection make-i/o-file-protection-error
+;; i/o-file-protection-error?
+
+;; &i/o-file-is-read-only make-i/o-file-is-read-only-error
+;; i/o-file-is-read-only-error?
+
+;; &i/o-file-already-exists make-i/o-file-already-exists-error
+;; i/o-file-already-exists-error?
+
+;; &i/o-file-does-not-exist make-i/o-file-does-not-exist-error
+;; i/o-file-does-not-exist-error?
+
+;; &i/o-port make-i/o-port-error i/o-port-error? i/o-error-port
+
+;; &i/o-decoding make-i/o-decoding-error i/o-decoding-error?
+
+;; &i/o-encoding make-i/o-encoding-error i/o-encoding-error?
+;; i/o-encoding-error-char
+
+;; &no-infinities make-no-infinities-violation no-infinities-violation?
+
+;; &no-nans make-no-nans-violation no-nans-violation?)
+
 
 
 ;|============================================================|
