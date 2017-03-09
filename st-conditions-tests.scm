@@ -38,18 +38,18 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
+(define (dict->alist dict)
+  (let-values ( ((keys-vec vals-vec)
+                 (hashtable-entries dict)) )
+   (vector-map cons keys-vec vals-vec)))
+
 (add-equal-test 'st-conditions
  #((isMessage . #t)
    (message . "/: zero divisor: 3 0 \n")
    (isWho . #t)
    (isAssertion . #t)
    (who . "/"))
- (let-values ( ((keys-vec vals-vec)
-                 (hashtable-entries
-                  (condition->dictionary
-                     zero-divide)))
-             )
-   (vector-map cons keys-vec vals-vec))
+ (dict->alist (condition->dictionary zero-divide))
  "zero-divide condition asDictionary")
 
 (add-equal-test 'st-conditions
@@ -60,12 +60,7 @@
    (who . write-char)
    (irritants 0)
    (isIrritants . #t))
- (let-values ( ((keys-vec vals-vec)
-                 (hashtable-entries
-                  (condition->dictionary
-                     write-to-non-port)))
-             )
-   (vector-map cons keys-vec vals-vec))
+ (dict->alist (condition->dictionary write-to-non-port))
  "write-to-non-port condition asDictionary")
 
 ;; (ensure-exception-raised 'st-conditions
