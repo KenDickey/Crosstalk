@@ -87,9 +87,9 @@
   "UnhandledError: WoW!"
   (st-eval
    "[37 squared. UnhandledError new signal: 'WoW!']
-	on: ErrorObject, UnhandledError
+	on: UnhandledError
 	do: [:ex | ex description ]")
-  "[...] on: ErrorObject, UnhandledError do: [..].")
+  "[...] on: UnhandledError do: [..].")
 
 (add-equal-test 'st-blockClosure
   3
@@ -109,7 +109,7 @@
     "Error: error 1"
     (st-eval "| result |
   result := [ [ Error signal: 'error 1']
-	      on: ErrorObject
+	      on: Error
 	      do: [ :ex1 | Error signal: 'error 2']
 	    ]
 	    on: Exception

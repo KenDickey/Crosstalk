@@ -1,6 +1,5 @@
 ;;; FILE: "st-error-obj.scm"
-;;; IMPLEMENTS: Scheme: ErrorObject;
-;;;          Smalltalk: Exception, ExceptionSet, UnhandledError,
+;;; IMPLEMENTS: Exception, ExceptionSet, UnhandledError,
 ;;;                     Error, Notification, Warning,
 ;;;                     Message, MessageSend, MessageNotUnderstood.
 ;;; See also "st-blockClosure.scm" for exception handling code.
@@ -8,11 +7,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 08 February 2017
 
-(define ErrorObject
-  (newSubclassName:iVars:cVars:
-   Object
-   'ErrorObject '() '()) ;; Scheme Error Object
-)
 
 (define ExceptionSet
   (newSubclassName:iVars:cVars:
@@ -75,7 +69,6 @@
    'UnhandledError '(exception) '())
 )
 
-
 (define IllegalResumeAttempt ;; internal/private
   (newSubclassName:iVars:cVars:
    Exception
@@ -109,7 +102,6 @@
    'AssertionFailure '() '())
 )
 
-
 (set! st-messageSend-behavior ($ MessageSend 'methodDict))
 
 (define Message
@@ -121,10 +113,6 @@
 )
 
 ;;; categoriy:
-
-(perform:with:
-     ErrorObject
-     'category: '|Exceptions Kernel|) ;; ?? '|Exceptions Scheme| ??
 
 (perform:with:
      ExceptionSet
@@ -176,10 +164,6 @@
 
 
 ;;; comment:
-
-(perform:with:
-     ErrorObject
-     'comment: "I present Scheme error objects")
 
 (perform:with:
      ExceptionSet
@@ -313,64 +297,6 @@ Structure:
  to resume from an exception which answers false to #isResumable.")
 
 
-;;; Scheme: ErrorObject
-
-(set! st-error-obj-behavior (perform: ErrorObject 'methodDict))
-
-(addSelector:withMethod:
-     ErrorObject
-     'is:
-     (lambda (self symbol)
-       (or (eq? symbol 'ErrorObject)
-           (superPerform:with: self 'is: symbol))))
-
-(addSelector:withMethod:
-     ErrorObject
-     'message ;; Scheme
-     (lambda (self) (error-object-message self)))
-
-(addSelector:withMethod:
-     ErrorObject
-     'irritants ;; Scheme
-     (lambda (self) (error-object-irritants self)))
-
-(addSelector:withMethod:
-     ErrorObject
-     'isReadError
-     (lambda (self) (read-error? self)))
-
-(addSelector:withMethod:
-     ErrorObject
-     'isFileError
-     (lambda (self) (file-error? self)))
-
-
-(addSelector:withMethod:
-     (class ErrorObject)
-     'error:
-     (lambda (self message)
-       (error message)))
-
-(addSelector:withMethod:
-     (class ErrorObject)
-     'error:withIrritants:
-     (lambda (self message irritants)
-       ;; @@FIXME: generalize
-       (apply error (cons message (vector->list irritants)))))
-
-(addSelector:withMethod: 
-    ErrorObject
-    'printOn:
-    (lambda (self port)
-      (display (error-object-message self) port)
-      (for-each
-       (lambda (irritant)
-         (display " " port)
-         (display irritant port))
-       (error-object-irritants self)))
-)
-
-;; Emulate St exceptions
 
 (addSelector:withMethod:
      (class Class)
@@ -382,49 +308,6 @@ Structure:
      'handles:  ;; base case
      (lambda (self anException) st-false))
 
-(addSelector:withMethod:
-     (class ErrorObject)
-     'handles:
-     (lambda (self anException)
-       (error-object? anException)))
-
-(addSelector:withMethod:
-     (class ErrorObject)
-     'signal:
-     (lambda (self message)
-       (error message)))
-
-(addSelector:withMethod:
-     (class ErrorObject)
-     'signal
-     (lambda (self)  ;; Not very useful..
-       (error "An error was signalled")))
-
-(addSelector:withMethod:
-     ErrorObject
-     'isResumable
-     (lambda (self) st-false))
-
-(addSelector:withMethod:
-     ErrorObject
-     'description
-     (lambda (self) ($ self 'message)))
-
-(addSelector:withMethod:
-     ErrorObject
-     'messageText
-     (lambda (self) ($ self 'message)))
-
-(addSelector:withMethod:
-     ErrorObject
-     'tag
-     (lambda (self) ($ self 'message)))
-
-(addSelector:withMethod:
-     (class ErrorObject)
-     '|,|
-     (lambda (self exceptionClass)
-       ($:: ExceptionSet 'with:with: self exceptionClass)))
 
 
 ;;; ExceptionSet
@@ -804,7 +687,7 @@ Structure:
   'doesNotUnderstand:
   (lambda (self aMessageSend) ;; NB: class == MessageSend
 ;;@@DEBUG{
-;;(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
+(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
 ;;@@DEBUG}
     (let ( (ex ($ MessageNotUnderstood 'new)) )
       ($: ex 'message: aMessageSend)
@@ -812,9 +695,9 @@ Structure:
       ($: ex 'reachedDefaultHandler: st-false)
       (let ( (resumeValue ($ ex 'signal)) )
 ;;@@DEBUG{
-;;(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
-;;(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
-;;       ($ ex 'reachedDefaultHandler))
+(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
+(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
+       ($ ex 'reachedDefaultHandler))
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
             ($: aMessageSend 'sendTo: self) ;; retry

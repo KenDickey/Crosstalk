@@ -240,10 +240,10 @@ ExceptionTester ~> basicANSISignaledExceptionTestSelectors
 
 ExceptionTester ~> basicTestSelectors
 [
-  ^ #(#simpleEnsureTest #simpleEnsureTestWithNotification #simpleEnsureTestWithUparrow 
-     #simpleEnsureTestWithError #signalFromHandlerActionTest 
-     #resumableFallOffTheEndHandler #nonResumableFallOffTheEndHandler #doubleResumeTest
-"timeouts NYI:  #simpleTimeoutWithZeroDurationTest #simpleTimeoutTest #simpleNoTimeoutTest "
+  ^ #(simpleEnsureTest simpleEnsureTestWithNotification simpleEnsureTestWithUparrow 
+     simpleEnsureTestWithError signalFromHandlerActionTest 
+     resumableFallOffTheEndHandler nonResumableFallOffTheEndHandler doubleResumeTest
+"timeouts NYI:  simpleTimeoutWithZeroDurationTest simpleTimeoutTest simpleNoTimeoutTest "
     )
 ].
 
@@ -315,22 +315,22 @@ ExceptionTester ~> logTestResult: aString
 
 ExceptionTester ~> doSomething
 [
-  self myLog: self doSomethingString 
+  self log: self doSomethingString 
 ].
 
 ExceptionTester ~> doSomethingElse
 [
-  self myLog: self doSomethingElseString 
+  self log: self doSomethingElseString 
 ].
 
 ExceptionTester ~> doSomethingExceptional
 [
-  self myLog: self doSomethingExceptionalString 
+  self log: self doSomethingExceptionalString 
 ].
 
 ExceptionTester ~> doYetAnotherThing
 [
-  self myLog: self doYetAnotherThingString 
+  self log: self doYetAnotherThingString 
 ].
 
 ExceptionTester ~> methodWithError

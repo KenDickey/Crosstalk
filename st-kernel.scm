@@ -130,7 +130,6 @@
 (define st-complex-behavior      (make-mDict-placeholder 'Complex))
 (define st-fraction-behavior     (make-mDict-placeholder 'Fraction))
 ;; @@FIXME: Scaled Decimal
-(define st-error-obj-behavior    (make-mDict-placeholder 'ErrorObject))
 (define st-character-behavior    (make-mDict-placeholder 'Character))
 (define st-string-behavior       (make-mDict-placeholder 'String))
 (define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
@@ -377,7 +376,6 @@
         (else (error "Unhandled type" (time-type thing) thing)))
        )
       ((date? thing)          st-date+time-behavior)
-      ((error-object? thing)  st-error-obj-behavior)
       ((condition? thing)     st-condition-behavior)
       ((st-object? thing) (vector-like-ref thing st-obj-behavior-index))
       ;; input-file 4
