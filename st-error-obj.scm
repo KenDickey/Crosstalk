@@ -37,12 +37,12 @@
      'doesNotUnderstand:
      (lambda (self aMessageSend)
        (let (  (condDict ($ self 'conditionDict))
-                 (selector ($ aMessageSend 'selector))
+               (selector ($ aMessageSend 'selector))
               )
          (if (and (hashtable? condDict)
                   (hashtable-contains? condDict selector))
              (hashtable-ref condDict selector st-nil)
-             (@:  self 'doesNotUnderstand: aMessageSend)))) 
+             (@:  self 'doesNotUnderstand: aMessageSend)))) ;; super send
 )
 
 (define Error
@@ -78,7 +78,7 @@
 (define MessageNotUnderstood
   (newSubclassName:iVars:cVars:
    Error
-   'MessageNotUnderstood '(message receiver reachedDefaultHandler) '())
+   'MessageNotUnderstood '(message reachedDefaultHandler) '())
 )
 
 (define MessageSend
@@ -399,14 +399,33 @@ Structure:
      (lambda (self resumptionValue)
 ;;   "Return resumptionValue as the value of the signal message."
        (when (not ($ self 'isResumable))
-           ($ IllegalResumeAttempt signal)
+           ($ IllegalResumeAttempt 'signal)
 	($ self 'resumeUnchecked: resumptionValue))))
+
+(addSelector:withMethod:
+     Exception
+     'resignalAs:
+     (lambda (self newEx)
+;;   "Return resumptionValue as the value of the signal message."
+       ($: newEx 'handlerContext: ($ self 'handlerContext))
+;;@@@??@@@ replace signalContext w current context??@@
+       ($: newEx 'signalContext:  ($ self 'signalContext))
+       ($: newEx 'conditionDict:  ($ self 'conditionDict))
+       ($: newEx 'messageText:    ($ self 'messageText))
+       ;; yadda yadda
+       ($ newEx 'signal)))
+     
 
 (addSelector:withMethod:
      Exception
      'resumeUnchecked:
      (lambda (self resumptionValue)
-       resumptionValue))  ;;@@@??@@@
+;;##DEBUG{
+(format #t "~%~a>>resumeUnchecked ~a"
+        ($ self 'printString)
+        resumptionValue)
+;;@@DEBUG}
+       (($ self 'signalContext) resumptionValue)))
 
 (addSelector:withMethod:
      Exception
@@ -613,7 +632,7 @@ Structure:
      Warning
      'defaultAction
      (lambda (self)
-       (format #f "Warning: ~a" ($ self 'messageText))
+       (format #f "~%Warning: ~a" ($ self 'messageText))
        ($ self 'resume))
 )
 
@@ -631,7 +650,7 @@ Structure:
      (lambda (self)
        (format #t "~%UnhendledError>>defaultAction ~a ~%" self)
        ;; log to file or open debugger
-       (error ($ self 'description) self))) ;; open Scheme debugger
+       (%%escape%% ($ self 'description)))) ;; open Scheme debugger
 
 (addSelector:withMethod:
      UnhandledError
@@ -670,13 +689,13 @@ Structure:
        (let ( (myMessage ($ self 'message)) )
          (if (not (null? myMessage))
              (format #f
-                     "~a doesNotUnderstand: #~a"
+                     "~%~a doesNotUnderstand: #~a"
                      (safer-printString ($ myMessage 'receiver))
                      ($ myMessage 'selector))
              (let ( (inherited-msg (superPerform: self 'messageText)) )
                (if (null? inherited-msg)
                    (format #f
-                           "~a doesNotUnderstand: <something>"
+                           "~%~a doesNotUnderstand: <something>"
                            (safer-printString ($ self 'receiver)) )
                    inherited-msg)))))
 )
@@ -687,7 +706,7 @@ Structure:
   'doesNotUnderstand:
   (lambda (self aMessageSend) ;; NB: class == MessageSend
 ;;@@DEBUG{
-(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
+;(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
 ;;@@DEBUG}
     (let ( (ex ($ MessageNotUnderstood 'new)) )
       ($: ex 'message: aMessageSend)
@@ -695,12 +714,17 @@ Structure:
       ($: ex 'reachedDefaultHandler: st-false)
       (let ( (resumeValue ($ ex 'signal)) )
 ;;@@DEBUG{
-(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
-(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
-       ($ ex 'reachedDefaultHandler))
+;(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
+;(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
+;       ($ ex 'reachedDefaultHandler))
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
-            ($: aMessageSend 'sendTo: self) ;; retry
+            (error (format #f
+                           "~%~a doesNotUnderstand: ~a"
+                           ($ ($ aMessageSend 'receiver) 'printString)
+                           ($ aMessageSend 'selector))
+                   ($ aMessageSend 'arguments))
+            ;;($: aMessageSend 'sendTo: self) ;; retry
             resumeValue)))))
 
 ;;;; redefine Object>>error:
@@ -708,7 +732,9 @@ Structure:
   Object
   'error:
   (lambda (self aString)
-    ($: Error 'signal: aString)))
+    (let ( (err ($ Error 'new)) )
+      ($: err 'receiver: self)
+      ($: err 'signal: aString))))
 
 
 ;;; MessageSend
@@ -779,7 +805,7 @@ Structure:
      (lambda (self newReceiver)
 ;;@@DEBUG{
        (format #t
-               "** ~a sentTo: ~a"
+               "~%** ~a sentTo: ~a"
                (safer-printString self)
                (safer-printString newReceiver))
 ;;@@DEBUG}
@@ -815,7 +841,7 @@ Structure:
      'printOn:
      (lambda (self aStream)
        (format aStream
-               "~a( ~a -> ~a )"
+               "~%~a( ~a -> ~a )"
                (className: self)
                ($ self 'selector)
                (if (isKindOf: ($ self 'receiver) MessageSend)
@@ -944,14 +970,17 @@ Structure:
     ;;@@DEBUG}
     (cond
      ((in-send-failed?)
-      (%%escape%%
-       (format #f
-               "send-failed recursion: ~a >> ~a"
-               (className: receiver)
-               selector))
-     )
+      (let ( (msg 
+              (format #f
+                      "~%send-failed recursion: ~a >> ~a"
+                      ($ receiver 'printString)
+                      selector))
+           )
+      (error msg receiver selector rest-args)
+      (%%escape%% msg)
+     ))
     ((unspecified? receiver)
-     (%%escape%% (format #f "Unspecified reciever for #~a" selector))
+     (%%escape%% (format #f "~%Unspecified reciever for #~a" selector))
      )
     (else
      (parameterize ( (in-send-failed? #true) )

@@ -106,7 +106,7 @@
   "[...] ifCurtailed: [..].")
 
 (add-equal-test 'st-blockClosure
-    "Error: error 1"
+    "Error: error 2"
     (st-eval "| result |
   result := [ [ Error signal: 'error 1']
 	      on: Error

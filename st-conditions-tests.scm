@@ -38,11 +38,6 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
-(define (dict->alist dict)
-  (let-values ( ((keys-vec vals-vec)
-                 (hashtable-entries dict)) )
-   (vector-map cons keys-vec vals-vec)))
-
 (add-equal-test 'st-conditions
  #((isMessage . #t)
    (message . "/: zero divisor: 3 0 \n")

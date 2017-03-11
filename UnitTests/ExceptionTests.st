@@ -116,11 +116,6 @@ ExceptionTests ~> testSimpleEnsureTestWithUparrow
   self assertSuccess: (ExceptionTester new runTest: #simpleEnsureTestWithUparrow )  
 ].
 
-ExceptionTests ~> testSimpleIsNested
-[
-  self assertSuccess: (ExceptionTester new runTest: #simpleIsNestedTest )  
-].
-
 ExceptionTests ~> testSimpleOuter
 [
   self assertSuccess: (ExceptionTester new runTest: #simpleOuterTest )  
@@ -233,9 +228,10 @@ ExceptionTester ~> initialize
 
 ExceptionTester ~> basicANSISignaledExceptionTestSelectors
 [
-  ^#( simpleIsNestedTest simpleOuterTest doubleOuterTest doubleOuterPassTest doublePassOuterTest
+  ^#( simpleOuterTest  doubleOuterPassTest doublePassOuterTest
       simplePassTest simpleResignalAsTest simpleResumeTest 
       simpleRetryTest simpleRetryUsingTest simpleReturnTest) 
+"doubleOuterTest"
 ].
 
 ExceptionTester ~> basicTestSelectors
@@ -384,19 +380,6 @@ ExceptionTester ~> doublePassOuterTest
   ] on: MyTestNotification do: [:ex | self doYetAnotherThing. ex resume] 
 ].
 
-ExceptionTester ~> simpleIsNestedTest
-[
-  "uses resignalAs:"
-  [ self doSomething.
-    MyTestError signal.
-    self doSomethingElse 
-  ] on: MyTestError
-    do: [:ex |
-	(ex isNested) "expecting to detect handler in #runTest:"
-          ifTrue: [self doYetAnotherThing. ex resignalAs: MyTestNotification new]
-    ] 
-].
-
 ExceptionTester ~> simpleOuterTest
 [
   "uses #resume"
@@ -496,15 +479,6 @@ ExceptionTester ~> doubleOuterPassTestResults
 ].
 
 ExceptionTester ~> doublePassOuterTestResults
-[
-  ^OrderedCollection new
-    add: self doSomethingString;
-    add: self doYetAnotherThingString;
-    add: self doSomethingElseString;
-    yourself 
-].
-
-ExceptionTester ~> simpleIsNestedTestResults
 [
   ^OrderedCollection new
     add: self doSomethingString;
@@ -760,10 +734,9 @@ ExceptionTester ~> runBasicTests
 ExceptionTester ~> runTest: aSelector
 [
   | actualResult expectedResult |
-  [ self 
-    logTest: aSelector;
-    clearLog;
-    perform: aSelector 
+  [ self clearLog;
+         logTest: aSelector;
+         perform: aSelector 
   ] on: MyTestError 
     do: [ :ex | self log: 'Unhandled Exception'.
           ex return: nil 
@@ -775,6 +748,9 @@ ExceptionTester ~> runTest: aSelector
   actualResult = expectedResult
     ifTrue:  [self logTestResult: 'succeeded']
     ifFalse: [self logTestResult: 'failed' ].
+
+  Transcript newLine;
+	nextPutAll: self suiteLog last printString.
  ].
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "

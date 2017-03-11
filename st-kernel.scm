@@ -675,6 +675,7 @@
           (display "entity has no class!!")
           )
          (else
+          (newline)
           (describe st-obj)
           (for-each
            (lambda (ivarName)

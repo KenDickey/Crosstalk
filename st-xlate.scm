@@ -483,10 +483,22 @@
      (parameterize ( (%%escape%% exit) ) ;; for send-failed
        (with-exception-handler
         (lambda (anException)
+;;          (($ ($ anException 'asException) 'defaultAction))
           (exit
-           (if (isKindOf: anException Exception)
-               ($ anException 'messageText)
-               (error-object-message anException))))
+           (let ( (ex ($ anException 'asException)) ) ; condition->ex
+;;@@@DEBUG{
+(display-ivars ex)
+;;@@@DEBUG}
+             (cond
+              ((and (isKindOf: anException MessageNotUnderstood)
+                    ($ anException 'reachedDefaultHandler))
+               (error ($ anException 'messageText)
+                      ($ anException 'printString)
+                      anException))
+              (else
+               (format #t "about to ~a>>defaultAction"
+                       ($ anException 'printString))
+               ($ anException 'defaultAction))))))
         (lambda () (eval (st->scm st-string)
                          (interaction-environment))))
 ) ) ) )

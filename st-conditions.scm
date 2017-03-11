@@ -21,7 +21,7 @@
     (error "Non-condtion passed to #asException" aCondition))
   (let ( (cDict (condition->dictionary aCondition)) )
     (cond
-     ((error? aCondition)
+     ((or (error? aCondition) ( message-condition? aCondition))
       (let ((receiver ($ (smalltalkAt: 'Error) 'new)))
         ($: receiver 'conditionDict: cDict)
         ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
@@ -31,7 +31,10 @@
         ($: receiver 'conditionDict: cDict)
         ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
       )
-     (else (error "@@NYI@@" aCondition))))
+     (else
+      (newline)
+      (display (dict->alist cDict))
+      (error "asException unhandled @@NYI@@" aCondition))))
  )
 
 (define (condition-name simple-condition)
@@ -103,6 +106,12 @@
          conditions)
       dict)
 )
+
+(define (dict->alist dict)
+  (let-values ( ((keys-vec vals-vec)
+                 (hashtable-entries dict)) )
+   (vector-map cons keys-vec vals-vec)))
+
 
 ;;; Conditions
 
