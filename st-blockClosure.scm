@@ -229,26 +229,44 @@
  	BlockClosure
         'on:do:
         (lambda (self exceptionClassOrSet handler)
-          (call/cc
-           (lambda (return-from-on:do:)
-             (with-exception-handler
-              (lambda (exceptionOrCondition)
-                (let ( (anException ($ exceptionOrCondition 'asException)) )
-                  ;; Note file "st-conditions.scm"
-                  (if ($: exceptionClassOrSet 'handles: anException)
-                    (begin
-                       ($: anException 'handlerContext: return-from-on:do:)
-                       (return-from-on:do:
-                        (if (= 1 (procedure-arity handler))
-                            ;; valueWithPossibleArgument:
-                            (handler anException)
-                            (handler))))
-                   ;; re-raise if not handled here
-                   (raise-continuable anException))
-                 ) )
-              self)
-        ) ) )
-)
+          (let ( (protectedBlock self)
+                 (retry #f)
+               )
+            (call/cc
+             (lambda (return-from-on:do:)
+
+               (with-exception-handler
+                
+                (lambda (exceptionOrCondition)
+                  (let ( (anException ($ exceptionOrCondition 'asException)) )
+                    ;; Note file "st-conditions.scm"
+                    (if (not ($: exceptionClassOrSet 'handles: anException))
+                        ;; re-raise if not handled here
+                        (raise-continuable anException)
+                        (begin  ;; the exception carries the context
+                          ($: anException
+                              'handlerContext:
+                              return-from-on:do:)
+                          ($: anException
+                              'retryContext:
+                              retry)
+                          ($: anException
+                              'blockSetter:
+                              (lambda (aBlock) (set! protectedBlock aBlock)))
+                          (return-from-on:do:
+                           (if (= 1 (procedure-arity handler))
+                               ;; valueWithPossibleArgument:
+                               (handler anException)
+                               (handler)))))))
+ 
+                (lambda ()
+                  (call/cc
+                   (lambda (retry-again)
+                     (set! retry retry-again)))
+                  (protectedBlock))
+ ) ) ) ) ) )
+
+;;    signalContext handlerContext retryContext blockSetter
 
 
 (addSelector:withMethod:

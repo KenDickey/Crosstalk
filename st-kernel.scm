@@ -778,10 +778,11 @@
   (primIncludesSelector: (behavior self) selector))
 
 (define old-structure-printer (structure-printer))
+(define structure-printer-set? #f)
 
 ;; Only setup structure-printer once
-(unless structure-printer-set
-  (set! structure-printer-set #true)
+(unless structure-printer-set?
+  (set! structure-printer-set? #true)
   (structure-printer
      (lambda (obj port quote?)
        (if (st-object? obj)

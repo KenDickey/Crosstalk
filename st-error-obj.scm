@@ -19,7 +19,7 @@
    Object
    'Exception
    '(receiver messageText myTag
-     signalContext handlerContext
+     signalContext handlerContext retryContext blockSetter
      conditionDict)
    '())
 )
@@ -78,7 +78,9 @@
 (define MessageNotUnderstood
   (newSubclassName:iVars:cVars:
    Error
-   'MessageNotUnderstood '(message reachedDefaultHandler) '())
+   'MessageNotUnderstood
+   '(message reachedDefaultHandler)
+   '())
 )
 
 (define MessageSend
@@ -385,7 +387,7 @@ Structure:
      (lambda (self)
        (let ( (ex ($ Error 'new)) )
          ($: ex 'receiver: self)
-         ($: ex 'messageText: "Huh?: non-exception object asException")
+         ($: ex 'messageText: "Huh?: non-exception object #asException")
          ex)))
 
 (addSelector:withMethod:
@@ -404,20 +406,6 @@ Structure:
 
 (addSelector:withMethod:
      Exception
-     'resignalAs:
-     (lambda (self newEx)
-;;   "Return resumptionValue as the value of the signal message."
-       ($: newEx 'handlerContext: ($ self 'handlerContext))
-;;@@@??@@@ replace signalContext w current context??@@
-       ($: newEx 'signalContext:  ($ self 'signalContext))
-       ($: newEx 'conditionDict:  ($ self 'conditionDict))
-       ($: newEx 'messageText:    ($ self 'messageText))
-       ;; yadda yadda
-       ($ newEx 'signal)))
-     
-
-(addSelector:withMethod:
-     Exception
      'resumeUnchecked:
      (lambda (self resumptionValue)
 ;;##DEBUG{
@@ -427,6 +415,23 @@ Structure:
 ;;@@DEBUG}
        (($ self 'signalContext) resumptionValue)))
 
+
+(addSelector:withMethod:
+     Exception
+     'resignalAs:
+     (lambda (self newException)
+       (let ( (newEx
+               (if (class? newException)
+                   ($ newException 'new)
+                   newException))
+            )
+         ($: newEx 'handlerContext: ($ self 'handlerContext))
+         ($: newEx 'signalContext:  ($ self 'signalContext))
+         ($: newEx 'conditionDict:  ($ self 'conditionDict))
+         ($: newEx 'messageText:    ($ self 'messageText))
+         ( ($ self 'signalContext) (raise-continuable newEx) ))))
+
+
 (addSelector:withMethod:
      Exception
      'signal
@@ -434,32 +439,26 @@ Structure:
        (call/cc
         (lambda (returnToSignal)
           ($: self 'signalContext: returnToSignal)
-          ((if ($ self 'isResumable) raise-continuable raise) self)))))
-
-(addSelector:withMethod:
-     (class Exception)
-     'signal
-     (lambda (self)
-       (let ( (newEx ($ self 'new)) )
-         ((if ($ newEx 'isResumable) raise-continuable raise) newEx))))
+          (raise-continuable self)))))
 
 (addSelector:withMethod:
      Exception
      'signal:
      (lambda (self aMessage)
-       (call/cc
-        (lambda (returnToSignal)
-          ($: self 'signalContext: returnToSignal)
-          ($: self 'messageText: aMessage)
-          ($ self 'signal)))))
+       ($: self 'messageText: aMessage)
+       ($  self 'signal)))
+
+(addSelector:withMethod:
+     (class Exception)
+     'signal
+     (lambda (self)
+       ($ ($ self 'new) 'signal)))
 
 (addSelector:withMethod:
      (class Exception)
      'signal:
      (lambda (self aMessage)
-       (let ( (newEx ($ self 'new)) )
-         ($: newEx 'messageText: aMessage)
-         ($ newEx 'signal))))
+       ($: ($ self 'new) 'signal: aMessage)))
 
 (addSelector:withMethod:
      (class Exception)
@@ -509,37 +508,38 @@ Structure:
      Exception
      'return
      (lambda (self)
-       (let ( (returnToSignal ($ self 'handlerContext)) )
-         (if (null? returnToSignal)
-             st-nil
-             (returnToSignal st-nil)))))
+       ( ($ self 'handlerContext) st-nil )))
 
 (addSelector:withMethod:
      Exception
      'return:
      (lambda (self aValue)
-       (let ( (returnToSignal ($ self 'handlerContext)) )
-         (if (null? returnToSignal)
-             aValue
-             (returnToSignal aValue)))))
+       ( ($ self 'handlerContext) aValue )))
 
 (addSelector:withMethod:
      Exception
      'resume
      (lambda (self)
-       (let ( (returnToSignal ($ self 'signalContext)) )
-         (if (null? returnToSignal)
-             st-nil
-             (returnToSignal st-nil)))))
+       ( ($ self 'signalContext) st-nil )))
 
 (addSelector:withMethod:
      Exception
      'resume:
      (lambda (self aValue)
-       (let ( (returnToSignal ($ self 'signalContext)) )
-         (if (null? returnToSignal)
-             aValue
-             (returnToSignal aValue)))))
+       ( ($ self 'signalContext) aValue )))
+
+(addSelector:withMethod:
+     Exception
+     'retry
+     (lambda (self)
+       ( ($ self 'retryContext) 'retry ) )) ;; arg ignored
+
+(addSelector:withMethod:
+     Exception
+     'retryUsing:
+     (lambda (self newProtectedBlock)
+       ( ($ self 'blockSetter) newProtectedBlock )
+       ( ($ self 'retryContext) 'retryUsing: ))) ;; arg ignored
 
 (addSelector:withMethod:
      Exception
@@ -592,7 +592,7 @@ Structure:
 ;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
      (lambda (self)
 ;;@@DEBUG{
-       (format #t "~%Exception>>noHandler ~a~%" self)
+       (format #t "~%Exception>>noHandler ~a~%" ($ self 'printString))
 ;;@@DEBUG}
        ($: UnhandledError 'signalForException: self)))
 
@@ -603,7 +603,12 @@ Structure:
 (addSelector:withMethod:
      Error
      'defaultAction
-     (lambda (self) ($ self 'noHandler)))
+     (lambda (self)
+;;@@@DEBUG{
+(format #t "Error defaultAction: noHandler: ~a"
+        ($ self 'printString))
+;;@@@DEBUG}
+       ($ self 'noHandler)))
 
 (addSelector:withMethod:
      Error
@@ -648,7 +653,8 @@ Structure:
      UnhandledError
      'defaultAction
      (lambda (self)
-       (format #t "~%UnhendledError>>defaultAction ~a ~%" self)
+       (format #t "~%UnhandledError>>defaultAction ~a ~%" self)
+       (format #t "~%@@FIXME: Log Backtrace OR Open a Debugger @@@")
        ;; log to file or open debugger
        (%%escape%% ($ self 'description)))) ;; open Scheme debugger
 
@@ -689,7 +695,7 @@ Structure:
        (let ( (myMessage ($ self 'message)) )
          (if (not (null? myMessage))
              (format #f
-                     "~%~a doesNotUnderstand: #~a"
+                     "~a doesNotUnderstand: #~a"
                      (safer-printString ($ myMessage 'receiver))
                      ($ myMessage 'selector))
              (let ( (inherited-msg (superPerform: self 'messageText)) )
@@ -719,11 +725,11 @@ Structure:
 ;       ($ ex 'reachedDefaultHandler))
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
-            (error (format #f
-                           "~%~a doesNotUnderstand: ~a"
+            (%%escape%% (format #f
+                           "~a doesNotUnderstand: ~a ~a"
                            ($ ($ aMessageSend 'receiver) 'printString)
-                           ($ aMessageSend 'selector))
-                   ($ aMessageSend 'arguments))
+                           ($ aMessageSend 'selector)
+                           ($ aMessageSend 'arguments)))
             ;;($: aMessageSend 'sendTo: self) ;; retry
             resumeValue)))))
 

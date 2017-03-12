@@ -490,11 +490,14 @@
 (display-ivars ex)
 ;;@@@DEBUG}
              (cond
-              ((and (isKindOf: anException MessageNotUnderstood)
-                    ($ anException 'reachedDefaultHandler))
-               (error ($ anException 'messageText)
-                      ($ anException 'printString)
-                      anException))
+;;              ((and (isKindOf: anException MessageNotUnderstood)
+;;                    ($ anException 'reachedDefaultHandler))
+              ((isKindOf: anException MessageNotUnderstood)
+	       ($ anException 'messageText)
+               ;; (error ($ anException 'messageText)
+               ;;        ($ anException 'printString)
+               ;;        anException))
+               )
               (else
                (format #t "about to ~a>>defaultAction"
                        ($ anException 'printString))
