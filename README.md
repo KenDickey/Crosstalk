@@ -27,9 +27,9 @@ This is very much a work in progress.
   3. Basic unit tests -- both Scheme core tests and SUnit
      + SUnit self test passes
      + Exceptions unit tests pass (call/cc is very useful!)
-  4. Translation of Smalltalk kernel code into Scheme
+  4. Translation of Smalltalk kernel code into Scheme **[basics in place]**
      + needs Environments for name lookup [basics working w/o analysis]
-     + needs Return anaylsis & simplification [call/cc proto working]
+     + needs Return anaylsis & simplification
      + needs to inline primops (e.g. +, ifTrue:)
      + convert procedures into syntaxtic transforms (macros) for speed
 
@@ -135,7 +135,8 @@ This is very much a work in progress.
     + Check baseline by porting unit test suites.
   - Look at runtime issues
   - Develop sensible combined Foreign Function Interface & Debugging infrastructure
-  - _Bootstrap Morphic_ !    
+  - **Bootstrap Morphic** !    
+
 ## Processing Notes
   - The control file is **"sis.scm"**.  This imports Scheme functions and code to load the system.
   - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk core classes **(add-st-kernel)**.
