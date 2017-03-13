@@ -21,24 +21,12 @@ This is very much a work in progress.
   - Keep things as simple as possible
     - Comprehension over speed, but don't be odiously dumb
 
-## Open Questions/Problems:
-  - #thisContext: How to introduce decent debugging?
-  - What kinds of caching would make significant performance difference?
-      + Cache single assignment multiple use (behavior, method)
-      - Symbol property-list
-      - PIC at call sites
-      - Hashtable cache
-  - Finalization pecularities (expectation of early finalization)
-  - How best to make Smalltalk object structures native to Larceny?
-  - What compiler/runtime changes would help?
-  - #allInstancesDo:
-  - #become:
-  - Dynamic class changes & schema evolution (w lazy instance update)
-
 ## The story so far..
   1. Dispatch mechanics (message send with #perform:)
   2. Class Structure (bootstrap + fixup; class/metaClass hierarchy setup)
-  3. Basic unit tests (need to be populated)
+  3. Basic unit tests -- both Scheme core tests and SUnit
+     + SUnit self test passes
+     + Exceptions unit tests pass
   4. Translation of st kernel code into scheme. [***In Progress***]
      + needs Environments for name lookup [basics working w/o analysis]
      + needs Return anaylsis & simplification [call/cc proto working]
@@ -144,7 +132,7 @@ This is very much a work in progress.
     + Need to pass location info thru for debug [TO DO!]
   - Read and execute Smalltalk code directly
     + Fill in bootstrap by transliterating Smalltalk runtime [*in progress*]
-    + Check baseline by porting ANSI unit test suite.
+    + Check baseline by porting unit test suites.
   - Look at runtime issues
   - Develop sensible combined Foreign Function Interface & Debugging infrastructure
   - _Bootstrap Morphic_ !
@@ -162,9 +150,22 @@ How small can we make the Scheme support core?
 
 How best to stage in Smalltalk functionality?
   - Compiling (St in St)
-  - Unit testing; ANSI & system self test
   - Debug (w St sources)
   - Foreign Function Interface
   - Morphic UI/graphic framework
   - Host Cuis Smalltalk on top of this St kernel
+
+## Open Questions/Problems:
+  - #thisContext: How to introduce decent debugging?
+  - What kinds of caching would make significant performance difference?
+      + Cache single assignment multiple use (behavior, method)
+      - Symbol property-list
+      - PIC at call sites
+      - Hashtable cache
+  - Finalization pecularities (expectation of early finalization)
+  - How best to make Smalltalk object structures native to Larceny?
+  - What compiler/runtime changes would help?
+  - #allInstancesDo:
+  - #become:
+  - Dynamic class changes & schema evolution (w lazy instance update)
 
