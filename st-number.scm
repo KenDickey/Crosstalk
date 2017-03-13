@@ -228,7 +228,7 @@
         (lambda (self aNumber)
           (* self aNumber)))
 
-(addSelector:withMethod: 
+(addSelector:withMethod: ;; redefined in "st-erro-bj.scm"
         Number
         '|/|
         (lambda (self aNumber)
