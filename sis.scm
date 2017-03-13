@@ -12,15 +12,15 @@
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
 ;; Run from command line via "larceny -r7rs", then
-;;   (import (scheme load))
-;;   (load "sis.scm")
-;;   (load-source-bootstrap)
+;;       (import (scheme load))
+;;             (load "sis.scm")
+;;      (load-source-bootstrap)
 
 ;; Scheme core unit tests:
-;;   (load "sis-tests.scm")
-;;   (run-source-tests)
+;;      (load "sis-tests.scm")
+;;          (run-source-tests)
 
-;; (add-st-kernel)
+;;             (add-st-kernel)
 ;; (add-and-run-st-unit-tests)
 
 ;; (display-subclasses Object)

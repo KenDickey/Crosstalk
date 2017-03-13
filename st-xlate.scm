@@ -487,7 +487,7 @@
           (exit
            (let ( (ex ($ anException 'asException)) ) ; condition->ex
 ;;@@@DEBUG{
-(display-ivars ex)
+;;(display-ivars ex)
 ;;@@@DEBUG}
              (cond
 ;;              ((and (isKindOf: anException MessageNotUnderstood)
@@ -499,8 +499,10 @@
                ;;        anException))
                )
               (else
-               (format #t "about to ~a>>defaultAction"
-                       ($ anException 'printString))
+;;@@@DEBUG{
+;;(format #t "about to ~a>>defaultAction"
+;;           ($ anException 'printString))
+;;@@@DEBUG}
                ($ anException 'defaultAction))))))
         (lambda () (eval (st->scm st-string)
                          (interaction-environment))))

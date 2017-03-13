@@ -19,7 +19,8 @@
    Object
    'Exception
    '(receiver messageText myTag
-     signalContext handlerContext retryContext blockSetter
+     signalContext resignalContext signalExn
+     handlerContext retryContext blockSetter
      conditionDict)
    '())
 )
@@ -62,6 +63,43 @@
    Notification
    'Warning '() '())
 )
+
+
+(define ArithmeticError
+  (newSubclassName:iVars:cVars:
+   Error
+   'ArithmeticError '() '())
+)
+
+(define ZeroDivide
+  (newSubclassName:iVars:cVars:
+   ArithmeticError
+   'ZeroDivide '(dividend) '())
+)
+
+(addSelector:withMethod:
+     (class ZeroDivide)
+     'dividend:
+     (lambda (self dvdnd)
+       (let ( (ex ($ ZeroDivide 'new)) )
+         ($: ex 'receiver: dvdnd)
+         ($: ex 'dividend: dvdnd)
+         ($: ex 'messageText: (format #f "ZeroDivide: ~a / 0" dvdnd))
+         ex)))
+
+(addSelector:withMethod:
+     (class ZeroDivide)
+     'signalWithDividend:
+     (lambda (self dvdnd)
+       ($ ($: self 'dividend: dvdnd) 'signal)))
+
+(addSelector:withMethod:  ;; REDEFINE
+        Number
+        '|/|
+        (lambda (self aNumber)
+          (when (zero? aNumber)
+              ($: ZeroDivide 'signalWithDividend: self))
+          (/ self aNumber)))
 
 (define UnhandledError
   (newSubclassName:iVars:cVars:
@@ -409,9 +447,9 @@ Structure:
      'resumeUnchecked:
      (lambda (self resumptionValue)
 ;;##DEBUG{
-(format #t "~%~a>>resumeUnchecked ~a"
-        ($ self 'printString)
-        resumptionValue)
+;;(format #t "~%~a>>resumeUnchecked ~a"
+;;        ($ self 'printString)
+;;        resumptionValue)
 ;;@@DEBUG}
        (($ self 'signalContext) resumptionValue)))
 
@@ -425,21 +463,39 @@ Structure:
                    ($ newException 'new)
                    newException))
             )
-         ($: newEx 'handlerContext: ($ self 'handlerContext))
-         ($: newEx 'signalContext:  ($ self 'signalContext))
-         ($: newEx 'conditionDict:  ($ self 'conditionDict))
-         ($: newEx 'messageText:    ($ self 'messageText))
-         ( ($ self 'signalContext) (raise-continuable newEx) ))))
+;;@@@DEBUG{
+;;(display-ivars self)
+;;@@@DEBUG}
+         ($: newEx 'handlerContext:  ($ self 'handlerContext))
+         ($: newEx 'signalContext:   ($ self 'signalContext))
+         ($: newEx 'resignalContext: ($ self 'resignalContext))
+;;       ($: newEx 'conditionDict:  ($ self 'conditionDict))
+;;       ($: newEx 'messageText:    ($ self 'messageText))
+;;@@@DEBUG{
+;;(display-ivars newEx)
+;;@@@DEBUG}
+         ($: self 'signalExn: newEx)
+         ( ($  self 'resignalContext) 'resignalAs )
+     ) ) )
 
 
 (addSelector:withMethod:
      Exception
      'signal
      (lambda (self)
+       ($: self 'signalExn: self)
        (call/cc
-        (lambda (returnToSignal)
-          ($: self 'signalContext: returnToSignal)
-          (raise-continuable self)))))
+        (lambda (resignal)
+          ($: self 'resignalContext: resignal)))
+        (call/cc
+         (lambda (returnToSignal)
+           ($: ($ self 'signalExn) 'signalContext: returnToSignal)
+;;@@@DEBUG{
+;;(format #t "~a" ($ ($ self 'signalExn) 'printString))
+;;@@@DEBUG}
+             (raise-continuable ($ self 'signalExn))
+	)))
+)
 
 (addSelector:withMethod:
      Exception
@@ -592,7 +648,7 @@ Structure:
 ;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
      (lambda (self)
 ;;@@DEBUG{
-       (format #t "~%Exception>>noHandler ~a~%" ($ self 'printString))
+;;(format #t "~%Exception>>noHandler ~a~%" ($ self 'printString))
 ;;@@DEBUG}
        ($: UnhandledError 'signalForException: self)))
 
@@ -605,8 +661,8 @@ Structure:
      'defaultAction
      (lambda (self)
 ;;@@@DEBUG{
-(format #t "Error defaultAction: noHandler: ~a"
-        ($ self 'printString))
+;;(format #t "Error defaultAction: noHandler: ~a"
+;;        ($ self 'printString))
 ;;@@@DEBUG}
        ($ self 'noHandler)))
 
@@ -679,7 +735,7 @@ Structure:
      (lambda (self)
        ($: self 'reachedDefaultHandler: st-true)
 ;;@@DEBUG{
-(format #t "~%MessageNotUnderstood defaultAction")
+;;(format #t "~%MessageNotUnderstood defaultAction")
 ;;@@DEBUG}
        (superPerform: self 'defaultAction)))
 
@@ -810,10 +866,10 @@ Structure:
      'sendTo:
      (lambda (self newReceiver)
 ;;@@DEBUG{
-       (format #t
-               "~%** ~a sentTo: ~a"
-               (safer-printString self)
-               (safer-printString newReceiver))
+;; (format #t
+;;         "~%** ~a sentTo: ~a"
+;;         (safer-printString self)
+;;         (safer-printString newReceiver))
 ;;@@DEBUG}
        ($:: newReceiver 
             'perform:withArguments:
