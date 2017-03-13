@@ -135,14 +135,13 @@ This is very much a work in progress.
     + Check baseline by porting unit test suites.
   - Look at runtime issues
   - Develop sensible combined Foreign Function Interface & Debugging infrastructure
-  - _Bootstrap Morphic_ !
-    
+  - _Bootstrap Morphic_ !    
 ## Processing Notes
   - The control file is **"sis.scm"**.  This imports Scheme functions and code to load the system.
-  - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk bootstrap **(add-st)**.
-    + The Scheme bootstrap implements St code function and exposes Scheme datatypes.
-    This code also includes a St parser and translator into Scheme which allows for the St bootstrap to be translated.
-    + The Smalltalk bootstrap is the St kernel code which is xlated and loaded. 
+  - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk bootstrap **(add-st=kernel)**.
+    + The Scheme bootstrap implements Smalltalk code function and exposes Scheme datatypes.
+    This code also includes a Smalltalk parser and translator into Scheme which allows for the Smalltalk bootstrap to be translated.
+    + The Smalltalk bootstrap is the Smalltalk kernel code which is xlated and loaded. 
 
 One goal is to maximize the Smalltalk code and keep the Scheme kernel small.
 
