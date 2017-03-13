@@ -16,18 +16,18 @@ This is very much a work in progress.
     - Scheme values are presented as Smalltalk Objects by supplying their behaviors
   - Leverage Scheme runtime system
     - Scheme numbers, strings, characters, vectors/arrays, bytevectors ..
-    - Closures, GC, exceptions, finalization
+    - Closures, ports, GC, exceptions, finalization..
     - Dynamic compilation to native machine code
   - Keep things as simple as possible
-    - Comprehension over speed, but don't be odiously dumb
+    - Comprehension over speed, but don't be excessvely dumb
 
 ## The story so far..
   1. Dispatch mechanics (message send with #perform:)
   2. Class Structure (bootstrap + fixup; class/metaClass hierarchy setup)
   3. Basic unit tests -- both Scheme core tests and SUnit
      + SUnit self test passes
-     + Exceptions unit tests pass
-  4. Translation of st kernel code into scheme. [***In Progress***]
+     + Exceptions unit tests pass (call/cc is very useful!)
+  4. Translation of Smalltalk kernel code into Scheme
      + needs Environments for name lookup [basics working w/o analysis]
      + needs Return anaylsis & simplification [call/cc proto working]
      + needs to inline primops (e.g. +, ifTrue:)
@@ -127,7 +127,7 @@ This is very much a work in progress.
 
 ## Upcoming
   - Fill in the class structure (approx ANSI)
-    + Present Scheme native objects [**Basics working; needs fill-in, dispatch optimization**]
+    + Present Scheme native objects [**Basic mechanics working; needs API fill-in, dispatch optimization**]
   - Parsing Smalltalk with location/position info
     + Need to pass location info thru for debug [TO DO!]
   - Read and execute Smalltalk code directly
@@ -138,10 +138,10 @@ This is very much a work in progress.
   - _Bootstrap Morphic_ !    
 ## Processing Notes
   - The control file is **"sis.scm"**.  This imports Scheme functions and code to load the system.
-  - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk bootstrap **(add-st=kernel)**.
-    + The Scheme bootstrap implements Smalltalk code function and exposes Scheme datatypes.
+  - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk core classes **(add-st-kernel)**.
+    + The Scheme bootstrap implements Smalltalk semanics and exposes Scheme datatypes.
     This code also includes a Smalltalk parser and translator into Scheme which allows for the Smalltalk bootstrap to be translated.
-    + The Smalltalk bootstrap is the Smalltalk kernel code which is xlated and loaded. 
+    + The Smalltalk bootstrap is the Smalltalk kernel code which is translated and loaded. 
 
 One goal is to maximize the Smalltalk code and keep the Scheme kernel small.
 
