@@ -447,9 +447,11 @@ Structure:
      'resumeUnchecked:
      (lambda (self resumptionValue)
 ;;##DEBUG{
-;;(format #t "~%~a>>resumeUnchecked ~a"
-;;        ($ self 'printString)
-;;        resumptionValue)
+(when (debug-st-runtime)
+  (format #t
+          "~%~a>>resumeUnchecked ~a"
+          ($ self 'printString)
+          resumptionValue))
 ;;@@DEBUG}
        (($ self 'signalContext) resumptionValue)))
 
@@ -491,7 +493,8 @@ Structure:
          (lambda (returnToSignal)
            ($: ($ self 'signalExn) 'signalContext: returnToSignal)
 ;;@@@DEBUG{
-;;(format #t "~a" ($ ($ self 'signalExn) 'printString))
+(when (debug-st-runtime)
+  (format #t "~a" ($ ($ self 'signalExn) 'printString)))
 ;;@@@DEBUG}
              (raise-continuable ($ self 'signalExn))
 	)))
@@ -648,7 +651,8 @@ Structure:
 ;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
      (lambda (self)
 ;;@@DEBUG{
-;;(format #t "~%Exception>>noHandler ~a~%" ($ self 'printString))
+(when (debug-st-runtime)
+  (format #t "~%Exception>>noHandler for ~a~%" ($ self 'description)))
 ;;@@DEBUG}
        ($: UnhandledError 'signalForException: self)))
 
@@ -661,8 +665,9 @@ Structure:
      'defaultAction
      (lambda (self)
 ;;@@@DEBUG{
-;;(format #t "Error defaultAction: noHandler: ~a"
-;;        ($ self 'printString))
+(when (debug-st-runtime)
+  (format #t "Error defaultAction: noHandler: ~a"
+          ($ self 'printString)))
 ;;@@@DEBUG}
        ($ self 'noHandler)))
 
@@ -709,6 +714,7 @@ Structure:
      UnhandledError
      'defaultAction
      (lambda (self)
+;;(when (debug-st-runtime)
        (format #t "~%UnhandledError>>defaultAction ~a ~%" self)
        (format #t "~%@@FIXME: Log Backtrace OR Open a Debugger @@@")
        ;; log to file or open debugger
@@ -735,7 +741,8 @@ Structure:
      (lambda (self)
        ($: self 'reachedDefaultHandler: st-true)
 ;;@@DEBUG{
-;;(format #t "~%MessageNotUnderstood defaultAction")
+(when (debug-st-runtime)
+  (format #t "~%MessageNotUnderstood defaultAction"))
 ;;@@DEBUG}
        (superPerform: self 'defaultAction)))
 
@@ -768,7 +775,9 @@ Structure:
   'doesNotUnderstand:
   (lambda (self aMessageSend) ;; NB: class == MessageSend
 ;;@@DEBUG{
-;(format #t "~%doesNotUnderstand: ~a ~%" aMessageSend) ;;(safer-printString aMessageSend))
+(when (debug-st-runtime)
+  (format #t "~%doesNotUnderstand: ~a ~%" aMessageSend))
+;;(safer-printString aMessageSend))
 ;;@@DEBUG}
     (let ( (ex ($ MessageNotUnderstood 'new)) )
       ($: ex 'message: aMessageSend)
@@ -776,9 +785,10 @@ Structure:
       ($: ex 'reachedDefaultHandler: st-false)
       (let ( (resumeValue ($ ex 'signal)) )
 ;;@@DEBUG{
-;(format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
-;(format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
-;       ($ ex 'reachedDefaultHandler))
+(when (debug-st-runtime)
+  (format #t "~%doesNotUnderstand>>signal returned: ~a " resumeValue)
+  (format #t "~%doesNotUnderstand>>reachedDefaultHandler: ~a ~%"
+          ($ ex 'reachedDefaultHandler)))
 ;;@@DEBUG}
         (if ($ ex 'reachedDefaultHandler)
             (%%escape%% (format #f
@@ -866,10 +876,11 @@ Structure:
      'sendTo:
      (lambda (self newReceiver)
 ;;@@DEBUG{
-;; (format #t
-;;         "~%** ~a sentTo: ~a"
-;;         (safer-printString self)
-;;         (safer-printString newReceiver))
+(when (debug-st-runtime)
+  (format #t
+          "~%** ~a sentTo: ~a"
+          (safer-printString self)
+          (safer-printString newReceiver)))
 ;;@@DEBUG}
        ($:: newReceiver 
             'perform:withArguments:
@@ -1025,11 +1036,18 @@ Structure:
 (define in-send-failed? (make-parameter #false))
 
 (set! send-failed ;; def'ed in "st-kernel.scm"
-  (lambda (receiver selector rest-args)
-    ;;@@DEBUG{
-    ;; (format #t "~%send failed: ~a >> ~a ~a~%"
-    ;;         receiver selector (list->vector rest-args))
-    ;;@@DEBUG}
+  (lambda (rcvr selector rest-args)
+    (let ( (receiver
+            (if (condition? rcvr)
+                ($ rcvr 'asException)
+                rcvr))
+         )
+;;@@DEBUG{
+(when (debug-st-runtime)
+  (format #t
+          "~%send failed: ~a >> ~a ~a~%"
+          receiver selector (list->vector rest-args)))
+;;@@DEBUG}
     (cond
      ((in-send-failed?)
       (let ( (msg 
@@ -1055,7 +1073,7 @@ Structure:
                 (list->vector rest-args)))
      ))
   ) )
-)
+))
 
 ;; (provide 'st-error-obj)
 

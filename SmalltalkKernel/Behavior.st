@@ -5,6 +5,11 @@
  DATE: 20 January 2017
 "
 
+"
+Object newSubclassName: #Behavior
+	iVars: #(superclass methodDict format)
+	cVars: nil.
+"
 
 "Behavior ~> >> aSelector
 [

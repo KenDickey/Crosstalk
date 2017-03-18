@@ -117,6 +117,38 @@
 result.")
     "Re-thrown exception")
 
+
+(add-equal-test 'st-blockClosure
+  3
+  (st-eval "[ 3 ] valueWithPossibleArgument: 1 and: 2")
+  "[ 3 ] valueWithPossibleArgument: 1 and: 2"
+ )
+
+(add-equal-test 'st-blockClosure
+  4
+  (st-eval "[:a | a + 3 ] valueWithPossibleArgument: 1 and: 2")
+  "[:a | a + 3 ] valueWithPossibleArgument: 1 and: 2"
+ )
+
+(add-equal-test 'st-blockClosure
+  6
+  (st-eval "[:a :b | a + b + 3 ] valueWithPossibleArgument: 1 and: 2")
+  "[:a :b | a + b + 3 ] valueWithPossibleArgument: 1 and: 2"
+ )
+
+
+(add-equal-test 'st-blockClosure
+ "'MessageNotUnderstood: 1 doesNotUnderstand: #whatsUpDoc'"
+ (st-eval "[1 whatsUpDoc] ifError: [:err :rcvr | err printString ].")
+ "[1 whatsUpDoc] ifError: [:err :rcvr | err ]."
+ )
+
+(add-equal-test 'st-blockClosure
+ #(1 "'ZeroDivide: ZeroDivide: 1 / 0'")
+ (st-eval "[1 / 0] ifError: [:err :rcvr | { rcvr. err printString. } ]")
+ "[1 / 0] ifError: [:err :rcvr | { rcvr. err. } ]"
+ )
+
 ;; (ensure-exception-raised 'st-blockClosure
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

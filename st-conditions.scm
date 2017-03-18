@@ -115,6 +115,18 @@
 
 ;;; Conditions
 
+;; (addSelector:withMethod:
+;;      Condition
+;;      'asException  
+;;      (lambda (self) (asException self)))
+
+;; (primAddSelector:withMethod:
+;;      st-condition-behavior
+;;      'asException  ;; def'ed in "st-condition.scm"
+;;      (lambda (self)
+;;        (asException self)))
+
+
 ;; &condition condition simple-conditions condition?
 ;; condition-predicate condition-accessor
 

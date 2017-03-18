@@ -285,8 +285,30 @@
                 (if curtailed? (action))))
             result)
           ))
-            
 
+(addSelector:withMethod:
+	BlockClosure
+        'ifError:
+        (lambda (self errorHandlerBlock)
+          ($:: self
+               'on:do:
+               Error
+               (lambda (ex)
+                 ($:: errorHandlerBlock
+                      'valueWithPossibleArgument:and:
+                      ($ ex 'description)
+                      ($ ex 'receiver)))
+       ) )
+)
+
+;; "Evaluate the block represented by the receiver, and normally return it's value.
+;;  If an error occurs, the errorHandlerBlock is evaluated, and it's value
+;;  is instead returned.
+;;  The errorHandlerBlock must accept zero, one, or two parameters
+;;  (the error message and the receiver)."
+;; "Examples:
+;; 	[1 whatsUpDoc] ifError: [:err :rcvr | 'huh?'].
+;; 	[1 / 0] ifError: [:err :rcvr | { rcvr. err. } ]
 
 ;; (provides st-blockClosure)
 

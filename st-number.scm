@@ -648,6 +648,19 @@
           (printStringRadix: self radix))
 )
 
+
+  ;; (define two^52 4503599627370496)
+  ;; (define two^53 9007199254740992)
+  ;; (define two^54 18014398509481984)
+  ;; (define two^63 9223372036854775808)
+
+  ;; (define flonum:minexponent    -1023)
+  ;; (define flonum:minexponent-51 -1074)
+  ;; (define flonum:maxexponent     1023)
+  ;; (define flonum:+infinity      1e500)
+  ;; (define flonum:-infinity     -1e500)
+
+
 ;
 ; @@@ MORE ..@@@
 ;;; Rational (Fraction)
@@ -801,6 +814,12 @@
         'asCharacter
         (lambda (self) (integer->char self))
 )
+
+(addSelector:withMethod: 
+ 	Integer
+        'atRandom
+        ;"Answer a random integer from 1 to self.
+        (lambda (self) (+ 1 (random-integer self))))
 
 ;; highBit
 

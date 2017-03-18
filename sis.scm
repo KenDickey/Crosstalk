@@ -54,6 +54,7 @@
     (only (srfi :13) ;; String library (see "st-string.scm")
           string-contains string-contains-ci)
     (srfi :19) ;; date and time (see "st-data-time.scm")
+    (srfi :27) ;; random-integer
     ;; For st-eval (in "st-xlate.scm")
     (scheme eval) 
     (scheme repl) ; (interaction-environment)
@@ -280,5 +281,7 @@
 (define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
 
 (define structure-printer-set #false) ;; to set once
+
+(define debug-st-runtime (make-parameter #false))
 
 ;;;			--- E O F ---			;;;
