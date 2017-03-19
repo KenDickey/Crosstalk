@@ -183,6 +183,7 @@
      "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "Events"   ;; ActiveModel; when:send:to:
      "SUnit" 
+     "Number"
      ;;    @@@more to come...
     )
  )
@@ -191,6 +192,8 @@
 (define st-unit-test-file-names
   '( "SUnitTests"
      "ExceptionTests"
+     "IntervalTests"
+;; More to come..     
 ) )
 
 
@@ -257,7 +260,7 @@
      (let ( (st-runCommand
              (format #f "(Smalltalk at: #Run~a) value." name))
           )
-       (format #t "~%~a~%" st-runCommand)
+       (format #t "~%~%~a~%" st-runCommand)
        (st-eval st-runCommand)))
    st-unit-test-file-names)
 )

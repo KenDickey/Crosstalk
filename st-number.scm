@@ -415,7 +415,12 @@
 
 (addSelector:withMethod: 
         Number
-        'round round)
+        'rounded
+        ;; NB: Scheme rounds to even, St does NOT
+        (lambda (self)
+          (if (= 0.5 (abs (- self (truncate self))))
+              (exact (round ((if (negative? self) - +) self 0.01)))
+              (exact (round self)))))
 
 (addSelector:withMethod: 
         Number

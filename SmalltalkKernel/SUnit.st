@@ -30,7 +30,7 @@ TestFailure ~> defaultAction
 	debug: self signalerContext
 	title: self description "
   "Punt to Scheme Debugger"
-  Error signal: self messageText
+  self error: self description
 ].
 
 TestFailure ~> isResumable

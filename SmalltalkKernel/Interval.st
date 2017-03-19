@@ -5,7 +5,9 @@
  DATE: 21 January 2017
 "
 
-SequenceableCollection newSubclassName: #Interval iVars: #(start stop step) cVars: nil.
+SequenceableCollection newSubclassName: #Interval 
+	iVars: #(start stop step) 
+	cVars: nil.
 
 Interval category: #'Collections-Ordered'.
 
@@ -89,6 +91,12 @@ Interval ~> first
   ^ self start
 ].
 
+Interval ~> last
+[
+"Refer to the comment in SequenceableCollection|last."
+  ^ self stop
+].
+
 Interval ~> hash
 [
 "Hash is reimplemented because = is implemented."
@@ -109,7 +117,7 @@ Interval ~> increment
 Interval ~> last
 [
 "Refer to the comment in SequenceableCollection|last."
-  ^ self stop - ((self stop - self start) \\ self step)
+  ^ self stop
 ].
 
 Interval ~> printOn: aStream
@@ -147,11 +155,11 @@ Interval ~> size
     ifTrue: [ 
 	self start < self stop
 		ifTrue: [ ^ 0 ]
-		ifFalse: [ ^ (self stop - self start) // self step + 1 ] ]
+		ifFalse: [ ^ ((self stop - self start) / self step + 1) rounded ] ]
     ifFalse: [ 
 	self stop < self start
 		ifTrue: [ ^ 0 ]
-		ifFalse: [ ^ (self stop - self start) // self step + 1 ] ]
+		ifFalse: [ ^ ((self stop - self start) / self step + 1) rounded ] ]
 ].
 
 Interval ~> species
@@ -159,26 +167,75 @@ Interval ~> species
   ^ Array
 ].
 
+Interval ~> + number
+[
+  ^ self start + number to: self stop + number count: self count
+].
+
+Interval ~> - number
+[
+  ^ self start - number to: self stop - number count: self count
+].
+
+Interval ~> reverseDo: aBlock 
+["Evaluate aBlock for each element of my interval, in reverse order."
+  seld count to: 1 by: -1 do: [ :i | aBlock value: (self at: i) ]
+].
+
+" -- -- -- -- -- -- -- -- -- -- -- -- -- -- "
+
 Interval class ~> from: startInteger to: stopInteger
 [
 "Answer an instance of me, starting at startNumber, ending at stopNumber, and with an interval increment of 1."
   ^ self basicNew setFrom: startInteger to: stopInteger by: 1
 ].
 
-Interval class ~> from: startInteger to: stopInteger by: stepInteger
+Interval class ~> from: start to: stop by: step
 [
 "Answer an instance of me,
- starting at startNumber,\
+ starting at startNumber,
  ending at stopNumber, and
  with an interval increment of stepNumber."
-  ^ self basicNew setFrom: startInteger to: stopInteger by: stepInteger
+  | count end |
+  count := stop - start / step + 1.
+  (count closeTo: count rounded)
+	ifTrue: [
+		count := count rounded.
+		end := stop 
+	]
+	ifFalse: [
+		count := count truncated.
+		end := count - 1 * step + start 
+	].
+  ^self from: start to: end count: count
 ].
 
-Interval class ~> from: startInteger to: stopInteger count: count
+Interval class ~> from: start to: stop count: count
 [
  | step |
   step := (stop - start) / (count - 1).
-  ^ self basicNew setFrom: startInteger to: stopInteger by: step
+  ^ self basicNew setFrom: start to: stop by: step
+].
+
+Interval class ~> newFrom: aCollection 
+[ "Answer an instance of me containing the same elements as aCollection."
+"	Interval newFrom: {1. 2. 3}
+	{33. 5. -23} as: Interval
+	{33. 5. -22} as: Interval    (an error)
+	(-4 to: -12 by: -1) as: Interval
+"
+    | newInterval n |
+
+    (n := aCollection size) <= 1 ifTrue: [
+		n = 0 ifTrue: [^self from: 1 to: 0].
+		^self from: aCollection first to: aCollection last].
+    	newInterval := self 
+			from: aCollection first 
+			to: aCollection last 
+			by: (aCollection last - aCollection first) // (n - 1).
+	aCollection ~= newInterval
+		ifTrue: [self error: 'The argument is not an arithmetic progression'].
+	^newInterval
 ].
 
 

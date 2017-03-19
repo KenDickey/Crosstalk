@@ -485,25 +485,26 @@
         (lambda (anException)
 ;;          (($ ($ anException 'asException) 'defaultAction))
           (exit
-           (let ( (ex ($ anException 'asException)) ) ; condition->ex
+           (let ( (exception ($ anException 'asException)) ) ; condition->ex
 ;;@@@DEBUG{
 ;;(display-ivars ex)
 ;;@@@DEBUG}
              (cond
 ;;              ((and (isKindOf: anException MessageNotUnderstood)
 ;;                    ($ anException 'reachedDefaultHandler))
-              ((isKindOf: anException MessageNotUnderstood)
-	       ($ anException 'messageText)
+              ((isKindOf: exception MessageNotUnderstood)
+	       ($ exception 'messageText)
                ;; (error ($ anException 'messageText)
                ;;        ($ anException 'printString)
                ;;        anException))
                )
               (else
 ;;@@@DEBUG{
-;;(format #t "about to ~a>>defaultAction"
-;;           ($ anException 'printString))
+(when (debug-st-runtime)
+  (format #t "about to ~a>>defaultAction"
+          ($ exception 'printString)))
 ;;@@@DEBUG}
-               ($ anException 'defaultAction))))))
+               ($ exception 'defaultAction))))))
         (lambda () (eval (st->scm st-string)
                          (interaction-environment))))
 ) ) ) )
