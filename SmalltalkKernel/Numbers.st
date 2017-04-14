@@ -78,5 +78,40 @@ Number ~> negated
  ^ (0 - self)
 ].
 
+Number ~> roundTo: quantum 
+["Answer the nearest number that is a multiple of quantum."
+ "Please use this method when you actually want a numeric result.
+ If what you need is a string representation with certain precision,
+ consider using #printOn:fractionDigits: or some other method in the 'printing' category."
+
+	^ (self / quantum) rounded * quantum
+].
+
+Number ~> roundDownTo: aNumber 
+["Answer the next multiple of aNumber toward negative infinity that is 
+  nearest the receiver."
+ "Examples:
+	3.1479 roundDownTo: 0.01 -> 3.14
+	3.1479 roundDownTo: 0.1 -> 3.1
+	1923 roundDownTo: 10 -> 1920
+	3.1479 roundDownTo: 0.005 -> 3.145
+	-3.1479 roundDownTo: 0.01 -> -3.15"
+		
+  ^ (self / aNumber) floor * aNumber
+].
+
+Number ~> roundUpTo: aNumber 
+["Answer the next multiple of aNumber toward infinity that is
+  nearest the receiver."
+ "Examples:
+	3.1479 roundUpTo: 0.01 -> 3.15
+	3.1479 roundUpTo: 0.1 -> 3.2
+	1923 roundUpTo: 10 -> 1930
+	3.1479 roundUpTo: 0.005 -> 3.15
+	-3.1479 roundUpTo: 0.01 -> -3.14"
+
+	^ (self / aNumber) ceiling * aNumber
+].
+
 
 "		E O F 		"
