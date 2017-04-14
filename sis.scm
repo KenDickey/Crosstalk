@@ -183,7 +183,7 @@
      "WeakSend"  ;; WeakMessageSend, WeakActionSequence
      "Events"   ;; ActiveModel; when:send:to:
      "SUnit" 
-     "Number"
+     "Numbers"
      ;;    @@@more to come...
     )
  )

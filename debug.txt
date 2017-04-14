@@ -102,3 +102,6 @@
 
 (st-eval "[Object new glerph] on: MessageNotUnderstood do: [ :ex |ex messageText]")
 -->  "Object doesNotUnderstand: #glerph"
+
+
+(display-ivars (st-eval "IntervalTest new testAt"))

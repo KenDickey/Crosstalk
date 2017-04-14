@@ -11,9 +11,9 @@ TestCase newSubclassName: #IntervalTest  iVars: #() cVars: #().
 
 IntervalTest category: #'Tests-Collections'.
 
-IntervalTest ~> assert: aNumber isAbout: anotherNumber
+IntervalTest ~> assert: aNumber isCloseTo: anotherNumber
 [
-  self assert: (aNumber isAbout: anotherNumber) 
+  self assert: (aNumber isCloseTo: anotherNumber) 
 ].
 
 IntervalTest ~> testAt
@@ -28,9 +28,9 @@ IntervalTest ~> testAt
 
   self assert:  (0 to: 2.4 by: 0.1) first = 0.
   self assert: ((0 to: 2.4 by: 0.1) at:  1) = 0.
-  self assert: ((0 to: 2.4 by: 0.1) at:  2) isAbout: 0.1.
-  self assert: ((0 to: 2.4 by: 0.1) at:  3) isAbout: 0.2.
-  self assert: ((0 to: 2.4 by: 0.1) at: 23) isAbout: 2.2.
+  self assert: ((0 to: 2.4 by: 0.1) at:  2) isCloseTo: 0.1.
+  self assert: ((0 to: 2.4 by: 0.1) at:  3) isCloseTo: 0.2.
+  self assert: ((0 to: 2.4 by: 0.1) at: 23) isCloseTo: 2.2.
   self assert: ((0 to: 2.4 by: 0.1) at: 24) = 2.3.
   self assert: ((0 to: 2.4 by: 0.1) at: 25) = 2.4.
   self assert:  (0 to: 2.4 by: 0.1) last = 2.4. 
@@ -43,16 +43,16 @@ IntervalTest ~> testFloatInterval
 " 
   self assert: (0 to: 2.4 by: 0.1) size = 25.
   self assert: (0 to: 2.4 by: 0.1) first = 0.
-  self assert: (0 to: 2.4 by: 0.1) last isAbout: 2.4.
+  self assert: (0 to: 2.4 by: 0.1) last isCloseTo: 2.4.
 
   2 to: 200 do: [ :n |
   	self assert: (0.0 to: 1.0 count: n) size = n.
   	self assert: (0.0 to: 1.0 count: n) first = 0.0.
-  	self assert: (0.0 to: 1.0 count: n) last isAbout: 1.0].
+  	self assert: (0.0 to: 1.0 count: n) last isCloseTo: 1.0].
   2 to: 200 do: [ :n |
   	self assert: (1.0 to: 0.0 count: n) size = n.
   	self assert: (1.0 to: 0.0 count: n) first = 1.0.
-  	self assert: (1.0 to: 0.0 count: n) last isAbout: 0.0] 
+  	self assert: (1.0 to: 0.0 count: n) last isCloseTo: 0.0] 
 ].
 
 "IntervalTest ~> testFloatToByDo
