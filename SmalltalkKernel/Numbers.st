@@ -24,10 +24,12 @@ Number ~> closeTo: aNumber
 	or: [(self - aNumber) abs / (self abs max: aNumber abs) < 0.0001]
 ].
 
-Number ~> isCloseTo: aNumber
+"Number ~> isCloseTo: aNumber
 [
   ^ self closeTo: aNumber
-].
+]."
+
+Number addSelector: #isCloseTo: withMethod: ( Number >> #closeTo: ).
 
 Number ~> truncateTo: aNumber 
 ["Answer the next multiple of aNumber toward zero that is nearest the receiver."
