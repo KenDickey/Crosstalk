@@ -5,9 +5,13 @@
 (load "sis-tests.scm")
 (run-source-tests)
 
-(add-st)
 ;(xlate-st-bootstrap)
 ;(load-st-bootstrap)
+
+(add-st-kernel)
+(add-and-run-st-unit-tests)
+
+;; (display-subclasses Object)
 
 
 (smalltalk-keys)
