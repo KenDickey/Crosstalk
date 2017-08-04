@@ -34,7 +34,7 @@
           add-test add-eq-test add-equal-test add-equivalent-alist-test
 	  ensure-exception-raised
           default-setup-thunk default-teardown-thunk
-          make-error-string-predicate 
+          make-error-string-predicate
           )
   (import (rnrs)
           (rnrs records syntactic (6))
@@ -130,28 +130,6 @@
      )
 ) )
 
-(define (every? pred? list)
-  (if (null? list)
-      #true
-      (and (pred? (car list))
-           (every? pred? (cdr list)))))
-
-(define (equivalent-alist? l1 l2)
-  (and (list? l1)
-       (list? l2)
-       (= (length l1) (length l2))
-       (every?
-        (lambda (pair)
-          (if (not (pair? pair))
-              #false
-              (let ( (probe (assq (car pair) l2)) )
-                (and (pair? probe)
-                     (equal? (car probe) (car pair))
-                     (equal? (cdr probe) (cdr pair))))))
-        l1))
-)
-
-  
 (define-syntax add-equivalent-alist-test
   (syntax-rules ()
     ((_ <suite-name> <expect> <form>)
@@ -219,6 +197,28 @@
 ;;           (when (< index max-index)
 ;;             (loop (+ 1 index))))
 ;; ) ) ) )
+
+(define (every? pred? list)
+  (if (null? list)
+      #t
+      (and (pred? (car list))
+           (every? pred? (cdr list)))))
+
+(define (equivalent-alist? l1 l2)
+  (and (list? l1)
+       (list? l2)
+       (= (length l1) (length l2))
+       (every?
+        (lambda (bucket)
+          (if (not (pair? bucket))
+              #f
+              (let ( (probe (assq (car bucket) l2)) )
+                (and (pair? probe)
+                     (equal? (car probe) (car bucket))
+                     (equal? (cdr probe) (cdr bucket))))))
+        l1))
+)
+
 
 ;==============================================================;
 
@@ -387,8 +387,6 @@
            container suite-name))
   (hashtable-delete! container suite-name) ;; table-remove!
 )
-
-;=================================
 
 ;;;======================================================================
 ;;; RUNNING TESTS
