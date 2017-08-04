@@ -40,6 +40,7 @@
           (rnrs records syntactic (6))
           (rnrs exceptions (6))
           (rnrs hashtables (6))
+          (rnrs lists      (6))
           (srfi :39) ; parameters
           (srfi :48) ; format
           )
@@ -129,6 +130,12 @@
      )
 ) )
 
+(define (every? pred? list)
+  (if (null? list)
+      #true
+      (and (pred? (car list))
+           (every? pred? (cdr list)))))
+
 (define (equivalent-alist? l1 l2)
   (and (list? l1)
        (list? l2)
@@ -139,8 +146,8 @@
               #false
               (let ( (probe (assq (car pair) l2)) )
                 (and (pair? probe)
-                     (eq? (car probe) (car pair))
-                     (eq? (cdr probe) (cdr pair))))))
+                     (equal? (car probe) (car pair))
+                     (equal? (cdr probe) (cdr pair))))))
         l1))
 )
 
