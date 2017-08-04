@@ -110,7 +110,7 @@
 (define (dict->alist dict)
   (let-values ( ((keys-vec vals-vec)
                  (hashtable-entries dict)) )
-   (vector-map cons keys-vec vals-vec)))
+    (vector->list (vector-map cons keys-vec vals-vec))))
 
 
 ;;; Conditions

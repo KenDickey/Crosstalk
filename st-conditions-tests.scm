@@ -38,8 +38,8 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
-(add-equal-test 'st-conditions
- #((isMessage . #t)
+(add-equivalent-alist-test 'st-conditions
+ '((isMessage . #t)
    (message . "/: zero divisor: 3 0 \n")
    (isWho . #t)
    (isAssertion . #t)
@@ -47,8 +47,8 @@
  (dict->alist (condition->dictionary zero-divide))
  "zero-divide condition asDictionary")
 
-(add-equal-test 'st-conditions
-  #((isMessage . #t)
+(add-equivalent-alist-test 'st-conditions
+  '((isMessage . #t)
       (isError . #t)
       (message . "frob")
       (irritants a "bee" #\c 47)
@@ -56,8 +56,8 @@
  (dict->alist (condition->dictionary frob-error))
  "Scheme error condition asDictionary")
 
-(add-equal-test 'st-conditions
- #((isMessage . #t)
+(add-equivalent-alist-test 'st-conditions
+ '((isMessage . #t)
    (isError . #t)
    (message . "not a textual output port")
    (isWho . #t)

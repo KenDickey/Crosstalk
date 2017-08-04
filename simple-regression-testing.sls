@@ -31,7 +31,8 @@
   (export verbose-test-output? break-on-test-error?
           run-all-tests run-tests-for-suite
           add-test-suite remove-test-suite remove-all-test-suites
-          add-test add-eq-test add-equal-test ensure-exception-raised
+          add-test add-eq-test add-equal-test add-equivalent-alist-test
+	  ensure-exception-raised
           default-setup-thunk default-teardown-thunk
           make-error-string-predicate 
           )
@@ -59,7 +60,8 @@
 ;; (add-test       suite-name expect form equivalent? . message)
 ;; (add-eq-test    suite-name expect form . message)
 ;; (add-equal-test suite-name expect form . message)
-;; (ensure-exception-raised suite-name type-pred? form . message)
+;; (add-equivalent-alist-test suite-name expect form . message)
+;; (ensure-exception-raised   suite-name type-pred? form . message)
 ;; 
 ;;  All forms are "thunkified" by being wrapped in zero argument lambdas.
 ;;  Internal usage is: (equivalent? expected (thunk))
@@ -124,6 +126,32 @@
      )
     ((_ <suite-name> <expect> <form> <message>)
      (add-test <suite-name> <expect> <form> equal? <message>)
+     )
+) )
+
+(define (equivalent-alist? l1 l2)
+  (and (list? l1)
+       (list? l2)
+       (= (length l1) (length l2))
+       (every?
+        (lambda (pair)
+          (if (not (pair? pair))
+              #false
+              (let ( (probe (assq (car pair) l2)) )
+                (and (pair? probe)
+                     (eq? (car probe) (car pair))
+                     (eq? (cdr probe) (cdr pair))))))
+        l1))
+)
+
+  
+(define-syntax add-equivalent-alist-test
+  (syntax-rules ()
+    ((_ <suite-name> <expect> <form>)
+     (add-test <suite-name> <expect> <form> equivalent-alist? '<form>)
+     )
+    ((_ <suite-name> <expect> <form> <message>)
+     (add-test <suite-name> <expect> <form> equivalent-alist? <message>)
      )
 ) )
 
