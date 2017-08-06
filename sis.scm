@@ -117,18 +117,18 @@
 
 ;;;
 
-(define scm-root-directory-prefix "/home/kend/Crosstalk/")
+(define scm-root-directory-prefix ".") ;; "/home/kend/Crosstalk")
 
 (define st-kernel-prefix
   (string-append scm-root-directory-prefix
-                 "SmalltalkKernel/"))
+                 "/SmalltalkKernel/"))
 
 (define st-unit-test-prefix
   (string-append scm-root-directory-prefix
-                 "UnitTests/"))
+                 "/UnitTests/"))
 
 (define temp-dir-prefix
-  (string-append scm-root-directory-prefix "Temp/"))
+  (string-append scm-root-directory-prefix "/Temp/"))
 
 (define scm-bootstrap-file-names
   '( "st-kernel"       ;; message mechanics
@@ -158,7 +158,7 @@
 
 (define (source-scm-file-names)
   (map (lambda (file-name)
-         (string-append scm-root-directory-prefix file-name ".scm"))
+         (string-append scm-root-directory-prefix "/" file-name ".scm"))
        scm-bootstrap-file-names)
 )
 
@@ -200,20 +200,20 @@
 (define (xlate-st-file fname)
   (format #t "~%St->Scm translate ~a" fname)
   (xlate-st-file->scm-file
-   (string-append st-kernel-prefix fname ".st")
-   (string-append temp-dir-prefix fname ".scm"))
+   (string-append st-kernel-prefix "/" fname ".st")
+   (string-append temp-dir-prefix "/" fname ".scm"))
 )
     
 (define (xlate-st-unit-test-file fname)
   (format #t "~%St->Scm translate ~a" fname)
   (xlate-st-file->scm-file
-   (string-append st-unit-test-prefix fname ".st")
-   (string-append temp-dir-prefix fname ".scm"))
+   (string-append st-unit-test-prefix "/" fname ".st")
+   (string-append temp-dir-prefix "/" fname ".scm"))
 )
 
 (define (compiled-file-names)
   (map (lambda (file-name)
-         (string-append scm-root-directory-prefix file-name ".fasl"))
+         (string-append scm-root-directory-prefix "/" file-name ".fasl"))
        scm-bootstrap-file-names)
 )
 
