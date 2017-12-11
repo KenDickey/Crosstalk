@@ -49,6 +49,8 @@
        port-position port-has-set-port-position!?
        ratnum?
        current-directory
+       system ;; for directory creation
+       getprop putprop ;; for symbol-value
        )
     (srfi :48) ;; intermediate-format-strings
     (only (srfi :13) ;; String library (see "st-string.scm")
@@ -129,6 +131,8 @@
 
 (define temp-dir-prefix
   (string-append scm-root-directory-prefix "/Temp/"))
+
+
 
 (define scm-bootstrap-file-names
   '( "st-kernel"       ;; message mechanics
@@ -286,5 +290,9 @@
 (define structure-printer-set #false) ;; to set once
 
 (define debug-st-runtime (make-parameter #false))
+
+;; Make sure we have a Temp dir
+(system (string-append "mkdir "
+                       temp-dir-prefix))
 
 ;;;			--- E O F ---			;;;
