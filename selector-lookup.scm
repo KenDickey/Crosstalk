@@ -8,8 +8,8 @@
 ;; In place of a Class or hash-table, each St object has a slot with
 ;; a vector of closures which are its methods.
 ;;
-;; Selectors are assigned an index when first used to refer to a method.
-;; The index is used to find the appropriate method in the method vector.
+;; Selectors are assigned an id when first used to refer to a method.
+;; The id is used to find the appropriate method in the method vector.
 ;; Holes in the vector are kept track of in slot zero.
 ;;
 ;; No hashes.  No caches.
