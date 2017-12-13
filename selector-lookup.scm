@@ -15,16 +15,16 @@
 ;; No hashes.  No caches.
 ;;
 ;; E.g.  (#f +=> unused)
-;;  Logical    Actual   ..(hole-index-min num-holes-less-one)..
+;;  Logical    Actual   ..(hole-index num-adjacent-holes)..
 ;; 0 |  #f |   | --> | ((5 . 1) (9 . 2) (15 . 0))
-;; 1 | m1  |   | m1  |
-;; 2 | m2  |   | m2  |
-;; 3 | m3  |   | m3  |
-;; 4 | m4  |   | m4  |
-;; 5 |  #f |   | m7  |
-;; 6 |  #f |   | m8  |
-;; 7 | m7  |   | m12 |
-;; 8 | m8  |   | m13 |
+;; 1 |  m1 |   |  m1 |
+;; 2 |  m2 |   |  m2 |
+;; 3 |  m3 |   |  m3 |
+;; 4 |  m4 |   |  m4 |
+;; 5 |  #f |   |  m7 |
+;; 6 |  #f |   |  m8 |
+;; 7 |  m7 |   | m12 |
+;; 8 |  m8 |   | m13 |
 ;; 9 |  #f |   | m14 |
 ;;10 |  #f |   | m16 |
 ;;11 |  #f |
@@ -37,17 +37,19 @@
 ;; Tuning: Could use method Object>>doesNotUnderstand: in unused
 ;; slots, only condensing when the number of unused 'holes'
 ;; exceeds a given threshold.
+;;
+;; Alt: Check against Larceny's optimized case dispatch.
 
-(define (make-selector-table (vector nil)))
+(define (make-selector-table) (vector nil))
 
-(define assign-index-to-selector ;; return the index
+(define assign-id-to-selector ;; return the selector id
   (let ( (counter 0) )
     (lambda (sym)
       (cond
        ((not (symbol? sym))
         doesNotUnderstand:
         )
-       ((selector->index sym)) ;; Answer the index
+       ((selector->id sym)) ;; Answer the index
        (else
         (set! counter (+ 1 counter))
         (set-selector-index! sym counter)
@@ -55,14 +57,14 @@
 ) ) ) )
          
 
-(define (selector->index sym)
+(define (selector->id sym)
   (getprop sym '%%method-index%%))
 
 (define (set-selector-index! sym idx)
   (putprop sym '%%method-index%% idx))
 
 (define (selector+table->method sym vec)
-  (let ( (idx (selector->index sym)) )
+  (let ( (idx (selector->id sym)) )
     (if (not idx)
         doesNotUnderstand:
         (let loop ( (hole-count 0)
@@ -76,18 +78,18 @@
                 doesNotUnderstand:)
             ))
            (else
-            (let  ( (next-hole (caar holes-alist))
-                    (hole-span (cdar holes-alist))
+            (let  ( (next-hole    (caar holes-alist))
+                    (num-adjacent (cdar holes-alist))
                   )
               (cond
                ((< idx next-hole)
                 (vector-ref vec (- idx hole-count))
                 )
-               ((<= idx (+ next-hole hole-span))
-                doesNotUnderstand:
+               ((<= idx (+ next-hole num-adjacent))
+                doesNotUnderstand: ;; not in table
                 )
                (else (loop
-                      (+ hole-count 1 hole-span) 
+                      (+ hole-count 1 num-adjacent) 
                       (cdr holes-alist)))))))
 ) ) ) )
 
@@ -95,7 +97,7 @@
 
 ;; (define doesNotUnderstand: 'doesNotUnderstand: )
 
-;; (map assign-index-to-selector
+;; (map assign-id-to-selector
 ;;      '(m1 m2 m3 m4 m5 m6 m7 m8 m9 m10 m11 m12 m13 m14 m15 m16 m17))
 
 ;; (define mvec (vector '((5 . 1) (9 . 2) (15 . 0))
