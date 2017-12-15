@@ -12,9 +12,9 @@
 ;; The id is used to find the appropriate method in the method vector.
 ;; Holes in the vector are kept track of in slot zero.
 ;;
-;; No hashes.  No caches.
+;; No hashes.  No caches.  Holes elided.
 ;;
-;; E.g.  (#f +=> unused)
+;; E.g.  (#f ==> unused)
 ;;  Logical    Actual   ..(hole-index num-adjacent-holes)..
 ;; 0 |  #f |   | --> | ((5 . 1) (9 . 2) (15 . 0))
 ;; 1 |  m1 |   |  m1 |
@@ -39,6 +39,7 @@
 ;; exceeds a given threshold.
 ;;
 ;; Alt: Check against Larceny's optimized case dispatch.
+;; Alt: Large # of gaps -> binary search
 
 (define (make-selector-table) (vector nil))
 
