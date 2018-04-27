@@ -10,10 +10,6 @@
 
 ;; @@FIXME: pre-Smalltalk namespace
 
-(define true  #true)
-(define false #false)
-(define nil   '())
-
 (define (doesNotUnderstand: self selector) ;; ANSI
 ;; NB: redefined in "st-error-obj.scm"
   (error (format #f "#~a not understood by ~a"
@@ -266,12 +262,12 @@
 (primAddSelector:withMethod:
  	st-object-behavior
         'hash   ;; ANSI
-        equal-hash)
+        equal?-hash)
 
 (primAddSelector:withMethod:
  	st-object-behavior
         'identityHash   ;; ANSI
-        object-hash)
+        eq?-hash)
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -296,7 +292,7 @@
 (primAddSelector:withMethod:
  	st-object-behavior
         'is:
-        (lambda (self aSymbol) #false)) ; base case
+        (lambda (self aSymbol) #f)) ; base case
 
 (primAddSelector:withMethod: ;; ANSI
  	st-object-behavior

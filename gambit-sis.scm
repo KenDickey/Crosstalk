@@ -89,11 +89,20 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
-;;; R7RS bytevector accessors named differently
+(define-macro (unless test . body)
+  `(if ,test #f (begin ,@body)))
 
-(define bytevector-ref   u8vector-ref)
-(define bytevector-set!  u8vector-set!)
-(define list->bytevector list->u8vector)
+(define-macro (when test . body)
+  `(if ,test (begin ,@body)))
+
+
+(define make-bytevector   make-u8vector)
+(define bytevector?       u8vector?)
+(define bytevector-ref    u8vector-ref)
+(define bytevector-set!   u8vector-set!)
+(define bytevector-length u8vector-length)
+(define list->bytevector  list->u8vector)
+(define bytevector->list  u8vector->list)
 
 
 ;;;

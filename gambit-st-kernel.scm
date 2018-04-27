@@ -104,7 +104,11 @@
 
 ;;; Basic Objects
 
-(define st-nil  '())
+(define true  #t)
+(define false #f)
+(define nil   '())
+
+(define st-nil   nil)
 (define st-true  #t)
 (define st-false #f)
 
@@ -422,7 +426,7 @@
      (lambda (self index)
        ;; NB: ST 1-based, Scheme 0-based
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-ref self (- index 1))
+           (bytevector-ref self (- index 1))
            (error "Index out of range" self index))))
      
 (primAddSelector:withMethod:
@@ -430,7 +434,7 @@
      'at:put:
      (lambda (self index newVal)
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-set! self (- index 1) newVal)
+           (bytevector-set! self (- index 1) newVal)
            (error "Index out of range" self index))))
 
 (primAddSelector:withMethod:
@@ -470,13 +474,13 @@
            behavior
            getter-name
            (lambda (self)
-             (vector-like-ref self index)))
+             (##vector-ref self index)))
           
           (primAddSelector:withMethod:
            behavior
            setter-name
            (lambda (self newVal)
-             (vector-like-set! self index newVal)
+             (##vector-set! self index newVal)
              self))
           
           (loop (+ index 1) (cdr slot-names))))
@@ -492,8 +496,8 @@
      (lambda (self user-index)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
-             (vector-like-ref self vec-index)
+         (if (< pre-start vec-index (##vector-length self))
+             (##vector-ref self vec-index)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
    )
 
@@ -503,9 +507,9 @@
      (lambda (self user-index newVal)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
+         (if (< pre-start vec-index (##vector-length self))
              (begin
-               (vector-like-set! self vec-index newVal)
+               (##vector-set! self vec-index newVal)
                self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
      )
@@ -516,9 +520,9 @@
      (lambda (self user-index aBlock)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
-             (let ( (original-elt (vector-like-ref self vec-index)) )
-               (vector-like-set! self
+         (if (< pre-start vec-index (##vector-length self))
+             (let ( (original-elt (##vector-ref self vec-index)) )
+               (##vector-set! self
                             vec-index
                             (aBlock original-elt))
                self)
@@ -529,7 +533,7 @@
      behavior
      'basicSize
      (lambda (self)
-       (- (vector-like-length self) start-index))
+       (- (##vector-length self) start-index))
      )
 ) )
 

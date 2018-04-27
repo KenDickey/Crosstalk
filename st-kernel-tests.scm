@@ -21,7 +21,7 @@
   (primAddSelector:withMethod:  ;; Testing context
  	test-behavior
         'isKindOf:
-        (lambda ignored #false))
+        (lambda ignored #f))
   (primAddSelector:withMethod:  ;; Testing context
  	test-behavior
         'superclass
@@ -59,7 +59,7 @@
 
 (add-equal-test 'st-kernel 
   "true"
-  (perform: #true 'printString)
+  (perform: #t 'printString)
   "true")
 
 (add-equal-test 'st-kernel 
