@@ -39,7 +39,7 @@
         'selector
         (lambda (self)
           (let ( (selector (procedure-name self)) )
-            ;; Scheme returns #false if unnamed.
+            ;; Scheme returns #f if unnamed.
             ;; Smalltalk returns nil in this case.
             (if selector
                 selector
@@ -216,7 +216,7 @@
         'ensure:
         (lambda (self afterThunk)
           (dynamic-wind
-            (lambda () #false) ;; before
+            (lambda () #f) ;; before
             self ; thunk
             afterThunk))) ;; after: always executed
 
@@ -274,13 +274,13 @@
         'ifCurtailed:
         (lambda (self action)
           ;;  to class based system
-          (let ( (curtailed? #true)
+          (let ( (curtailed? #t)
                  (result '()) )
             (dynamic-wind
-              (lambda () #false) ;; before
+              (lambda () #f) ;; before
               (lambda ()
                 (set! result (self))
-                (set! curtailed? #false))
+                (set! curtailed? #f))
               (lambda ()
                 (if curtailed? (action))))
             result)

@@ -599,7 +599,7 @@
   (unless (integer? integer)
     (error "printWIthRadix: unsupported for this recevier" integer))
   (let ( (string-port (open-output-string)) )
-    (printOn:base:showRadix: integer string-port radix #true)
+    (printOn:base:showRadix: integer string-port radix #t)
     (get-output-string string-port)))
   ;; (format #f
   ;;         (if (negative? integer)

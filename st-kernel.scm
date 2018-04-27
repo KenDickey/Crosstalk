@@ -37,15 +37,15 @@
 (define (saferIsKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
     (cond
-     ((null? super-class) #false)
-     ((eq? super-class someClass) #true)
-     ((not (st-object? super-class)) #false)
+     ((null? super-class) #f)
+     ((eq? super-class someClass) #t)
+     ((not (st-object? super-class)) #f)
      (else (loop (perform: super-class 'superclass))))
 ) )
 
 (define (class? thing)
   (cond
-   ((not (st-object? thing)) #false)
+   ((not (st-object? thing)) #f)
    (else (saferIsKindOf: thing Class))))
 
 ;;  Nota Bene: send-failed is redefined in "st-error-obj.scm"
@@ -96,8 +96,8 @@
 ;;; Basic Objects
 
 (define st-nil  '())
-(define st-true  #true)
-(define st-false #false)
+(define st-true  #t)
+(define st-false #f)
 
 (define st-nil? null?)
 
@@ -169,7 +169,7 @@
  	st-nil-behavior
         'notNil
         (lambda (self)
-          #false))
+          #f))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
@@ -181,7 +181,7 @@
  	st-nil-behavior
         'isNil
         (lambda (self)
-          #true))
+          #t))
 
 (primAddSelector:withMethod: 
  	st-true-behavior
@@ -326,8 +326,8 @@
 (define (behavior thing)
   (case thing  
     ;; immediates -- tagtype -> err
-    ((#true)  st-true-behavior)
-    ((#false) st-false-behavior)
+    ((#t)  st-true-behavior)
+    ((#f) st-false-behavior)
     (( () )   st-nil-behavior)
 ;; eof-object -- err
     (else
@@ -738,9 +738,9 @@
     (display "a number with value: ")
     (display obj)
     )
-   ((eq? obj #true)  (display "true")
+   ((eq? obj #t)  (display "true")
     )
-   ((eq? obj #false) (display "false")
+   ((eq? obj #f) (display "false")
     )
    ((string? obj)
     (display "a string of length ")
@@ -782,7 +782,7 @@
 
 ;; Only setup structure-printer once
 (unless structure-printer-set?
-  (set! structure-printer-set? #true)
+  (set! structure-printer-set? #t)
   (structure-printer
      (lambda (obj port quote?)
        (if (st-object? obj)

@@ -8,7 +8,7 @@
 (define TestClass #f)
 
 (define (setup-st-core-classes)
-  #true)
+  #t)
 
 (define (cleanup-st-core-classes)
   (set! TestClass #f)

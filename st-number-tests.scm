@@ -33,17 +33,17 @@
   "2 - 3")
 
 (add-equal-test 'st-number
-  #true
+  #t
   (perform:with: 2 'isKindOf: Number)
   "2 isKindOf: Number")
 
 (add-equal-test 'st-number
-  #false
+  #f
   (perform:with: 1/2 'isKindOf: Integer)
   "1/2 isKindOf: Integer")
 
 (add-equal-test 'st-number
-  #true
+  #t
   (perform:with: 1/2 'isKindOf: Magnitude)
   "1/2 isKindOf: Magnitude")
 

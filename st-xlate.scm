@@ -117,7 +117,7 @@
 ;;; Block
 
 ;; dynamic var
-(define within-return? (make-parameter #false))
+(define within-return? (make-parameter #f))
 
 (define (xlateBlock ast)
   (let* ( (arguments
@@ -139,7 +139,7 @@
              (simplified-return (astBlock-statements ast))
              )
             (hasReturn?
-             (parameterize ((within-return? #true))
+             (parameterize ((within-return? #t))
                (->scm-statements (astBlock-statements ast)))
              )
             (else
@@ -439,8 +439,8 @@
 
 (define (xlate-st-file->scm infile-name)
   (set! next-st-token (tokenizer-for-file-named infile-name))
-  (set! curr-token #false)
-  (set! prev-token #false)
+  (set! curr-token #f)
+  (set! prev-token #f)
   (call-with-port (current-output-port)
     (lambda (outp)
       (let loop ( (form (parse-st-code)) )
@@ -455,8 +455,8 @@
 
 (define (xlate-st-file->scm-file infile-name outfile-name)
   (set! next-st-token (tokenizer-for-file-named infile-name))
-  (set! curr-token #false)
-  (set! prev-token #false)
+  (set! curr-token #f)
+  (set! prev-token #f)
   (delete-file outfile-name) ;; OK to fail
   (call-with-output-file outfile-name
     (lambda (outp)

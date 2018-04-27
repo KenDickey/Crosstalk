@@ -297,24 +297,24 @@
          'streamContents:
          (lambda (outport)
            (let ( (length (string-length self))
-                  (after-first-char #false)
+                  (after-first-char #f)
                 )
-             (let loop ( (index 0) (upcaseMe #false) )
+             (let loop ( (index 0) (upcaseMe #f) )
                (when (< index length)
                  (let ( (char (string-ref self index)) )
                    (cond
                     ((char-whitespace? char)
-                      (loop (+ index 1) #true)
+                      (loop (+ index 1) #t)
                       )
                     ((and upcaseMe after-first-char)
                      (write-char (char-upcase char) outport)
-                     (loop (+ index 1) #false)
+                     (loop (+ index 1) #f)
                      )
                     (else
                      (write-char char outport)
                      (unless after-first-char
-                       (set! after-first-char #true))
-                     (loop (+ index 1) #false)
+                       (set! after-first-char #t))
+                     (loop (+ index 1) #f)
                      )))))))
   ) ) )
 

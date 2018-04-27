@@ -43,7 +43,7 @@
         (lambda (self)
           (if (input-stream? self)
               (eof-object? (peek-char self))
-              #true))) ;; write-only ports always at end
+              #t))) ;; write-only ports always at end
 
 
 ;;; CharStream

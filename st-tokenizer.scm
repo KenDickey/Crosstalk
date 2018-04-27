@@ -86,7 +86,7 @@
 ;; This scanner needs to look 2 chars ahead
 ;; to decide these cases.
 
-(define saved-char #false) ;; false or a character
+(define saved-char #f) ;; false or a character
 
 
 ;;; TOKEN-PARSER-FOR-PORT returns a function/thunk
@@ -99,11 +99,11 @@
           (column  column) ;; Likewise..
           (buffer  (make-string 1024 #\space))
           (buf-len (string-length buffer))
-          (token-len      #false)
-          (token-location #false)
-          (first-char     #false)
-          (next-char      #false)
-          (port-closed    #false)
+          (token-len      #f)
+          (token-location #f)
+          (first-char     #f)
+          (next-char      #f)
+          (port-closed    #f)
        )
 
     (define (add-to-buffer char)
@@ -117,7 +117,7 @@
       (if saved-char
           (begin
             (set! first-char saved-char)
-            (set! saved-char #false))
+            (set! saved-char #f))
           (set! first-char (read-next-char)))
       (unless (eof-object? first-char)
         ;; Can't store eof in a string.
@@ -183,7 +183,7 @@
             (cond
              ((eof-object? char)
               (close-port inport)
-              (set! port-closed #true)
+              (set! port-closed #t)
               (set! next-char (eof-object))
               )
              ((safe-char=? char #\newline)
@@ -233,7 +233,7 @@
                 (new-token token-kind)
                 (begin ;; found a keyword
                   (add-to-buffer saved-char)
-                  (set! saved-char #false)
+                  (set! saved-char #f)
                   (new-token 'keyword))))
           (new-token token-kind)))
               
@@ -287,7 +287,7 @@
           (new-token 'integer)	;; e.g. "3. " int period white
           (begin		;; e.g. "3.0" float
             (add-to-buffer #\.)
-            (set! saved-char #false)
+            (set! saved-char #f)
             (let loop ()
               (cond
                ((digit? next-char)
@@ -490,22 +490,22 @@
       (let ( (charcode (char->integer char)) )
         (or (<= 97 charcode 122)  ;; a..z
             (<= 65 charcode  90))) ;; A..Z
-      #false))
+      #f))
 
 (define (unicode-letter? char)
   (if (char? char)
       (char-alphabetic? char)
-      #false))
+      #f))
 
 (define (ascii-digit? char)
   (if (char? char) ;; eof protect
       (char-numeric? char)
-      #false))
+      #f))
 
 (define (unicode-digit? char) ;; Note: char-numeric?
   (if (char? char)
       (<= 48 (char->integer char) 57) ;; 0..9
-      #false))
+      #f))
 
 (define ascii-binop-chars
   (string->list "!%&*+,/<=>?@\\~-")) ;; NB: without $|
@@ -518,7 +518,7 @@
   (error "Need to implement test for Unicode math symbol chars"))
 
 ;; Default is ASCII (portable)
-(define unicode-in-identifiers #false)
+(define unicode-in-identifiers #f)
 (define letter? ascii-letter?)
 (define digit?  ascii-digit?)
 (define binary-operator-char? ascii-binop-char?)
@@ -544,28 +544,28 @@
 (define (whitespace? char)
   (if (char? char)
       (char-whitespace? char)
-      #false))
+      #f))
 
 (define (numeric? char)
   (if (char? char)
       (char-numeric? char)
-      #false))
+      #f))
 
 (define (radixDigit? char)
   (cond
    ((eof-object? char)
-    #false)
+    #f)
    ((digit? char)
-    #true)
+    #t)
    ((upcaseLetter? char)
-    #true)
+    #t)
    (else
-    #false)))
+    #f)))
 
 (define (upcaseLetter? char)
   (if (char? char) ;; eof protect
       (<= 65 (char->integer char) 90) ;; A..Z
-      #false))
+      #f))
 
 
 ;;;

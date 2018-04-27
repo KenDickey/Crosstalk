@@ -71,20 +71,20 @@
   ;;    verticalBar
   ;;    whitespace )
 
-(define debug-parser          (make-parameter #false))
-(define trace-parse-methods   (make-parameter #false))
-(define trace-skip-whitespace (make-parameter #false))
+(define debug-parser          (make-parameter #f))
+(define trace-parse-methods   (make-parameter #f))
+(define trace-skip-whitespace (make-parameter #f))
 
 ;; Quick Test
 (define next-st-token
   (lambda ignored (error "next-st-token: input not defined !!")))
-(define curr-token #false)
-(define prev-token #false)
+(define curr-token #f)
+(define prev-token #f)
 
 (define (parse-test input-string)
   (set! next-st-token (tokenizer-for-string input-string))
-  (set! curr-token #false)
-  (set! prev-token #false)
+  (set! curr-token #f)
+  (set! prev-token #f)
 )
 
 (define (st->AST st-string)
@@ -571,8 +571,8 @@
               '(integer integerWithRadix
                 scaledDecimal scaledDecimalWithFract
                 float floatWithExponent))
-      #true
-      #false))
+      #t
+      #f))
 
 
 ;; <array literal> ::= '#(' <array element>* ')'
@@ -729,7 +729,7 @@
   (if (eq? 'blockEnd (curr-token-kind))
       (begin ;; no statements
         (consume-token!)
-        (astBlock args temps '() #false))
+        (astBlock args temps '() #f))
       (let ( (statements (parse-statements)) )
         (skip-whitespace)
         (unless (eq? 'blockEnd (curr-token-kind))
@@ -748,25 +748,25 @@
      (letrec ( (check-for-returns
         (lambda (ast)
           (cond
-           ((list? ast) (for-each check-for-returns ast) #false)
+           ((list? ast) (for-each check-for-returns ast) #f)
            ((astSequence? ast)
             (check-for-returns (astSequence-statements ast)))
            ((astSubexpression? ast)
             (check-for-returns (astSubexpression-expression ast)))
-           ((astReturn? ast) (return #true))
+           ((astReturn? ast) (return #t))
            ((astAssignment? ast)
             (check-for-returns (astAssignment-val ast)))
            ((astBlock? ast)
-            (if (astBlock-hasReturn? ast) (return #true))
+            (if (astBlock-hasReturn? ast) (return #t))
             (check-for-returns (astBlock-statements ast)))
            ((astCascade? ast)
             (check-for-returns (astCascade-messages ast)))
-           ((astIdentifier? ast) #false)
-           ((astLiteral? ast) #false)
-           ((astSelector? ast) #false)
-           ((astUnarySend? ast) #false)
-           ((astKeywordSend? ast) #false)
-           ((astUnaryMessage? ast) #false)
+           ((astIdentifier? ast) #f)
+           ((astLiteral? ast) #f)
+           ((astSelector? ast) #f)
+           ((astUnarySend? ast) #f)
+           ((astKeywordSend? ast) #f)
+           ((astUnaryMessage? ast) #f)
            ((astBinaryMessage? ast) 
             (check-for-returns (astBinaryMessage-argument ast)))
            ((astKeywordMessage? ast)
@@ -776,8 +776,8 @@
            ((astMessageSend? ast)
             (unless (check-for-returns (astMessageSend-receiver ast))
               (check-for-returns (astMessageSend-messages ast))))
-           ((astArray? ast) #false)
-           ((astDynamicArray? ast) #false)
+           ((astArray? ast) #f)
+           ((astDynamicArray? ast) #f)
            (else
             (error
              "check-for-returns: unhandled AST case" ast)

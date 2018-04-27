@@ -139,12 +139,12 @@ Be aware however that most of these methods are not sent as real messages
 (addSelector:withMethod: 
  	(class True)
         'initializedInstance
-        (lambda (self) st-true)) ; #true
+        (lambda (self) st-true)) ; #t
 
 (addSelector:withMethod: 
  	(class False)
         'initializedInstance
-        (lambda (self) st-false)) ; #false
+        (lambda (self) st-false)) ; #f
 
 (addSelector:withMethod: 
  	(class UndefinedObject)
@@ -331,7 +331,7 @@ Be aware however that most of these methods are not sent as real messages
 
 (addSelector:withMethod: 
  	True
-        'ifFalse:   ;;; NB: nil, NOT #false !
+        'ifFalse:   ;;; NB: nil, NOT #f !
         (lambda (self alternativeBlock) st-nil)) 
 
 (addSelector:withMethod: 
@@ -346,7 +346,7 @@ Be aware however that most of these methods are not sent as real messages
 
 (addSelector:withMethod: 
  	False
-        'ifTrue:   ;;; NB: nil, NOT #false !
+        'ifTrue:   ;;; NB: nil, NOT #f !
         (lambda (self alternativeBlock) st-nil)) 
 
 (addSelector:withMethod: 
@@ -388,7 +388,7 @@ Be aware however that most of these methods are not sent as real messages
         'and:and:
         (lambda (self block1 block2)
           (cond
-           ((st-false? self) self) ;; #false
+           ((st-false? self) self) ;; #f
            ((st-false? (block1)) st-false)
            ((st-false? (block2)) st-false)
            (else st-true))))
@@ -398,7 +398,7 @@ Be aware however that most of these methods are not sent as real messages
         'and:and:and:
         (lambda (self block1 block2 block3)
           (cond
-           ((st-false? self) self) ;; #false
+           ((st-false? self) self) ;; #f
            ((st-false? (block1)) st-false)
            ((st-false? (block2)) st-false)
            ((st-false? (block3)) st-false)
@@ -409,7 +409,7 @@ Be aware however that most of these methods are not sent as real messages
         'and:and:and:and:
         (lambda (self block1 block2 block3 block4)
           (cond
-           ((st-false? self) self) ;; #false
+           ((st-false? self) self) ;; #f
            ((st-false? (block1)) st-false)
            ((st-false? (block2)) st-false)
            ((st-false? (block3)) st-false)
@@ -422,7 +422,7 @@ Be aware however that most of these methods are not sent as real messages
         'or:or:
         (lambda (self block1 block2)
           (cond
-           ((st-true? self) self) ;; #true
+           ((st-true? self) self) ;; #t
            ((st-true? (block1)) st-true)
            ((st-true? (block2)) st-true)
            (else st-false))))
@@ -432,7 +432,7 @@ Be aware however that most of these methods are not sent as real messages
         'or:or:or:
         (lambda (self block1 block2 block3)
           (cond
-           ((st-true? self) self) ;; #true
+           ((st-true? self) self) ;; #t
            ((st-true? (block1)) st-true)
            ((st-true? (block2)) st-true)
            ((st-true? (block3)) st-true)
@@ -443,7 +443,7 @@ Be aware however that most of these methods are not sent as real messages
         'or:or:or:or:
         (lambda (self block1 block2 block3 block4)
           (cond
-           ((st-true? self) self) ;; #true
+           ((st-true? self) self) ;; #t
            ((st-true? (block1)) st-true)
            ((st-true? (block2)) st-true)
            ((st-true? (block3)) st-true)

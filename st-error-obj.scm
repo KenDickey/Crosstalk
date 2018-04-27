@@ -1033,7 +1033,7 @@ Structure:
 
 ;;; send-failed
 
-(define in-send-failed? (make-parameter #false))
+(define in-send-failed? (make-parameter #f))
 
 (set! send-failed ;; def'ed in "st-kernel.scm"
   (lambda (rcvr selector rest-args)
@@ -1063,7 +1063,7 @@ Structure:
      (%%escape%% (format #f "~%Unspecified reciever for #~a" selector))
      )
     (else
-     (parameterize ( (in-send-failed? #true) )
+     (parameterize ( (in-send-failed? #t) )
       ($: receiver
           'doesNotUnderstand:
           ($::: MessageSend

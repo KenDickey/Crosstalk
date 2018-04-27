@@ -89,7 +89,7 @@
          (let ( (rtd (record-rtd cdn)) )
            (hashtable-set! dict
                            (condition-name->predicate-symbol cdn)
-                           #true)
+                           #t)
            (let loop ( (field-names
                         (vector->list
                          (record-type-field-names rtd)))

@@ -218,8 +218,8 @@
      (lambda (self predicate?)
        (let loop ( (elts self) )
          (cond
-          ((null? elts) #false)
-          ((predicate? (car elts)) #true)
+          ((null? elts) #f)
+          ((predicate? (car elts)) #t)
           (else
            (loop (cdr elts)))))))
 

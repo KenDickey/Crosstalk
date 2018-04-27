@@ -1,8 +1,9 @@
+(define do-nothing (lambda whatever 'ignored))
 
 (include "testing-macros.scm")
 (load "testing")
 
-(add-test-suite 'one)
+(add-test-suite 'one do-nothing do-nothing)
 
 (add-eq-test 'one #t (= 1 1) "equal")
 
@@ -20,7 +21,7 @@
 
 (add-test 'one 37 (+ 36 1) = "addition")
 
-(add-test-suite 'two)
+(add-test-suite 'two do-nothing do-nothing)
 
 (add-test 'two 54 (max 32 1 54 7 23 7 21) = "max")
 

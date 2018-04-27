@@ -141,7 +141,7 @@
                         'indexOf:startingAt:ifAbsent:
                         (char-downcase aChar)
                         1
-                        (lambda () #false)))
+                        (lambda () #f)))
                )
             (if val (- val 1) ; zero is index 1
                 -1)))
@@ -158,7 +158,7 @@
                         'indexOf:startingAt:ifAbsent:
                         (char-downcase self)
                         1
-                        (lambda () #false)))
+                        (lambda () #f)))
                )
             (if val (- val 1) ; zero is index 1
                 -1)))

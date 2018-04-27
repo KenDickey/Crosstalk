@@ -12,8 +12,7 @@
 
 ;; Syntactic sugar tastes sweeter ;^)
 
-(define (make-method-dictionary)
-  (make-table (string->keyword "test") eq?))
+(define (make-method-dictionary) (make-eq-hashtable))
 (define method-dictionary? table?)
 (define method-dictionary-size table-length)
 
@@ -99,8 +98,13 @@
 
 
 ;;@@@FIXME very suspect..
-(define procedure-arity ##subprocedure-nb-parameters)
-
+(define (procedure-arity proc)
+  (if (##closure? proc)
+      (arithmetic-shift
+       (##subprocedure-nb-parameters proc)
+       -4) ;; interpreted; convert fixnum representation
+      (##subprocedure-nb-parameters proc) ;; compiled
+) )
 
 ;;; Basic Objects
 

@@ -5,16 +5,16 @@
 
 ;; (requires 'st-set)
 
-(define set1 #false)
-(define set2 #false)
+(define set1 #f)
+(define set2 #f)
 
 (define (setup-st-set)
   (set! set1 ($ Set 'new))
   (set! set2 ($ Set 'new)))
 
 (define (cleanup-st-set) 
-  (set! set1 #false)
-  (set! set2 #false))
+  (set! set1 #f)
+  (set! set2 #f))
 
 (add-test-suite 'st-set
                 setup-st-set
@@ -41,7 +41,7 @@
     ($: set1 'add: 1/2)
     ($: set1 'add: 1/2)
     ($: set1 'add: "another string")
-    ($: set1 'add: #true)
+    ($: set1 'add: #t)
     ($: set1 'add: 23.4)
     ($: set1 'add: (sqrt -4))
     ($: set1 'add: 'mySetSymbol)
@@ -77,23 +77,23 @@
   (begin
     ($::
        set2
-       'remove:ifAbsent: 'aSymbol (lambda () #false))
+       'remove:ifAbsent: 'aSymbol (lambda () #f))
     ($ set2 'tally))
   "after #remove: (set2 tally) --> 8")
 
 (add-equal-test 'st-set
-  #false
+  #f
   ($::
      set2
-     'remove:ifAbsent: 'aSymbol (lambda () #false))
-  "after #remove:, 2nd #remove: block --> #false")
+     'remove:ifAbsent: 'aSymbol (lambda () #f))
+  "after #remove:, 2nd #remove: block --> #f")
 
 (add-equal-test 'st-set
   8
   (begin
     ($::
        set2
-       'remove:ifAbsent: 'aSymbol (lambda () #false))
+       'remove:ifAbsent: 'aSymbol (lambda () #f))
     ($ set2 'tally))
   "after failed #remove: (set2 tally) --> 8")
 

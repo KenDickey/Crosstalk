@@ -37,88 +37,88 @@
    "obj glerph -> doesNotUnderstand")
 
 (add-eq-test 'st-object
-  #false
+  #f
   (perform:with: %%test-object '== 37)
   "anObject == 37")
 
 (add-eq-test 'st-object
-  #false
+  #f
   (perform:with: Object 'respondsTo: 'ugly)
   "anObject respondsTo: #ugly")
 
 (add-eq-test 'st-object
-  #true
+  #t
   (perform:with: %%test-object '~= 37)
   "anObject ~= 37")
 
 (add-eq-test 'st-object
-  #false
+  #f
   (perform:with: %%test-object '~~ %%test-object)
   "anObj ~~ anObj")
 
 (add-eq-test 'st-object
-  #true
+  #t
   (perform:with: %%test-object '== %%test-object)
   "anObj == anObj")
 
 (add-eq-test 'st-object
-  #true
+  #t
   (perform:with: %%test-object '= %%test-object)
   "anObj = anObj")
 
 (add-eq-test 'st-object
-  #false
+  #f
   (perform:with: %%test-object '~= %%test-object)
   "anObj ~= anObj")
 
 (add-eq-test 'st-object
-  #true
-  (perform:with: %%test-object '~~ #false)
+  #t
+  (perform:with: %%test-object '~~ #f)
   "anObj ~~ false")
 
 (add-eq-test 'st-object
-  #false
-  (perform:with: %%test-object '== #false)
+  #f
+  (perform:with: %%test-object '== #f)
   "anObj == false")
 
 (add-eq-test 'st-object
-  #false
-  (perform:with: %%test-object '= #false)
+  #f
+  (perform:with: %%test-object '= #f)
   "anObj = false")
 
 (add-eq-test 'st-object
-  #true
-  (perform:with: %%test-object '~= #false)
+  #t
+  (perform:with: %%test-object '~= #f)
   "anObj ~= false")
 
 
 ;; (add-eq-test 'st-object
-;;   #false
+;;   #f
 ;;   (perform:with: "foo" '~~ "foo")
 ;;   "'foo' ~~ 'foo'")
 
 ;; (add-eq-test 'st-object
-;;   #true
+;;   #t
 ;;   (perform:with: 'foo '== 'foo)
 ;;   "#foo == #foo")
 
 ;; (add-eq-test 'st-object
-;;   #true
+;;   #t
 ;;   (perform:with: "foo" '= "foo")
 ;;   "'foo' = 'foo'")
 
 ;; (add-eq-test 'st-object
-;;   #false
+;;   #f
 ;;   (perform:with: "foo" '~= "foo")
 ;;   "'foo' ~= 'foo'")
 
 (add-eq-test 'st-object
-  #false
+  #f
   (perform:with: %%test-object '== (vector '(object) '() 3))
   "anObject == anOtherObject")
 
 (add-eq-test 'st-object
-  #true
+  #t
   (perform:with: %%test-object '== %%test-object)
   "anObject == anObject")
 
@@ -128,27 +128,27 @@
   "Object basicSize")
 
 ;; (add-equal-test 'st-object
-;;   #true
+;;   #t
 ;;   (perform: st-nil 'isNil)
 ;;   "nil isNil")
 
 (add-equal-test 'st-object
-  #false
+  #f
   (perform: %%test-object 'isNil)
   "anObject isNil")
 
 ;; (add-equal-test 'st-object
-;;   #false
-;;   (perform: #false 'isNil)
+;;   #f
+;;   (perform: #f 'isNil)
 ;;   "false isNil")
 
 ;; (add-equal-test 'st-object
-;;   #false
+;;   #f
 ;;   (perform: st-nil 'notNil)
 ;;   "nil notNil")
 
 ;; (add-equal-test 'st-object
-;;   #true
+;;   #t
 ;;   (perform: st-false 'notNil)
 ;;   "false notNil")
 

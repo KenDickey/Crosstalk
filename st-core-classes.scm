@@ -35,7 +35,7 @@
 
 
 ;;; The Smalltalk Global Environment
-; @@@?? Use a Larceny Environment ??@@@
+
 (define Smalltalk (make-eq-hashtable))
 
 (define (smalltalkAt: aSymbol)
@@ -214,7 +214,7 @@
 ;; Just enough behavior to allow instantiation bootstrap
 ;; to call: newSubclassName:iVars:cVars:
 
-(define broken #false)
+(define broken #f)
 
 (define (make-protoClass
          name behav slot-names
@@ -842,9 +842,9 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 (define (isKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
     (cond
-     ((null? super-class) #false)
-     ((eq? super-class someClass) #true)
-     ((not (st-object? super-class)) #false)
+     ((null? super-class) #f)
+     ((eq? super-class someClass) #t)
+     ((not (st-object? super-class)) #f)
      (else (loop (perform: super-class 'superclass))))
 ) )
 

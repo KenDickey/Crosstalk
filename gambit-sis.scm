@@ -75,7 +75,17 @@
  (readtable-keywords-allowed?-set (current-readtable) #f))
 
 
+
 ;; Helpers
+
+(define (list-copy to-copy)
+  (let loop ( (so-far to-copy) (result '()) )
+    (if (null? so-far)
+	(reverse result)
+	(loop (cdr so-far) (cons (car so-far) result)))
+) )
+
+(load "sort.scm") ;; list-sort, vector-sort
 
 (define (every? proc? list)
   (if (null? list)
@@ -95,6 +105,13 @@
 (define-macro (when test . body)
   `(if ,test (begin ,@body)))
 
+(define-macro (import . ignored) #f) ;; ignore R7RS imports
+
+(define (make-eq-hashtable) (make-table (string->keyword "test") eq?))
+(define hashtable-ref    table-ref)
+(define hashtable-set!   table-set!)
+(define hashtable-length table-length)
+(define hashtable?       table?)
 
 (define make-bytevector   make-u8vector)
 (define bytevector?       u8vector?)
@@ -103,6 +120,8 @@
 (define bytevector-length u8vector-length)
 (define list->bytevector  list->u8vector)
 (define bytevector->list  u8vector->list)
+
+(define string-hash string=?-hash)
 
 
 ;;;
@@ -278,7 +297,7 @@
 
 (define debug-st-runtime (make-parameter #f))
 
-;; Make sure we have a Temp dir
-(shell-command (string-append "mkdir " temp-dir-prefix))
+;; Make sure we have a Temp dir;; ignore if exists
+(shell-command (string-append "mkdir -p " temp-dir-prefix))
 
 ;;;			--- E O F ---			;;;
