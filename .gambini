@@ -1,0 +1,16 @@
+;; define macros in ".gambini" for all loaded files
+;; rather than #import in each.
+
+(define-macro (unless test . body)
+  `(if ,test #f (begin ,@body)))
+
+(define-macro (when test . body)
+  `(if ,test (begin ,@body)))
+
+(define-macro (import . ignored) #f) ;; ignore R7RS imports
+
+(include "~/Crosstalk/gambit-macros.scm")
+
+;; Include unit testing as well.
+(include "~/Crosstalk/testing-macros.scm")
+(include "~/Crosstalk/testing.scm")
