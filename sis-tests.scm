@@ -11,13 +11,10 @@
         (primitives load compile-file procedure-name procedure-name-set!)
         (kend simple-regression-testing))
 
-(break-on-test-error? #false)
-(verbose-test-output? #false)
-
 (define (source-test-file-names)
   (map (lambda (file-name)
          (string-append scm-root-directory-prefix "/" file-name "-tests.scm"))
-       scm-bootstrap-file-names)
+       scm-raw-bootstrap-file-names)
 )
 
 (define (run-source-tests)

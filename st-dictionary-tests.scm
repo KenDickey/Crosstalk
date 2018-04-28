@@ -4,7 +4,7 @@
 
 ;; (require 'st-dictionary)
 
-(define %%dict%% #false)
+(define %%dict%% #f)
 (define (setup-st-dictionary)
   (set! %%dict%% ($ Dictionary 'new))
   ($:: %%dict%% 'at:put: 'a 1)
@@ -51,7 +51,7 @@
 
 
 (add-equal-test 'st-dictionary
-  #((c b a) 6)
+  (vector '(c b a) 6)
   (let ( (keys '()) (total 0) )
     ($: %%dict%%
       'keysAndValuesDo:

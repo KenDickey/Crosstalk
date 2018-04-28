@@ -17,8 +17,8 @@
 
 ;; E.g.  (#f ==> unused)
 ;;
-;;  Logical      Table     Actual   
-;;    _____  
+;;   Logical     Table     Actual
+;;    _____
 ;; 0 |  #f |    1  4  1     _____
 ;; 1 |  m1 |    7  8  3   0|  m1 |
 ;; 2 |  m2 |   12 14  6   1|  m2 |
@@ -46,6 +46,7 @@
 ;;       then index = (idx - sub)
 ;;       else hole => doesNotUnderstand:
 
+;; FIXME: Table: List -> Vector
 ;; FIXME: Binary search when table exceeds threshold
 
 ;;  (import (primitives getprop putprop))
@@ -134,5 +135,6 @@
 
 
 ;;; FIXME: Add & Remove Methods
+
 
 ;;	--- E O F ---	;;

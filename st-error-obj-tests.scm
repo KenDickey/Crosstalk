@@ -65,7 +65,7 @@ result :=
   "Nested exceptions C")
 
 (add-equal-test 'st-error-obj
-  #(3 4)
+  (vector 3 4)
   (st-eval "| result a |
    result :=
 	( [ a := 0. Warning signal: 'error 1'. a := 2]
@@ -76,7 +76,7 @@ result :=
 )
 
 (add-equal-test 'st-error-obj
-  #(2 2)
+  (vector 2 2)
   (st-eval "| result a |
    result :=
 	( [ a := 0. Warning signal: 'error 1'. a := 2]
@@ -87,7 +87,7 @@ result :=
 )
 
 (add-equal-test 'st-error-obj
-  #(3 5)
+  (vector 3 5)
   (st-eval "| result a |
    result :=
 	( [ a := 0. Warning signal: 'error 1' ]
@@ -98,7 +98,7 @@ result :=
 )
 
 (add-equal-test 'st-error-obj
-  #(3 5)
+  (vector 3 5)
   (st-eval "| result a |
    result :=
 	[ [ a := 0. Warning signal: 'error 1' ]
@@ -110,7 +110,7 @@ result :=
 )
 
 (add-equal-test 'st-error-obj
-  #(6 7)
+  (vector 6 7)
   (st-eval "| result a |
    result :=
 	[ [ a := 0. Warning signal: 'error 1' ]

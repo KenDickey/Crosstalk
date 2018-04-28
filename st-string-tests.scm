@@ -6,8 +6,8 @@
 ;; (require 'st-string)
 
 
-(define (setup-st-string)   #false)
-(define (cleanup-st-string) #false)
+(define (setup-st-string)   #f)
+(define (cleanup-st-string) #f)
 
 (add-test-suite 'st-string
                 setup-st-string

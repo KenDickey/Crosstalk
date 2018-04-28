@@ -61,7 +61,7 @@
 
 (add-eq-test 'st-blockClosure
   4
-  (let ( (x #false) )
+  (let ( (x #f) )
     (call-with-current-continuation
      (lambda (k)
        (with-exception-handler
@@ -144,7 +144,7 @@ result.")
  )
 
 (add-equal-test 'st-blockClosure
- #(1 "'ZeroDivide: ZeroDivide: 1 / 0'")
+ (vector 1 "'ZeroDivide: ZeroDivide: 1 / 0'")
  (st-eval "[1 / 0] ifError: [:err :rcvr | { rcvr. err printString. } ]")
  "[1 / 0] ifError: [:err :rcvr | { rcvr. err. } ]"
  )

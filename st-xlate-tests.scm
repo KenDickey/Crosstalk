@@ -66,14 +66,14 @@
   "[ :a| | b | b := a sin. ^ b ]")
 
 (add-equal-test 'st-xlate
-  #(1 2 3 a #\b "c")
-  (st-eval "{ 1. 2. 3. #a. $b. 'c'.}")
-  "{ 1. 2. 3. #a. $b. 'c'.}")
+  (vector 1 2 3 'a #\b "c")
+  (st-eval (symbol->string '|{ 1. 2. 3. #a. $b. 'c'.}|))
+  (symbol->string '|{ 1. 2. 3. #a. $b. 'c'.}|))
 
 (add-equal-test 'st-xlate
-  #(1 5 9 a #\b "c")
-  (st-eval "{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}")
-  "{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}")
+  (vector 1 5 9 'a #\b "c")
+  (st-eval (symbol->string '|{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}|))
+  (symbol->string '|{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}|))
 
 (add-equal-test 'st-xlate
   '(let ((%%val%%
@@ -108,7 +108,7 @@
              (let ((%%val%% ($: ($ self 'size) '+ (@ self 'size))))
                (set! y %%val%%)
                %%val%%)
-             ($: #(#\a 'a "a" 1 1.0)
+             ($: (vector #\a 'a "a" 1 1.0)
                  'do:
                  (lambda (each)
                    (let ((receiver (smalltalkAt: 'Transcript)))

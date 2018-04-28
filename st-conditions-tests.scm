@@ -8,16 +8,6 @@
 (define frob-error  #f)
 (define write-to-non-port #f)
 
-(define-syntax capture-condition ;; to explore
-  (syntax-rules ()
-    ((capture-condition form)
-     (call/cc
-      (lambda (exit)
-        (with-exception-handler
-         (lambda (c) (exit c))
-         (lambda ()  form)))))))
-
-
 (define (setup-st-conditions)
   (set! zero-divide
         (capture-condition (/ 3 0)))

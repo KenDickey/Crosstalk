@@ -86,6 +86,7 @@
 ) )
 
 (load "sort.scm") ;; list-sort, vector-sort
+(load "format.scm") ;; srfi 48
 
 (define (every? proc? list)
   (if (null? list)
@@ -99,19 +100,16 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
-(define-macro (unless test . body)
-  `(if ,test #f (begin ,@body)))
-
-(define-macro (when test . body)
-  `(if ,test (begin ,@body)))
-
-(define-macro (import . ignored) #f) ;; ignore R7RS imports
+;; Done in "~/.gambini"
+;(include "gambit-macros.scm")
+;(load "testing-macros")
+;(load "testing")
 
 (define (make-eq-hashtable) (make-table (string->keyword "test") eq?))
-(define hashtable-ref    table-ref)
-(define hashtable-set!   table-set!)
-(define hashtable-length table-length)
-(define hashtable?       table?)
+(define hashtable-ref   table-ref)
+(define hashtable-set!  table-set!)
+(define hashtable-size  table-length)
+(define hashtable?      table?)
 
 (define make-bytevector   make-u8vector)
 (define bytevector?       u8vector?)
@@ -143,6 +141,32 @@
 
 (define scm-bootstrap-file-names
   '( "gambit-st-kernel" ;; message mechanics
+     "st-object"       ;; Object behavior
+     "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
+     "st-boolean"      ;; Boolean True False UndefinedObject (nil)
+     "st-character"    ;; Character
+     "st-magnitude"
+     "st-number"
+     "st-collection"
+     "st-string"       ;; String
+     "st-symbol"       ;; Symbol
+     "st-list"         ;; proper, immutable lists (interoperate w Scheme)
+     "st-blockClosure" ;; BlockClosure
+     "st-array"        ;; Array
+     "st-error-obj"    ;; Scheme error objects
+     "gambit-st-tokenizer"    ;; Stream -> tokens
+     "gambit-st-parse"        ;; tokens -> AST
+     "st-xlate"	       ;; AST -> Scheme
+     "st-stream"       ;; Stream CharStream ByteStream
+     "st-set"          ;; Set
+     "st-dictionary"   ;; Dictionary
+     "st-date-time"    ;; PointInTime Duration DateAndTime
+     "st-conditions"   ;; Map Scheme Conditions to St Exceptions
+    )
+ )
+
+(define scm-raw-bootstrap-file-names
+  '( "st-kernel" ;; message mechanics
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
      "st-boolean"      ;; Boolean True False UndefinedObject (nil)

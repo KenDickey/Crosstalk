@@ -404,6 +404,8 @@
     (set! **tests**
           (make-test-container (make-table (string->keyword "test") eq?)))))
 
+(define (remove-all-test-suites) (init-test-db))
+
 
 ;==============================================================;
 ;;;EXPORTED BINDINGS
@@ -455,7 +457,22 @@
     (test-container-add-test **tests** suite-name test-case)))
 
 (init-test-db)
-      
+
+(define (equivalent-alist? l1 l2)
+  (and (list? l1)
+       (list? l2)
+       (= (length l1) (length l2))
+       (every?
+        (lambda (bucket)
+          (if (not (pair? bucket))
+              #f
+              (let ( (probe (assq (car bucket) l2)) )
+                (and (pair? probe)
+                     (equal? (car probe) (car bucket))
+                     (equal? (cdr probe) (cdr bucket))))))
+        l1))
+)
+
 ;;) ;; end (let () ..);; end-module testing
 
 ;===========================E=O=F==============================

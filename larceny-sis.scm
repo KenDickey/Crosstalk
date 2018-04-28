@@ -292,7 +292,18 @@
 (define debug-st-runtime (make-parameter #false))
 
 ;; Make sure we have a Temp dir
-(system (string-append "mkdir "
+(system (string-append "mkdir -p "
                        temp-dir-prefix))
+
+
+(define-syntax capture-condition ;; used in st-conditions-tests.scm
+  (syntax-rules ()
+    ((capture-condition form)
+     (call/cc
+      (lambda (exit)
+        (with-exception-handler
+         (lambda (c) (exit c))
+         (lambda ()  form)))))))
+
 
 ;;;			--- E O F ---			;;;

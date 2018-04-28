@@ -128,5 +128,62 @@
 
 
 ;;; FIXME: Add & Remove Methods
+(define (add-selector+method-to-mvec selector method mvec)
+  ;; (unless (and (symbol? selector)
+  ;;              (procedure? method)
+  ;;              (vector? mvec))
+  ;;   (error @@FIXME: checks@@)
+  (let ( (idx (assign-id-to-selector selector))
+         (mvec-len (vector-length mvec))
+       )
+    (let loop ( (hole-count 0)
+                (holes-alist (vector-ref mvec 0)) ;; FIXME: checks
+              )
+      (cond
+       ((null? holes-alist) ;; go ahead and add
+        (let ( (index (- idx hole-count)) )
+          (if (< index mvec-len)
+              ;; replace
+              (vector-set! mvec index method)
+              ;; add at end 
+              (let ( (result-vec 
+                      (vector-add-at-end method))
+                     )
+                (cond
+                 ((= index mvec-len)
+                  result-vec  ;; no change to holes-alist
+                  )
+                 (else
+                  (vector-set! result-vec
+                               0
+                               (append ;; add to end of alist
+                                (vector-ref mvec 0)
+                                (list
+                                 (cons
+                                  ;; new hole
+                                  mvec-len
+                                  ;; num adjacent holes
+                                  (- index mvec-len 1)
+                                  ))))
+                  result-vec)
+                 )))
+          ) )
+       (else
+        (let  ( (next-hole    (caar holes-alist))
+                (num-adjacent (cdar holes-alist))
+              )
+          (cond
+           ((< index next-hole)
+            (vector-ref vec (- idx hole-count))
+            )
+           ((<= idx (+ next-hole num-adjacent))
+            doesNotUnderstand: ;; not in table
+            )
+           (else (loop
+                  (+ hole-count 1 num-adjacent) 
+                  (cdr holes-alist)))))))
+
+) ) ) )
+    
 
 ;;	--- E O F ---	;;

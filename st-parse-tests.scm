@@ -5,8 +5,8 @@
 ;; (require 'st-parse)
 
 (define (setup-st-parse)
-  (debug-parser #false)
-  (trace-parse-methods #false))
+  (debug-parser #f)
+  (trace-parse-methods #f))
 
 (define (cleanup-st-parse) #f)
 

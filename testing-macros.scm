@@ -51,6 +51,15 @@
                                   ,msg))
  ) )
 
+(define-macro (add-equivalent-alist-test suite-name expect form . message)
+  (let ( (msg (if (pair? message) (car message) `',form)) )
+    `(test-db-add-test ,suite-name
+		       (make-test ,expect
+                                  (lambda () ,form)
+                                  equivalent-alist?
+                                  ,msg))
+) )
+
 (define-macro (ensure-exception-raised suite-name type-pred? form . message)
    (let ( (msg (if (pair? message) (car message) `',form)) )
      `(test-db-add-test ,suite-name
