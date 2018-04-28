@@ -241,7 +241,7 @@
              )
          (let loop ( (index 0) )
            (when (< index size) ;; Scheme 0 based
-             (bytevector-u8-set!
+             (bytevector-set!
                   newByteArray
                   index
                   (at: aCollection (+ 1 index))) ;; ST 1 based
@@ -254,7 +254,7 @@
      (lambda (self index)
        ;; NB: ST 1-based, Scheme 0-based
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-ref self (- index 1))
+           (bytevector-ref self (- index 1))
            (error "Index out of range" self index))))
      
 (addSelector:withMethod:
@@ -262,7 +262,7 @@
      'at:put:
      (lambda (self index newVal)
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-set! self (- index 1) newVal)
+           (bytevector-set! self (- index 1) newVal)
            (error "Index out of range" self index))))
 
 (addSelector:withMethod:
@@ -295,7 +295,7 @@
   (let ( (size (bytevector-length bvec)) )
     (let loop ( (index 0) )
       (when (< index size)
-        (proc (bytevector-u8-ref bvec index))
+        (proc (bytevector-ref bvec index))
         (loop (+ 1 index)))
 ) ) )
 

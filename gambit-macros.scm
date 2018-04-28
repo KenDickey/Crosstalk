@@ -16,4 +16,5 @@
        (lambda ()  ,form))))
 )
 
-
+(define-macro (vector-for-each proc . vecs)
+  `(apply for-each (cons ,proc (map vector->list (list ,@vecs)))))

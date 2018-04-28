@@ -121,6 +121,10 @@
 
 (define string-hash string=?-hash)
 
+(define (ratnum? x) ;; fraction?
+  (and (rational? x)
+       (exact? (numerator x))
+       (exact? (denominator x))))
 
 ;;;
 

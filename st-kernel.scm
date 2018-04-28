@@ -414,7 +414,7 @@
      (lambda (self index)
        ;; NB: ST 1-based, Scheme 0-based
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-ref self (- index 1))
+           (bytevector-ref self (- index 1))
            (error "Index out of range" self index))))
      
 (primAddSelector:withMethod:
@@ -422,7 +422,7 @@
      'at:put:
      (lambda (self index newVal)
        (if (<= 1 index (bytevector-length self))
-           (bytevector-u8-set! self (- index 1) newVal)
+           (bytevector-set! self (- index 1) newVal)
            (error "Index out of range" self index))))
 
 (primAddSelector:withMethod:
