@@ -248,7 +248,7 @@
                                (lambda ()
                                  (call-with-current-continuation
                                   (lambda (return)
-                                    (with-exception-handler
+                                    (with-exception-catcher
                                      (lambda (exn) (return exn)) ; capture & return
                                      (lambda () ,form)))))
                                (lambda (actual ignored)

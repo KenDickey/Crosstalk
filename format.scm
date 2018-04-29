@@ -71,7 +71,8 @@
    
    (define ascii-tab   (integer->char  9))  ;; NB: assumes ASCII encoding
    (define ascii-ff    (integer->char 12))
-   (define (freshline port) (if (not (= 1 (output-port-column port))) (newline port)))
+   (define (freshline port)
+     (if (not (= 1 (output-port-column port))) (newline port)))
    
   (cond
    ((null? args)

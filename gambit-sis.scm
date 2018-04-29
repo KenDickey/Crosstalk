@@ -106,10 +106,14 @@
 ;(load "testing")
 
 (define (make-eq-hashtable) (make-table (string->keyword "test") eq?))
+(define (make-eqv-hashtable) (make-table (string->keyword "test") eqv?))
 (define hashtable-ref   table-ref)
 (define hashtable-set!  table-set!)
 (define hashtable-size  table-length)
 (define hashtable?      table?)
+(define (table-equivalence-function table)
+  (let ( (test (##vector-ref table 2)) )
+    (if test test eq?)))
 
 (define make-bytevector   make-u8vector)
 (define bytevector?       u8vector?)
