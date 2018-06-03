@@ -18,3 +18,22 @@
 
 (define-macro (vector-for-each proc . vecs)
   `(apply for-each (cons ,proc (map vector->list (list ,@vecs)))))
+
+(define-macro (let-values bindings . body)
+  (if (null? bindings)
+      (cons 'begin body)
+      (apply (lambda (vars initializer)
+               (let ( (cont (cons 'let-values (cons (cdr bindings) body))))
+                 (cond
+                  ((not (pair? vars))
+                   `(let ((,vars ,initializer)) ,cont)
+                   )
+                  ((null? (cdr vars))
+                   `(let ((,(car vars) ,initializer)) ,cont)
+                   )
+                  (else
+                   `(call-with-values
+                        (lambda () ,initializer)
+                        (lambda ,vars ,cont))))))
+               (car bindings))))
+                   

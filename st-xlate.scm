@@ -457,7 +457,7 @@
   (set! next-st-token (tokenizer-for-file-named infile-name))
   (set! curr-token #f)
   (set! prev-token #f)
-  (delete-file outfile-name) ;; OK to fail
+  (delete-file-if-exists outfile-name) ;; OK to fail
   (call-with-output-file outfile-name
     (lambda (outp)
       (format outp "~%;; \"~a\" (translated)~%" outfile-name)

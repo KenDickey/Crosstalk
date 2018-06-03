@@ -100,6 +100,10 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
+(define (delete-file-if-exists path)
+  (if (file-exists? path)
+      (delete-file path)))
+
 ;; Done in "~/.gambini"
 ;(include "gambit-macros.scm")
 ;(load "testing-macros")
@@ -263,7 +267,7 @@
 )
 
 (define (remove-compiled)
-  (for-each delete-file (compiled-file-names)))
+  (for-each delete-file-if-exists (compiled-file-names)))
 
 (define (compile-bootstrap)
   (for-each (lambda (fn) (compile-file fn)) (source-scm-file-names)))
