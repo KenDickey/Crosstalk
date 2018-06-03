@@ -1,4 +1,4 @@
-;;; FILE: "sis.scm"
+;;; FILE: "larceny-sis.scm"
 ;;; IMPLEMENTS: Crosstalk: Smalltalk in Scheme -- kernel ST bootstrap
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 May 2016
@@ -13,7 +13,7 @@
 
 ;; Run from command line via "larceny -r7rs", then
 ;;       (import (scheme load))
-;;             (load "sis.scm")
+;;     (load "larceny-sis.scm")
 ;;      (load-source-bootstrap)
 
 ;; Scheme core unit tests:
@@ -85,6 +85,8 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
+(define equal?-hash object-hash)
+
 ;;; R7RS bytevector accessors named differently
 
 (define bytevector-ref  bytevector-u8-ref)
@@ -134,7 +136,7 @@
 
 
 
-(define scm-bootstrap-file-names
+(define scm-raw-bootstrap-file-names
   '( "st-kernel"       ;; message mechanics
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior

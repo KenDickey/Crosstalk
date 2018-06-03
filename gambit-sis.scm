@@ -124,6 +124,8 @@
 (define bytevector->list  u8vector->list)
 
 (define string-hash string=?-hash)
+(define equal-hash equal?-hash) ;; st-object
+(define object-hash eq?-hash)   ;; st-object
 
 (define (ratnum? x) ;; fraction?
   (and (rational? x)
