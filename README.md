@@ -169,3 +169,6 @@ How best to stage in Smalltalk functionality?
   - #become:
   - Dynamic class changes & schema evolution (w lazy instance update)
 
+
+
+## In Progress -- Gambit port (r5rs vs r7rs, internals, ..)
