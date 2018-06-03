@@ -8,6 +8,17 @@
 (define frob-error  #f)
 (define write-to-non-port #f)
 
+(define-syntax capture-condition  ;; to explore
+  (syntax-rules ()
+    ((capture-condition form)
+     ;;==>
+     (call/cc
+      (lambda (exit)
+        (with-exception-handler
+         (lambda (c) (exit c))
+         (lambda ()  form))))
+) ) )
+
 (define (setup-st-conditions)
   (set! zero-divide
         (capture-condition (/ 3 0)))
@@ -28,7 +39,8 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
-(add-equivalent-alist-test 'st-conditions
+;;(add-equivalent-alist-test 'st-conditions
+(add-equal-test 'st-conditions                           
  '((isMessage . #t)
    (message . "/: zero divisor: 3 0 \n")
    (isWho . #t)
@@ -37,7 +49,7 @@
  (dict->alist (condition->dictionary zero-divide))
  "zero-divide condition asDictionary")
 
-(add-equivalent-alist-test 'st-conditions
+(add-equal-test 'st-conditions
   '((isMessage . #t)
       (isError . #t)
       (message . "frob")
@@ -46,7 +58,7 @@
  (dict->alist (condition->dictionary frob-error))
  "Scheme error condition asDictionary")
 
-(add-equivalent-alist-test 'st-conditions
+(add-equal-test 'st-conditions
  '((isMessage . #t)
    (isError . #t)
    (message . "not a textual output port")

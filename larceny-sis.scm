@@ -162,6 +162,8 @@
     )
  )
 
+(define scm-bootstrap-file-names scm-raw-bootstrap-file-names)
+
 (define (source-scm-file-names)
   (map (lambda (file-name)
          (string-append scm-root-directory-prefix "/" file-name ".scm"))

@@ -46,10 +46,10 @@
 
 (add-equal-test 'st-tokenizer
   (list->vector
-   '(
-     (symbol . (symbol->string '|#'x y'|))
+   `(
+     (symbol . ,(symbol->string '|#'x y'|))
      (whitespace . " ")
-     (symbol . (symbol->string '|#'pHunNy x'|))
+     (symbol . ,(symbol->string '|#'pHunNy x'|))
      (whitespace . " ")
      (string . "'Joe''s string'")
      (whitespace . " ")
@@ -152,10 +152,10 @@
 
 (add-equal-test 'st-tokenizer
    (list->vector
-    '((leftParen . "(")
-      (litArrayStart . (symbol->string '|#(|))
+    `((leftParen . "(")
+      (litArrayStart . ,(symbol->string '|#(|))
       (blockStart . "[")
-      (litByteArrayStart . (symbol->string '|#[|))
+      (litByteArrayStart . ,(symbol->string '|#[|))
       (blockEnd . "]")
       (blockEnd . "]")
       (dynArrayStart . "{")

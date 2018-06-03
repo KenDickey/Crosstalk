@@ -95,9 +95,12 @@
 
 ;;; Basic Objects
 
-(define st-nil  '())
-(define st-true  #t)
-(define st-false #f)
+(define nil      '())
+(define true     #t)
+(define false    #f)
+(define st-nil   nil)
+(define st-true  true)
+(define st-false false)
 
 (define st-nil? null?)
 
