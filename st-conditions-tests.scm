@@ -39,8 +39,8 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
-;;(add-equivalent-alist-test 'st-conditions
-(add-equal-test 'st-conditions                           
+(add-equivalent-alist-test 'st-conditions
+;;(add-equal-test 'st-conditions                           
  '((isMessage . #t)
    (message . "/: zero divisor: 3 0 \n")
    (isWho . #t)
@@ -49,7 +49,7 @@
  (dict->alist (condition->dictionary zero-divide))
  "zero-divide condition asDictionary")
 
-(add-equal-test 'st-conditions
+(add-equivalent-alist-test 'st-conditions
   '((isMessage . #t)
       (isError . #t)
       (message . "frob")
@@ -58,7 +58,7 @@
  (dict->alist (condition->dictionary frob-error))
  "Scheme error condition asDictionary")
 
-(add-equal-test 'st-conditions
+(add-equivalent-alist-test 'st-conditions
  '((isMessage . #t)
    (isError . #t)
    (message . "not a textual output port")
