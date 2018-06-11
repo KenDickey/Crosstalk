@@ -100,6 +100,21 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
+(define (equivalent-alist? l1 l2) ;; used in unit tests
+  (and (list? l1)
+       (list? l2)
+       (= (length l1) (length l2))
+       (every?
+        (lambda (bucket)
+          (if (not (pair? bucket))
+              #f
+              (let ( (probe (assq (car bucket) l2)) )
+                (and (pair? probe)
+                     (equal? (car probe) (car bucket))
+                     (equal? (cdr probe) (cdr bucket))))))
+        l1))
+)
+
 (define (delete-file-if-exists path)
   (if (file-exists? path)
       (delete-file path)))

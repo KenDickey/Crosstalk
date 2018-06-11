@@ -19,6 +19,7 @@
 (define-macro (vector-for-each proc . vecs)
   `(apply for-each (cons ,proc (map vector->list (list ,@vecs)))))
 
+;; really let*-values, but used as let-values
 (define-macro (let-values bindings . body)
   (if (null? bindings)
       (cons 'begin body)
