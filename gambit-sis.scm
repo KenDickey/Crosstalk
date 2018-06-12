@@ -124,6 +124,8 @@
 ;(load "testing-macros")
 ;(load "testing")
 
+(define (eof-object) #!eof)
+
 (define (make-eq-hashtable) (make-table (string->keyword "test") eq?))
 (define (make-eqv-hashtable) (make-table (string->keyword "test") eqv?))
 (define hashtable-ref   table-ref)

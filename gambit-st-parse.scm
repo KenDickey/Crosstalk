@@ -1047,11 +1047,11 @@
               args))
           )
       ;; (astBlock arguments temporaries statements hasReturn?)
-      (vector-set! method-block 1 method-args) 
+      (astBlock-arguments-set! method-block method-args) 
       ;; Unlike block-closures, which return their last value,
       ;; method blocks return #self unless explicit ^return.
       (unless (astBlock-hasReturn? method-block)
-        (set-astBlock-statements!
+        (astBlock-statements-set!
          method-block
          (append (astBlock-statements method-block)
                  (list (make-astIdentifier

@@ -315,6 +315,12 @@
 ;;; Generic ST Object representation:
 ;;; (vector:  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
+;; ##port-kind, ##port-of-kind?
+(define (textual-port? p) ;; character-port ?
+  #t) ;; @@@FIXME!
+(define (binary-port? p) ;; byte-port ?
+  #f) ;; @@@FIXME!
+
 (define (make-st-object Behavior num-object-slots)
   (let* ( (vec-len (+ num-header-slots num-object-slots))
 	  (st-obj (##make-structure st-object-type vec-len))
@@ -353,21 +359,22 @@
 	  ((integer? thing)    st-integer-behavior) ;;bignum->tag=4,else err
 	  ((number?  thing)
 	   (cond  ;; coalesc into a single type?
-	    ((ratnum?   thing) st-fraction-behavior) ;; tag=2
-	    ((real?     thing) st-real-behavior)     ;; tag=2
-	    ((complex?  thing) st-complex-behavior)  ;; tag=1
+	    ((ratnum?   thing) st-fraction-behavior)
+	    ((real?     thing) st-real-behavior)    
+	    ((complex?  thing) st-complex-behavior) 
         ;; FIXME:: Scaled Decimal
 	    (else (error: "Unknown Scheme number representation" thing))
 	    ))
-	  ((vector? thing) st-array-behavior) ;; Scheme vector ;; tag=0
-	  ((string? thing)     st-string-behavior) ;; tag=5
-	  ((symbol? thing)     st-symbol-behavior) ;; tag=3
-	  ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
-	  ((bytevector? thing) st-bytevector-behavior)   ;; tag=0
+	  ((vector? thing) st-array-behavior) ;; Scheme vector
+	  ((string? thing)     st-string-behavior)
+	  ((symbol? thing)     st-symbol-behavior)
+	  ((procedure? thing)  st-blockClosure-behavior)
+	  ((bytevector? thing) st-bytevector-behavior)  
 	  ((port? thing)
 	   (cond
 	    ((textual-port? thing) st-char-stream-behavior)
 	    ((binary-port?  thing) st-byte-stream-behavior)
+            ;; @@FIXME: object & device ports (Gambit)
 	    (else
 	     (error "Wierd port: " thing)))
 	   )
@@ -793,6 +800,12 @@
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
+(define (string-for-each proc str)
+  (let ( (strlen (string-length str)) )
+    (let loop ( (index 0) )
+      (when (< index strlen)
+        (proc (string-ref str index))
+        (loop (+ index 1))))))
 
   ;; (structure-printer
   ;;    (lambda (obj port quote?)

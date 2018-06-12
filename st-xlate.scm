@@ -428,7 +428,7 @@
 
 ;;; Static Array
 (define (xlateArray ast)
-  (list->vector (map AST->scm (astArray-elements ast)))
+  (list 'quote (list->vector (map AST->scm (astArray-elements ast))))
 )
 
 
