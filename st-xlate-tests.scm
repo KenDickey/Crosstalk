@@ -108,7 +108,7 @@
              (let ((%%val%% ($: ($ self 'size) '+ (@ self 'size))))
                (set! y %%val%%)
                %%val%%)
-             ($: #( #\a 'a "a" 1 1.0 )
+             ($: '#( #\a 'a "a" 1 1.0 )
                  'do:
                  (lambda (each)
                    (let ((receiver (smalltalkAt: 'Transcript)))
