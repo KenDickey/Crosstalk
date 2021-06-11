@@ -12,7 +12,7 @@ The Class maintains the Behavior (method dictionary) which is shared with all
 its instances.
 
 Defining a method also causes the selector->closure to be added, recursively, to
-all child classes -- if the child class does not define an override ["Copy Down"].
+all child classes -- if the child class does not define an override ["Copy Down" semantics].
 
 Basic shape:
 ````Smalltalk
@@ -30,7 +30,7 @@ Method invocation is dirt simple
 ````
 
 If selector lookup fails, a #doesNotUnderstand closure of suitable arity is returned,
-so no special case application is requires.
+so no special case application is required.
 
 Assuming efficent hash-tables, this strategy is simple to explain, and eliminates recusrive lookups. 
 Lookup can be done without call-site caching.
