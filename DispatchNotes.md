@@ -7,6 +7,7 @@ of Selector (a Symbol) -> BlockClosure.
 
 Each Class keeps a Set (list) of Selectors defined in that Class.  When a method is
 defined, a new selector is added as well as the binding of selector->closure.  
+
 The Class maintains the Behavior (method dictionary) which is shared with all
 its instances.
 
@@ -28,8 +29,8 @@ Method invocation is dirt simple
 	((self primAt: 0) at: selector) value: self  [value: arg]...
 ````
 
-If selector lookup fails, a #doesNotUnderstand method of suitable arity is returned,
-so a closure is allways invoked.
+If selector lookup fails, a #doesNotUnderstand closure of suitable arity is returned,
+so no special case application is requires.
 
 Assuming efficent hash-tables, this strategy is simple to explain, and eliminates recusrive lookups. 
 Lookup can be done without call-site caching.
