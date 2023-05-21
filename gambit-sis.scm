@@ -290,7 +290,8 @@
   (for-each (lambda (fn) (compile-file fn)) (source-scm-file-names)))
 
 (define (load-source-bootstrap)
-  (for-each load (source-scm-file-names)))
+  (for-each (lambda (name) (format "\nabout to load ~s" name ) (load name))
+	    (source-scm-file-names)))
 
 (define (load-compiled-bootstrap)
   (for-each load (compiled-file-names)))

@@ -295,10 +295,13 @@
 ;	with a binding of 'class->(lambda (self) <class>)
 ;	to get the class
 
-(define-structure st-object) ;; defines proc:  st-object?
-(define st-object-type (##structure-type (make-st-object)))
+;;;(define-structure st-object) ;; defines proc:  st-object?
+;;;(define st-object-type (##structure-type (make-st-object)))
+;;; @@KenD@@ Fake it using meroon object vectors @@@
 
-(define st-obj-behavior-index 1) ;; slot0 is tag, slot1 is mDict
+(define (st-object? o) (##meroon? o))
+
+(define st-obj-behavior-index 0) ;; slot0 is mDict/behavior
 
 (define (st-obj-behavior obj)
   (##vector-ref obj st-obj-behavior-index))
@@ -306,7 +309,7 @@
 (define (st-obj-behavior-set! obj new-behavior)
   (##vector-set! obj st-obj-behavior-index new-behavior))
 
-(define num-header-slots 2)  ;; 1 slot for tag; 1 slot for mDict
+(define num-header-slots 1)
 
 (define (st-object-length obj)
   (- (##vector-length obj) num-header-slots))
@@ -322,16 +325,13 @@
   #f) ;; @@@FIXME!
 
 (define (make-st-object Behavior num-object-slots)
-  (let* ( (vec-len (+ num-header-slots num-object-slots))
-	  (st-obj (##make-structure st-object-type vec-len))
-	)
-    (##vector-set! st-obj st-obj-behavior-index Behavior)
-    ;; initial slot values are: nil
-    (let loop ( (idx num-header-slots) )
-      (if (< idx vec-len)
-	  (begin
-	    (##vector-set! st-obj idx nil)
-	    (loop (+ idx 1)))))
+  (let* ( (st-object-subtype 6)  ;; magic for meroon
+	  (st-obj
+	   (##subtype-set!
+	    (##make-vector (+ num-header-slots num-object-slots) nil)
+	    st-object-subtype))
+	  )
+    (st-obj-behavior-set! st-obj Behavior)
     st-obj)
 )
 
@@ -600,7 +600,7 @@
                    selector
                    argArray))
          )
-    (typetag-set! messageSend st-typetag)
+    (##subtype-set! messageSend 6) ; @@FIXME: meroon@@
     messageSend
 ) )
 
