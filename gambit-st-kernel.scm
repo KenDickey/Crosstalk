@@ -96,14 +96,28 @@
   (if (not (eq? nameSymbol (##procedure-name method)))
       (table-set! method->name-table method nameSymbol)))
 
+;; Smalltalk arity is 1 plus number of colons in a selector
+(define (count-params symbol)
+  (let loop ( (str
+	       (cond
+		((symbol? symbol) (symbol->string symbol))
+		((keyword? symbol) (keyword->string symbol)) ; strips last #\:
+		((string? symbol) symbol)
+		(else (error "bad symbol"))))
+	    )
+    (let count-loop ( (count 1) (index (- (string-length str) 1)) )
+      (if (< index 0)
+	  (if (keyword? symbol) (+ count 1) count)
+	  (count-loop (if (char=? #\: (string-ref str index))
+			  (+ count 1)
+			  count)
+		      (- index 1)))
+) ) )
 
-;;@@@FIXME very suspect..
+;;@@@FIXME hack..
 (define (procedure-arity proc)
-  (if (##closure? proc)
-      (arithmetic-shift
-       (##subprocedure-nb-parameters proc)
-       -4) ;; interpreted; convert fixnum representation
-      (##subprocedure-nb-parameters proc) ;; compiled
+  (let ( (name (##procedure-name proc)) )
+    (if name (count-params name) #f)
 ) )
 
 ;;; Basic Objects
