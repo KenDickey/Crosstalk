@@ -170,5 +170,4 @@ How best to stage in Smalltalk functionality?
   - Dynamic class changes & schema evolution (w lazy instance update)
 
 
-
-## In Progress -- Gambit port (r5rs vs r7rs, internals, ..)
+## In Progress -- Guile port (basics, then read, compile ..)
