@@ -129,9 +129,8 @@
   (string-append scm-root-directory-prefix "/Temp/"))
 
 
-
 (define scm-raw-bootstrap-file-names
-  '( "st-kernel"       ;; message mechanics
+  '( "guile-st-kernel"       ;; message mechanics
      "st-object"       ;; Object behavior
      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
      "st-boolean"      ;; Boolean True False UndefinedObject (nil)
