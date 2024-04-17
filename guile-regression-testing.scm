@@ -97,7 +97,7 @@
 (define table-set!     hash-table-set!)
 (define table-ref      hash-table-ref)
 (define table-delete!  hash-table-delete!)
-(define table-for-each hash-table-walk)
+(define table-for-each (lambda (proc table) (hash-table-walk table proc)))
 
 (define (string->keyword a-string) a-string) ;; identity
 ;;==============================================================;
@@ -322,7 +322,7 @@
 ;;; A test-container contains and runs named test suites,
 ;;;   mapping test-suite names to their associated suites.
 
-(define test-container (table (string->keyword "test") eq?))
+(define test-container (make-table (string->keyword "test") eq?))
 
 (define (test-container-add! container name suite)
   (unless (and (test-container? container)
@@ -450,7 +450,7 @@
     (test-container-remove-tests-for test-container suite-name)))
 
 (define (remove-all-test-suites)
-  (set! test-container (table (string->keyword "test") eq?)))
+  (set! test-container (make-table (string->keyword "test") eq?)))
 
 (define run-tests-for-suite
   (lambda (suite-name)
