@@ -1,8 +1,8 @@
-;;; FILE: "st-kernel.scm"
+;;; FILE: "guile-st-kernel.scm"
 ;;; IMPLEMENTS: Basic Smalltalk object mechanics
 ;;; LANGUAGE: Scheme (R7RS small)
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 12 May 2016
+;;; DATE: 17 April 2024
 
 
 ;;; We will start with object behaviors -- not the objects themselves.
