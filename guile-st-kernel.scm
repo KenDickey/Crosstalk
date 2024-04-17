@@ -10,7 +10,7 @@
 
 ;; NB: guile --r7rs ...
 
-;; All (import ...) done in "sis.sch"
+;; All (import ...) done in "guile-sis.sch"
 
 
 ;;; Method Dictionarys are Scheme hashtables
@@ -253,6 +253,9 @@
         'selector
         (lambda (self) (procedure-name self)))
 
+(define (procedure-arity proc)
+  (car (procedure-minimum-arity proc)))
+
 (primAddSelector:withMethod: 
  	st-blockClosure-behavior
         'argumentCount
@@ -279,7 +282,7 @@
 ; See (define (behavior obj) ...) below
 ;	byte-tag + mask -> index into table of classes
 
-; Use Larceny Structure as ST Object (named & indexed slots)
+; Use Guile Vector as cheap ST Object (named & indexed slots)
 ;   1st slot in Vector contains a mDict (method dictionary)
 ;	with a binding of 'class->(lambda (self) <class>)
 ;	to get the class
@@ -287,19 +290,19 @@
 (define st-obj-behavior-index 0) ;; 1st slot in a st-object
 
 (define (st-obj-behavior obj)
-  (vector-like-refv obj st-obj-behavior-index))
+  (vector-ref obj st-obj-behavior-index))
 
 (define (st-obj-behavior-set! obj new-behavior)
-  (vector-like-set! obj st-obj-behavior-index new-behavior))
+  (vector-set! obj st-obj-behavior-index new-behavior))
 
 (define (st-object? thing)
-  (and (structure? thing) ;;@@Fixme marker/tag check
-       (< 0 (vector-like-length thing))
-       (hashtable? (vector-like-ref thing 0))))
+  (and (vector? thing) ;;@@FIXME@@ marker/tag check
+       (< 0 (vector-length thing))
+       (hashtable? (vector-ref thing 0))))
 
 (define (st-object-length obj)
-  ;; @@NB: Unchecked
-  (- (vector-like-length obj) 1))
+  ;; @@FIXME@@: Unchecked
+  (- (vector-length obj) 1))
 
 ;;; @@FIXME: convert to NATIVE TAG mask + index
 ;;;       ..into vector of behaviors :FIXME@@
@@ -308,16 +311,16 @@
 ;;; Generic ST Object representation:
 ;;; (vector:  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
-(define st-typetag     5) ;;  a Structure (See larceny/src/Lib/Common/layouts.sch)
-(define vector-typetag 0)
+(define st-typetag     #x6d) ;;  Unused T7 tag
+(define vector-typetag #x0d)
 
 (define (make-st-object Behavior num-object-slots)
   (let ( (st-obj (make-vector
                    (+ num-header-slots num-object-slots)
                    st-nil)) ;; init slots to UndefinedObject
        )
-    (typetag-set! st-obj st-typetag)
-    (vector-like-set! st-obj st-obj-behavior-index Behavior)
+;;  (typetag-set! st-obj st-typetag)   ;; @@FIXME@@
+    (vector-set! st-obj st-obj-behavior-index Behavior)
     st-obj)
 )
 
@@ -343,17 +346,18 @@
       ((integer? thing)    st-integer-behavior) ;;bignum->tag=4,else err
       ((number?  thing)
        (cond  ;; coalesc into a single type?
-        ((ratnum?   thing) st-fraction-behavior) ;; tag=2
-        ((real?     thing) st-real-behavior)     ;; tag=2
-        ((complex?  thing) st-complex-behavior)  ;; tag=1
+        ((rational? thing) st-fraction-behavior)
+        ((real?     thing) st-real-behavior)    
+        ((complex?  thing) st-complex-behavior) 
         ;; FIXME:: Scaled Decimal
         (else (error: "Unknown Scheme number representation" thing))
        ))
-      ((vector? thing) st-array-behavior) ;; Scheme vector ;; tag=0
-      ((string? thing)     st-string-behavior) ;; tag=5
-      ((symbol? thing)     st-symbol-behavior) ;; tag=3
-      ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
-      ((bytevector? thing) st-bytevector-behavior)   ;; tag=0
+      ((st-object? thing) (st-obj-behavior thing)) ;; @@FIXME@@
+      ((vector? thing)	   st-array-behavior) ;; Scheme vector 
+      ((string? thing)     st-string-behavior)
+      ((symbol? thing)     st-symbol-behavior)
+      ((procedure? thing)  st-blockClosure-behavior)
+      ((bytevector? thing) st-bytevector-behavior)  
       ((port? thing)
        (cond
         ((textual-port? thing) st-char-stream-behavior)
@@ -383,7 +387,7 @@
        )
       ((date? thing)          st-date+time-behavior)
       ((condition? thing)     st-condition-behavior)
-      ((st-object? thing) (vector-like-ref thing st-obj-behavior-index))
+      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ;; input-file 4
       ;; output-file 4
       ;; output-string 4
@@ -402,7 +406,7 @@
   (primLookup: (behavior self) selectorSym))
 
 
-;; Scheme immediates, vector-like, bytevector-like
+;; Scheme immediates, vector, bytevector
 
 (define (make-st-bytevector numBytes initialValue)
   (let ( (initVal (if (and (integer? initialValue)
@@ -468,13 +472,13 @@
            behavior
            getter-name
            (lambda (self)
-             (vector-like-ref self index)))
+             (vector-ref self index)))
           
           (primAddSelector:withMethod:
            behavior
            setter-name
            (lambda (self newVal)
-             (vector-like-set! self index newVal)
+             (vector-set! self index newVal)
              self))
           
           (loop (+ index 1) (cdr slot-names))))
@@ -490,8 +494,8 @@
      (lambda (self user-index)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
-             (vector-like-ref self vec-index)
+         (if (< pre-start vec-index (vector-length self))
+             (vector-ref self vec-index)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
    )
 
@@ -501,9 +505,9 @@
      (lambda (self user-index newVal)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
+         (if (< pre-start vec-index (vector-length self))
              (begin
-               (vector-like-set! self vec-index newVal)
+               (vector-set! self vec-index newVal)
                self)
              (error "Index out of range" user-index)))) ;; @@FIXME: conditions
      )
@@ -514,9 +518,9 @@
      (lambda (self user-index aBlock)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-like-length self))
-             (let ( (original-elt (vector-like-ref self vec-index)) )
-               (vector-like-set! self
+         (if (< pre-start vec-index (vector-length self))
+             (let ( (original-elt (vector-ref self vec-index)) )
+               (vector-set! self
                             vec-index
                             (aBlock original-elt))
                self)
@@ -527,7 +531,7 @@
      behavior
      'basicSize
      (lambda (self)
-       (- (vector-like-length self) start-index))
+       (- (vector-length self) start-index))
      )
 ) )
 
@@ -583,7 +587,7 @@
                    selector
                    argArray))
          )
-    (typetag-set! messageSend st-typetag)
+;;    (typetag-set! messageSend st-typetag)  ;; @@FIXME@@
     messageSend
 ) )
 
@@ -783,21 +787,21 @@
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
-(define old-structure-printer (structure-printer))
-(define structure-printer-set? #f)
+;; (define old-structure-printer (structure-printer))
+;; (define structure-printer-set? #f)
 
-;; Only setup structure-printer once
-(unless structure-printer-set?
-  (set! structure-printer-set? #t)
-  (structure-printer
-     (lambda (obj port quote?)
-       (if (st-object? obj)
-           (format port
-                   (if quote? "~s" "~a")
-                   (if (respondsTo: obj 'printString)
-                       (perform: obj 'printString)
-                       "#<an Object>"))
-           (old-structure-printer obj port quote?)))))
+;; ;; Only setup structure-printer once
+;; (unless structure-printer-set?
+;;   (set! structure-printer-set? #t)
+;;   (structure-printer
+;;      (lambda (obj port quote?)
+;;        (if (st-object? obj)
+;;            (format port
+;;                    (if quote? "~s" "~a")
+;;                    (if (respondsTo: obj 'printString)
+;;                        (perform: obj 'printString)
+;;                        "#<an Object>"))
+;;            (old-structure-printer obj port quote?)))))
 
 ;;(define (unspecified? thing)
 ;;  (eq? thing *unspecified*))
