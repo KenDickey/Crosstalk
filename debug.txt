@@ -1,8 +1,9 @@
-(import (scheme load))
-(load "sis.scm")
+guile --r7rs
+;;(import (scheme load))
+(load "guile-sis.scm")
 (load-source-bootstrap)
 
-(load "sis-tests.scm")
+(load "guile-sis-tests.scm")
 (run-source-tests)
 
 ;(xlate-st-bootstrap)

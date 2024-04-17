@@ -90,6 +90,16 @@
 ;;
 ;; Nota Bene:  Currently all output goes to (current-output-port).
 ;;
+;;;======================================================================
+;;; Tables -- just syntax
+(define make-table     make-hash-table)
+(define table?         hash-table?)
+(define table-set!     hash-table-set!)
+(define table-ref      hash-table-ref)
+(define table-delete!  hash-table-delete!)
+(define table-for-each hash-table-walk)
+
+(define (string->keyword a-string) a-string) ;; identity
 ;;==============================================================;
 
 
@@ -203,14 +213,14 @@
 
 ;==============================================================;
 
-(define-structure test expected thunk compare? message)
+(define-structure (test expected thunk compare? message))
 
 
 ;;;A TEST-COUNTER keeps track of number passed,
 ;;;    failed (actual != expected), excepted (signalled exception)
 ;;;    and reports on these statistics.
 
-(define-structure test-counter name num-passed num-failed num-excepted)
+(define-structure (test-counter name num-passed num-failed num-excepted))
 
 ;; (define-record-type test-counter
 ;;   (fields (immutable name)
@@ -253,7 +263,7 @@
 ;;;
 ;;;   A test-container maintains the (name -> unit-test-suite) bindings.
 
-(define-structure test-suite name test-list setup-thunk teardown-thunk)
+(define-structure (test-suite name test-list setup-thunk teardown-thunk))
 
 ;; (define-record-type test-suite
 ;;   (fields (immutable name)

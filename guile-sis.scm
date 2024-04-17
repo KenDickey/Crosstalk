@@ -16,11 +16,12 @@
 ;;      (load-source-bootstrap)
 
 ;; Scheme core unit tests:
-;;      (load "sis-tests.scm")
-;;          (run-source-tests)
+;;      (load "guile-sis-tests.scm")
+;;      (run-source-tests)
 
-;;             (add-st-kernel)
-;; (add-and-run-st-unit-tests)
+;; Smalltalk
+;;  (add-st-kernel)
+;;  (add-and-run-st-unit-tests)
 
 ;; (display-subclasses Object)
 
@@ -58,6 +59,7 @@
           string-contains string-contains-ci)
     (srfi :19) ;; date and time (see "st-data-time.scm")
     (srfi :27) ;; random-integer
+    (srfi :69) ;; hash-by-identity (eq? hash)
     ;; For st-eval (in "st-xlate.scm")
     (scheme eval) 
     (scheme repl) ; (interaction-environment)

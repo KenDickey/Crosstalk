@@ -690,7 +690,7 @@
     (skip-whitespace)
     (if (eq? 'dynArrayEnd (curr-token-kind))
         (begin
-          (consume-token!) "#\}"
+          (consume-token!) ;; "#\}"
           (astDynamicArray (reverse expressions)))
         (let ( (exp (parse-expression)) )
           (skip-whitespace)

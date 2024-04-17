@@ -23,6 +23,8 @@
 
 (define method-dictionary-size hashtable-size)
 
+(define object-hash hash-by-identity) ;; eq? hash
+
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)
   (hashtable-ref methodDict
