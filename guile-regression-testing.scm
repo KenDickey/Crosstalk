@@ -99,7 +99,7 @@
 (define table-delete!  hash-table-delete!)
 (define table-for-each (lambda (proc table) (hash-table-walk table proc)))
 
-(define (string->keyword a-string) a-string) ;; identity
+(define (string->keyword a-string) (string->symbol a-string)) ;; identity
 ;;==============================================================;
 
 
@@ -249,10 +249,10 @@
    (+ 1 (test-counter-num-passed counter))))
 
 (define (counter-display-results counter)
-  (display (format "~%Test Results for ~a"      (test-counter-name counter)))
-  (display (format "~%TOTAL PASSED:     ~d"     (test-counter-num-passed   counter)))
-  (display (format "~%TOTAL FAILED:     ~d"     (test-counter-num-failed   counter)))
-  (display (format "~%TOTAL EXCEPTIONS: ~d~%~%" (test-counter-num-excepted counter)))
+  (display (format #f "~%Test Results for ~a"      (test-counter-name counter)))
+  (display (format #f "~%TOTAL PASSED:     ~d"     (test-counter-num-passed   counter)))
+  (display (format #f "~%TOTAL FAILED:     ~d"     (test-counter-num-failed   counter)))
+  (display (format #f "~%TOTAL EXCEPTIONS: ~d~%~%" (test-counter-num-excepted counter)))
   (newline)
 )
 
@@ -338,11 +338,11 @@
                                    test-suite-name
                                    setup
                                    teardown)
-  (let ( (test-suite
+  (let ( (new-test-suite
           (test-suite test-suite-name '() setup teardown))
        )
-    (test-container-add! container test-suite-name test-suite)
-    test-suite
+    (test-container-add! container test-suite-name new-test-suite)
+    new-test-suite
 ) )
 
 (define test-container? table?)
