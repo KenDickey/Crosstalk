@@ -17,24 +17,26 @@
 
 ;; Syntactic sugar tastes sweeter ;^)
 
+(define (make-eq-hashtable) (make-hash-table eq? object-hash))
+
 (define make-method-dictionary make-eq-hashtable)
 
-(define method-dictionary? hashtable?)
+(define method-dictionary? hash-table?)
 
-(define method-dictionary-size hashtable-size)
+(define method-dictionary-size hash-table-size)
 
 (define object-hash hash-by-identity) ;; eq? hash
 
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)
-  (hashtable-ref methodDict
+  (hash-table-ref methodDict
                  symbol
                  (lambda (self . rest-args)
                    (send-failed self symbol rest-args)))
                    ;; (make-messageSend self symbol rest-args)))
 )
 
-(define primSet:toValue: hashtable-set!)
+(define primSet:toValue: hash-table-set!)
 
 (define (saferIsKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
@@ -69,32 +71,25 @@
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
   (procedure-name-set! methodClosure symbol) 
-  (hashtable-set! methodDict symbol methodClosure))
+  (hash-table-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
-(define (primSelectors methodDict) (vector->list (hashtable-keys methodDict)))
+(define (primSelectors methodDict) (vector->list (hash-table-keys methodDict)))
 
-(define primIncludesSelector: hashtable-contains?)
+(define primIncludesSelector: hash-table-exists?) ;; contains
 
 (define (primSelectorsDo: methodDict closure)
-  (vector-for-each closure (hashtable-keys methodDict)))
+  (vector-for-each closure (hash-table-keys methodDict)))
 
 (define (primSelectorsAndMethodsDo: methodDict closure)
-  (let-values ( ((selectors methods) (hashtable-entries methodDict)) )
+  (let-values ( ((selectors methods) (hash-table-entries methodDict)) )
     (vector-for-each closure selectors methods)))
 
 (define (primMethodsDo: methodDict closure)
-  (let-values ( ((ignored-selectors methods) (hashtable-entries methodDict)) )
+  (let-values ( ((ignored-selectors methods) (hash-table-entries methodDict)) )
     (vector-for-each closure methods))) 
 
-(define (clone-method-dictionary mDict)
-  (let ( (clone (make-eq-hashtable (hashtable-size mDict))) )
-    (primSelectorsAndMethodsDo:
-     	mDict
-        (lambda (selector method)
-          (primAddSelector:withMethod: clone selector method)))
-    clone)
-)
+(define clone-method-dictionary hash-table-copy)
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
 
@@ -300,7 +295,7 @@
 (define (st-object? thing)
   (and (vector? thing) ;;@@FIXME@@ marker/tag check
        (< 0 (vector-length thing))
-       (hashtable? (vector-ref thing 0))))
+       (hash-table? (vector-ref thing 0))))
 
 (define (st-object-length obj)
   ;; @@FIXME@@: Unchecked
@@ -367,8 +362,8 @@
         (else
          (error "Wierd port: " thing)))
       )
-      ((hashtable? thing)
-       (if (eq? eq? (hashtable-equivalence-function thing))
+      ((hash-table? thing)
+       (if (eq? eq? (hash-table-equivalence-function thing))
            st-identity-dictionary-behavior
            st-dictionary-behavior)
        )
@@ -395,7 +390,7 @@
       ;; output-string 4
       ;; (current-*-port) 4
       ;; output-bytevector 4
-      ;; hashtable; other records & record types 5
+      ;; hash-table; other records & record types 5
       ;; @@FIXME ...
       (else (error "#behavior can't deal with other Scheme types yet"
                  thing))
@@ -656,7 +651,7 @@
 (define (smalltalk-keys)
   (vector-sort
    symbol<?
-   (hashtable-keys Smalltalk)))
+   (hash-table-keys Smalltalk)))
 
 ;; What selectors does  obj  respond to?
 (define (selectors obj)

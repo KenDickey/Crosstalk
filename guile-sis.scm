@@ -27,7 +27,7 @@
 
 
 (import
-    (rnrs hashtables)
+;;    (rnrs hashtables) NO; use srfi-69
     (rnrs sorting)
     (rnrs io ports)
     (rnrs io simple)

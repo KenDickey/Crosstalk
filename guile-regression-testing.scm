@@ -92,7 +92,7 @@
 ;;
 ;;;======================================================================
 ;;; Tables -- just syntax
-(define make-table     make-hash-table)
+(define (make-table) (make-hash-table eq? object-hash))
 (define table?         hash-table?)
 (define table-set!     hashtable-set!)
 (define table-ref      hashtable-ref)
