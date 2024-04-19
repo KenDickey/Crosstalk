@@ -15,9 +15,15 @@
 
 ;;; Method Dictionarys are Scheme hashtables
 
-;; Syntactic sugar tastes sweeter ;^)
-
+;; hashtable api fixup
 (define (make-eq-hashtable) (make-hash-table eq? object-hash))
+(define hashtable-ref hash-table-ref)
+(define hashtable-set! hash-table-set!)
+(define hashtable-contains? hash-table-exists?)
+(define hashtable-keys hash-table-keys)
+(define hashtable-size hash-table-size)
+
+;; Syntactic sugar tastes sweeter ;^)
 
 (define make-method-dictionary make-eq-hashtable)
 
@@ -74,7 +80,7 @@
   (hash-table-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
-(define (primSelectors methodDict) (vector->list (hash-table-keys methodDict)))
+(define (primSelectors methodDict) (hash-table-keys methodDict))
 
 (define primIncludesSelector: hash-table-exists?) ;; contains
 
