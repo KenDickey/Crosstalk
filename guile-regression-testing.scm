@@ -94,9 +94,9 @@
 ;;; Tables -- just syntax
 (define make-table     make-hash-table)
 (define table?         hash-table?)
-(define table-set!     hash-table-set!)
-(define table-ref      hash-table-ref)
-(define table-delete!  hash-table-delete!)
+(define table-set!     hashtable-set!)
+(define table-ref      hashtable-ref)
+(define table-delete!  hashtable-delete!)
 (define table-for-each (lambda (proc table) (hash-table-walk table proc)))
 
 (define (string->keyword a-string) (string->symbol a-string)) ;; identity
@@ -296,15 +296,15 @@
        )
    (if (null? test-list)
        ((if break-on-error? simple-error warn)
-        (format "HUH?  No tests found for ~a" suite-name))
+        (format #f "HUH?  No tests found for ~a" suite-name))
        (begin
         (setup-thunk)
-        (display (format "~%===> Starting  Tests for: ~a" suite-name))
+        (display (format #f "~%===> Starting  Tests for: ~a" suite-name))
         (for-each 
          (lambda (test)
            (run-test test result-counter verbose? break-on-error?))
          (reverse test-list))
-        (display (format "~%===> Completed Tests for: ~a~%" suite-name))
+        (display (format #f "~%===> Completed Tests for: ~a~%" suite-name))
         (teardown-thunk)))
 )  )
 
@@ -365,7 +365,7 @@
                         default-teardown-thunk))
               )
            (test-suite-add-test suite test-case)
-           (warn (format "Created test suite named: ~a" suite-name)))))
+           (warn (format #f "Created test suite named: ~a" suite-name)))))
   test-case
 )
 
@@ -396,7 +396,7 @@
                     (set! caught-exception exn)
                     (counter-increment-excepted result-counter)
                     ((if break-on-error? simple-error warn) 
-                     (format "--> ~s:~%*** EXCEPTION: ~s, expected: ~s"
+                     (format #f "--> ~s:~%*** EXCEPTION: ~s, expected: ~s"
                              (test-message test)
                              (if (message-condition? exn)
                                  (condition-message exn)
@@ -413,7 +413,7 @@
        (counter-increment-passed result-counter)
        (when verbose?
          (display
-          (format "~%--> ~s:~%PASSED: Expected: ~s ~%             Got: ~s"
+          (format #f "~%--> ~s:~%PASSED: Expected: ~s ~%             Got: ~s"
                   (test-message  test)
                   (test-expected test)
                   (if (message-condition? actual) ;; more informative
@@ -423,7 +423,7 @@
       (else
        (counter-increment-failed result-counter)
        ((if break-on-error? simple-error warn)
-        (format "--> ~s:~%*** FAILED:  Expected ~s  Got ~s"
+        (format #f "--> ~s:~%*** FAILED:  Expected ~s  Got ~s"
                 (test-message test)
                 (test-expected test)
                 actual))
@@ -465,7 +465,7 @@
                                   (break-on-test-error?))
             (counter-display-results result-counter))
           ((if (break-on-test-error?) simple-error warn)
-           (format "HUH?  No tests found for: ~a" suite-name))))
+           (format #f "HUH?  No tests found for: ~a" suite-name))))
 ) )
 
 (define run-all-tests
@@ -479,7 +479,7 @@
                                    (verbose-test-output?)
                                    (break-on-test-error?))
              ((if (break-on-test-error?) simple-error warn)
-              (format "HUH?  No tests found for ~a" suite-name))))
+              (format #f "HUH?  No tests found for ~a" suite-name))))
         test-container)
       (counter-display-results result-counter)
 ) ) )
