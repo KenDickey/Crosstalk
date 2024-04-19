@@ -92,7 +92,7 @@
 ;;
 ;;;======================================================================
 ;;; Tables -- just syntax
-(define (make-table) (make-hash-table eq? object-hash))
+(define make-table     make-eq-hashtable)
 (define table?         hash-table?)
 (define table-set!     hashtable-set!)
 (define table-ref      hashtable-ref)
@@ -322,7 +322,7 @@
 ;;; A test-container contains and runs named test suites,
 ;;;   mapping test-suite names to their associated suites.
 
-(define test-container (make-table (string->keyword "test") eq?))
+(define test-container (make-table));; (string->keyword "test") eq?))
 
 (define (test-container-add! container name suite)
   (unless (and (test-container? container)
@@ -450,7 +450,7 @@
     (test-container-remove-tests-for test-container suite-name)))
 
 (define (remove-all-test-suites)
-  (set! test-container (make-table (string->keyword "test") eq?)))
+  (set! test-container (make-table))) ;; (string->keyword "test") eq?)))
 
 (define run-tests-for-suite
   (lambda (suite-name)

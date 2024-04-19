@@ -22,6 +22,7 @@
 (define hashtable-contains? hash-table-exists?)
 (define hashtable-keys hash-table-keys)
 (define hashtable-size hash-table-size)
+(define hashtable-delete! hash-table-delete!)
 
 ;; Syntactic sugar tastes sweeter ;^)
 
