@@ -16,7 +16,8 @@
 ;;; Method Dictionarys are Scheme hashtables
 
 ;; hashtable api fixup
-(define (make-eq-hashtable) (make-hash-table eq? object-hash))
+(define (make-eq-hashtable . ignored) (make-hash-table eq? object-hash))
+(define (make-eqv-hashtable . ignored) (make-hash-table eqv? object-hash))
 (define hashtable-ref hash-table-ref)
 (define hashtable-set! hash-table-set!)
 (define hashtable-contains? hash-table-exists?)

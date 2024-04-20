@@ -1,5 +1,4 @@
-#!r6rs
-;;; FILE: "simple-regression-testing.sls"
+;;; FILE: "guile-regression-testing.scm"
 ;;; IMPLEMENTS: Simple [minded] Regression Test System
 ;;; LANGUAGE: R5RS Scheme with define-syntax/syntax-case
 ;;; AUTHOR: Ken Dickey
@@ -27,7 +26,7 @@
 ;;;FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;;OTHER DEALINGS IN THE SOFTWARE.
 ;==============================================================;
-;; (library (kend simple-regression-testing)
+;; (library (kend guile-regression-testing)
 ;;   (export verbose-test-output? break-on-test-error?
 ;;           run-all-tests run-tests-for-suite
 ;;           add-test-suite remove-test-suite remove-all-test-suites
