@@ -234,17 +234,17 @@
 
 
 (define (counter-increment-failed counter)
-  (test-counter-num-failed-set!
+  (set-test-counter-num-failed!
    counter
    (+ 1 (test-counter-num-failed counter))))
 
 (define (counter-increment-excepted counter)
-  (test-counter-num-excepted-set!
+  (set-test-counter-num-excepted!
    counter
    (+ 1 (test-counter-num-excepted counter))))
 
 (define (counter-increment-passed counter)
-  (test-counter-num-passed-set!
+  (set-test-counter-num-passed!
    counter
    (+ 1 (test-counter-num-passed counter))))
 
@@ -277,12 +277,12 @@
     (error 'test-suite-add-test
            "Requires a test-suite and a test"
            suite test))
-  (test-suite-test-list-set! suite
+  (set-test-suite-test-list! suite
                              (cons test (test-suite-test-list suite)))
 )
 
 (define (test-suite-remove-tests suite)
-  (test-suite-test-list-set! suite '()))
+  (set-test-suite-test-list! suite '()))
 
 (define (test-suite-run-tests suite result-counter verbose? break-on-error?)
   (unless (test-suite? suite)
