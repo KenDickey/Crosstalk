@@ -4,6 +4,8 @@ guile --r7rs
 (load-source-bootstrap)
 
 (load "guile-sis-tests.scm")
+(verbose-test-output? #f)
+(break-on-test-error? #f)
 (run-source-tests)
 
 ;(xlate-st-bootstrap)
