@@ -44,7 +44,7 @@
 (perform:with:
      Dictionary
      'category:
-     '|Collections-Unordered|)
+     (string->symbol "Collections-Unordered"))
 
 (perform:with:
      Dictionary
@@ -81,26 +81,26 @@
      (class Dictionary)
      'new:
      (lambda (self size) ;; eqv -> #=
-       (make-eqv-hashtable size)))
+       (make-hashtable size)))
 
 (addSelector:withMethod:
      (class IdentityDictionary)
      'new:
      (lambda (self size) ;; eq -> #==
-       (make-eq-hashtable size)))
+       (make-hashtable size)))
 
 
 (addSelector:withMethod:
      (class Dictionary)
      'new
      (lambda (self)
-       (make-eqv-hashtable)))
+       (make-hashtable)))
 
 (addSelector:withMethod:
      (class IdentityDictionary)
      'new
      (lambda (self)
-       (make-eq-hashtable)))
+       (make-hashtable)))
 
 
 (addSelector:withMethod:
@@ -113,7 +113,18 @@
      'at:ifAbsent:
      (lambda (self key absentThunk)
        (if (hashtable-contains? self key)
-           (hashtable-ref self key nil)
+           (hash-ref self key nil)
+           (if (st-nil? absentThunk) ;; St ideom
+               st-nil
+               (absentThunk))))
+)
+
+(addSelector:withMethod:
+     IdentityDictionary
+     'at:ifAbsent:
+     (lambda (self key absentThunk)
+       (if (hashtable-contains? self key)
+           (hashq-ref self key nil)
            (if (st-nil? absentThunk) ;; St ideom
                st-nil
                (absentThunk))))
@@ -134,7 +145,16 @@
      'at:ifAbsentPut:
      (lambda (self key valueThunk)
        (when (hashtable-contains? self key)
-         (hashtable-set! self key (valueThunk)))
+         (hash-set! self key (valueThunk)))
+       self)
+)
+
+(addSelector:withMethod:
+     IdentityDictionary
+     'at:ifAbsentPut:
+     (lambda (self key valueThunk)
+       (when (hashtable-contains? self key)
+         (hashq-set! self key (valueThunk)))
        self)
 )
 
@@ -156,16 +176,30 @@
            self))
 )
 
-
 (addSelector:withMethod:
      Dictionary
      'includesKey:
      (lambda (self key)
-       (hashtable-contains? self key))
+       (and (hashq-get-handle self key) #t))
+)
+
+(addSelector:withMethod:
+     IdentityDictionary
+     'includesKey:
+     (lambda (self key)
+        (hashtable-contains? self key))
 )
 
 (addSelector:withMethod:
      Dictionary
+     'at:put:
+     (lambda (self key value)
+       (hashq-set! self key value)
+       value)
+)
+
+(addSelector:withMethod:
+     IdentityDictionary
      'at:put:
      (lambda (self key value)
        (hashtable-set! self key value)
@@ -183,16 +217,14 @@
      Dictionary
      'keysDo:
      (lambda (self aBlock)
-       (let ( (keys-vec (hashtable-keys self)) )
-         (vector-for-each aBlock keys-vec)))
+       (for-each aBlock (hashtable-keys self)))
 )
 
 (addSelector:withMethod:
      Dictionary
      'keysAndValuesDo: 
      (lambda (self twoArgBlock)
-       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
-         (vector-for-each twoArgBlock keys-vec vals-vec)))
+       (hash-for-each self aBlock))
 )
 
 
@@ -200,14 +232,14 @@
      Dictionary
      'valuesDo: 
      (lambda (self aBlock)
-       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
-         (vector-for-each aBlock vals-vec)))
+       (let ( (values (hash-fold (lambda (key val accum) (cons val accum)) '() self)) )
+         (for-each aBlock values)))
 )
 
 (addSelector:withMethod:
      Dictionary
      'keysArray
-     (lambda (self) (hashtable-keys self))
+     (lambda (self) (list->vector (hashtable-keys self)))
 )
 
 (addSelector:withMethod:
@@ -226,8 +258,8 @@
      Dictionary
      'valuesArray
      (lambda (self)
-       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
-         vals-vec))
+       (list->vector
+        (hash-fold (lambda (key val accum) (cons val accum)) '() self)))
 )
 
 (addSelector:withMethod:
@@ -235,7 +267,7 @@
      'removeKey:ifAbsent:
      (lambda (self key absentThunk)
        (if (hashtable-contains? self key)
-           (hashtable-delete! self key)
+           (hashtable-remove! self key)
            (absentThunk)))
 )
 

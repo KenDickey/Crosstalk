@@ -13,36 +13,42 @@
 
 ;;; Method Dictionarys are Scheme hashtables
 
-;; hashtable api fixup
-(define (make-eq-hashtable . ignored) (make-hash-table eq? object-hash))
-(define (make-eqv-hashtable . ignored) (make-hash-table eqv? object-hash))
-(define hashtable-ref hash-table-ref)
-(define hashtable-set! hash-table-set!)
-(define hashtable-contains? hash-table-exists?)
-(define hashtable-keys hash-table-keys)
-(define hashtable-size hash-table-size)
-(define hashtable-delete! hash-table-delete!)
-
+;; eq-hashtable api fixup
+(define make-eq-hashtable  make-hash-table)
+(define make-hashtable make-hash-table)
+(define hashtable-ref hashq-ref)
+(define hashtable-set! hashq-set!)
+(define (hashtable-contains? table key)
+  (and (hashq-get-handle table key) #t))
+(define (hashtable-keys table)
+  (hash-fold (lambda (key val accum) (cons key accum)) '() table))
+(define hash-table-keys hashtable-keys)
+(define (hashtable-size table) (hash-count (const #t) table))
+(define hashtable-delete! hashq-remove!)
+(define (hashtable-copy table)
+  (let ( (copy (make-hash-table (hashtable-size table))) )
+    (hash-for-each (lambda (key val) (hashq-set! copy key val)) table)
+    copy))
 ;; Syntactic sugar tastes sweeter ;^)
 
-(define make-method-dictionary make-eq-hashtable)
+(define make-method-dictionary make-hash-table)
 
 (define method-dictionary? hash-table?)
 
-(define method-dictionary-size hash-table-size)
+(define method-dictionary-size hashtable-size)
 
-(define object-hash hash-by-identity) ;; eq? hash
+(define (object-hash obj) (hash obj most-positive-fixnum)) ;; equal-hash 
 
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)
-  (hash-table-ref methodDict
-                 symbol
-                 (lambda (self . rest-args)
+  (hashq-ref methodDict
+             symbol
+             (lambda (self . rest-args)
                    (send-failed self symbol rest-args)))
                    ;; (make-messageSend self symbol rest-args)))
 )
 
-(define primSet:toValue: hash-table-set!)
+(define primSet:toValue: hashq-set!)
 
 (define (saferIsKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
@@ -77,12 +83,12 @@
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
   (procedure-name-set! methodClosure symbol) 
-  (hash-table-set! methodDict symbol methodClosure))
+  (hashq-set! methodDict symbol methodClosure))
 
 ;; methodDict selectors
 (define (primSelectors methodDict) (hash-table-keys methodDict))
 
-(define primIncludesSelector: hash-table-exists?) ;; contains
+(define primIncludesSelector: hashtable-contains?) ;; contains
 
 (define (primSelectorsDo: methodDict closure)
   (vector-for-each closure (hash-table-keys methodDict)))
@@ -95,7 +101,7 @@
   (let-values ( ((ignored-selectors methods) (hash-table-entries methodDict)) )
     (vector-for-each closure methods))) 
 
-(define clone-method-dictionary hash-table-copy)
+(define clone-method-dictionary hashtable-copy)
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
 

@@ -91,12 +91,12 @@
 ;;
 ;;;======================================================================
 ;;; Tables -- just syntax
-(define make-table     make-eq-hashtable)
+(define make-table     make-hash-table)
 (define table?         hash-table?)
-(define table-set!     hashtable-set!)
-(define table-ref      hashtable-ref)
-(define table-delete!  hashtable-delete!)
-(define table-for-each (lambda (proc table) (hash-table-walk table proc)))
+(define table-set!     hash-set!)
+(define table-ref      hash-ref)
+(define table-delete!  hash-remove!)
+(define table-for-each hash-for-each)
 
 (define (string->keyword a-string) (string->symbol a-string)) ;; identity
 ;;==============================================================;

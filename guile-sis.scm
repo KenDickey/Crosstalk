@@ -27,7 +27,7 @@
 
 
 (import
-;;    (rnrs hashtables) NO; use srfi-69
+;;    (rnrs hashtables) NO; use guile natives
     (rnrs sorting)
     (rnrs io ports)
     (rnrs io simple)
@@ -60,7 +60,7 @@
           string-contains string-contains-ci)
     (srfi :19) ;; date and time (see "st-data-time.scm")
     (srfi :27) ;; random-integer
-    (srfi :69) ;; hash-by-identity (eq? hash)
+;;    (srfi :69) ;; hash-by-identity (eq? hash)
     ;; For st-eval (in "st-xlate.scm")
 ;;    (scheme eval) 
 ;;    (scheme repl) ; (interaction-environment)
