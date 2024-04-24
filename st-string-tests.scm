@@ -15,7 +15,7 @@
 
 (add-equal-test 'st-string
   "this and that"
-  (perform:with: "this " '|,| "and that")
+  (perform:with: "this " (string->symbol ",") "and that")
   "'this ' , ' and that'")
 
 (add-equal-test 'st-string
@@ -79,7 +79,7 @@
   "'aBcD' asUppercase")
 
 (add-equal-test 'st-string
-  '|this thing|
+  (string->symbol "this thing")
   (perform: "this thing" 'asSymbol)
   "'this thing' asSymbol")
 

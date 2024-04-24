@@ -26,7 +26,7 @@ NewSub ~> message-pattern
 
 Note: the **#'~>'** syntax was chosen to avoid confusing use of the **#'>>'** selector sent to a class to return a method.  Also, **#'~>'** is a clue that the syntax differs slightly from that used in GNU Smalltak, PharoCandle, or PharoKernel.
 
-Note driver file **"sis.scm"** in our containing directory.  
+Note driver file **"guile-sis.scm"** in our containing directory.  
 
 Use **(add-st)** which assumes a Crosstalk/Temp directory exists.
 

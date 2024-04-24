@@ -1,4 +1,4 @@
-guile --r7rs
+guile
 ;;(import (scheme load))
 (load "guile-sis.scm")
 (load-source-bootstrap)

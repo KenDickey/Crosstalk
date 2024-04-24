@@ -239,7 +239,7 @@
 
 (define ClassClass
   (make-protoClass
-     '|Class class| ; name
+     (string->symbol "Class class") ; name
      st-metaClass-behavior ; I am a MetaClass
      combined-metaClass-ivar-names    ;; slot-names
      st-class-behavior ; instances are Classes
@@ -262,7 +262,7 @@
 
 (define MetaClassClass
   (make-protoClass
-     '|MetaClass class|
+     (string->symbol "MetaClass class")
      st-metaClass-behavior ;; I am a MetaClass
      combined-metaClass-ivar-names   ;; slot-names
      st-class-behavior ;; that makes classes

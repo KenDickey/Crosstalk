@@ -1,7 +1,7 @@
 # Crosstalk
 
 ## Smalltalk in Scheme -- clean room bootstrap of Smalltalk kernel in R7RS Larceny Scheme; 
-currently being ported to Guile Scheme (in progress)
+currently being ported to GNU Guile Scheme (in progress)
 
 Basically an exercise in deeply understanding Smalltalk.
 
@@ -139,11 +139,12 @@ This is very much a work in progress.
   - **Bootstrap Morphic** !    
 
 ## Processing Notes
-  - The control file is **"sis.scm"**.  This imports Scheme functions and code to load the system.
+  - The control file is **"guile-sis.scm"**.  This imports Scheme functions and code to load the system.
   - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk core classes **(add-st-kernel)**.
     + The Scheme bootstrap implements Smalltalk semanics and exposes Scheme datatypes.
     This code also includes a Smalltalk parser and translator into Scheme which allows for the Smalltalk bootstrap to be translated.
     + The Smalltalk bootstrap is the Smalltalk kernel code which is translated and loaded. 
+	+ Note expressions in file "debug.txt"
 
 One goal is to maximize the Smalltalk code and keep the Scheme kernel small.
 
@@ -163,6 +164,7 @@ How best to stage in Smalltalk functionality?
       - Symbol property-list
       - PIC at call sites
       - Hashtable cache
+	  - Make fast without caches at all..?
   - Finalization pecularities (expectation of early finalization)
   - How best to make Smalltalk object structures native to Larceny?
   - What compiler/runtime changes would help?

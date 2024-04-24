@@ -24,7 +24,7 @@
 (define (setup-st-tokenizer)
   (set! get-token1
         (tokenizer-for-string
-          (symbol->string '|#'x y' #'pHunNy x' 'Joe''s string' $C|)))
+          "#'x y' #'pHunNy x' 'Joe''s string' $C"))
   (set! get-token2
         (tokenizer-for-string
          "23 12.3 12.3e4 16rBEEF 10s 12s12 1/2"))
@@ -47,15 +47,15 @@
 (add-equal-test 'st-tokenizer
   (list->vector
    `(
-     (symbol . ,(symbol->string '|#'x y'|))
+     (symbol . "#'x y'")
      (whitespace . " ")
-     (symbol . ,(symbol->string '|#'pHunNy x'|))
+     (symbol . "#'pHunNy x'")
      (whitespace . " ")
      (string . "'Joe''s string'")
      (whitespace . " ")
      (characterLiteral . "$C")))
   (tokens-from get-token1)
-  (symbol->string '|#'x y' #'pHunNy x' 'aString' $C|))
+  "#'x y' #'pHunNy x' 'aString' $C")
 
 (add-equal-test 'st-tokenizer
   (list->vector
@@ -153,15 +153,15 @@
 (add-equal-test 'st-tokenizer
    (list->vector
     `((leftParen . "(")
-      (litArrayStart . ,(symbol->string '|#(|))
+      (litArrayStart . "#(")
       (blockStart . "[")
-      (litByteArrayStart . ,(symbol->string '|#[|))
+      (litByteArrayStart . "#[")
       (blockEnd . "]")
       (blockEnd . "]")
       (dynArrayStart . "{")
       (dynArrayEnd . "}")))
-  (tokens-from (tokenizer-for-string (symbol->string '|(#([#[]]{}| ) ))
-  (symbol->string '|(#([#[]]{}| ) )
+  (tokens-from (tokenizer-for-string "(#([#[]]{}" ))
+  "(#([#[]]{}" )
 
 (add-equal-test 'st-tokenizer
    (list->vector

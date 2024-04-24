@@ -95,7 +95,7 @@
 
 (addSelector:withMethod:  ;; REDEFINE
         Number
-        '|/|
+        (string->symbol "/")
         (lambda (self aNumber)
           (when (zero? aNumber)
               ($: ZeroDivide 'signalWithDividend: self))
@@ -156,51 +156,51 @@
 
 (perform:with:
      ExceptionSet
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      Exception
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      Error
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      Notification
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      Warning
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      UnhandledError
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      IllegalResumeAttempt
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      MessageNotUnderstood
-     'category: '|Exceptions Kernel|)
+     'category: (string->symbol "Exceptions Kernel"))
 
 (perform:with:
      Halt
-     'category: '|Exceptions Extensions|)
+     'category: (string->symbol "Exceptions Extensions"))
 
 (perform:with:
      AssertionFailure
-     'category: '|Exceptions Extensions|)
+     'category: (string->symbol "Exceptions Extensions"))
 
 (perform:with:
      MessageSend
-     'category: '|Kernel-Objects|) ;; N.B.
+     'category: (string->symbol "Kernel-Objects")) ;; N.B.
 
 (perform:with:
      Message
-     'category: '|Kernel-Methods|) ;;N.B.
+     'category: (string->symbol "Kernel-Methods")) ;;N.B.
 
 
 ;;; comment:
@@ -371,7 +371,7 @@ Structure:
 
 (addSelector:withMethod:
      ExceptionSet
-     '|,|
+     (string->symbol ",")
      (lambda (self anExceptionClass)
        ($: self 'add: anExceptionClass)
        self))
@@ -521,7 +521,7 @@ Structure:
 
 (addSelector:withMethod:
      (class Exception)
-     '|,|
+     (string->symbol ",")
      (lambda (self exceptionClass)
        ($:: ExceptionSet 'with:with: self exceptionClass)))
 

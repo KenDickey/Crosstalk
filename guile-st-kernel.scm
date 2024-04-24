@@ -8,8 +8,6 @@
 ;;; We will start with object behaviors -- not the objects themselves.
 ;;; A behavior is just a (method) dictionary / hashtable
 
-;; NB: guile --r7rs ...
-
 ;; All (import ...) done in "guile-sis.sch"
 
 

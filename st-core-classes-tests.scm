@@ -27,7 +27,7 @@
   "Class name")
 
 (add-equal-test 'st-core-classes
-  '|Class class|
+  (string->symbol "Class class")
   (perform: (perform: Class 'class) 'name)
   "Class class name")
 
@@ -42,7 +42,7 @@
   "MetaClass superclass name")
 
 (add-equal-test 'st-core-classes
-  '|ClassDescription class|
+  (string->symbol "ClassDescription class")
   (perform:
    (perform:
     (perform: MetaClass 'superclass)
@@ -51,7 +51,7 @@
   "MetaClass superclass class name")
 
 (add-equal-test 'st-core-classes
-  '|ClassDescription class|
+  (string->symbol "ClassDescription class")
   (perform:
    (perform:
     (perform: MetaClass 'class)
@@ -60,7 +60,7 @@
   "MetaClass class superclass name")
 
 (add-equal-test 'st-core-classes
-  '|MetaClass class|
+  (string->symbol "MetaClass class")
   (perform: (perform: MetaClass 'class) 'name)
   "MetaClass class name")
 

@@ -11,7 +11,7 @@
 ;   https://en.wikipedia.org/wiki/Smalltalk
 ;   http://object-arts.com/downloads/papers/AnsiSmalltalkDraft1-9.pdf
 
-;; Run from command line via "guile --r7rs", then
+;; Run from command line via `guile`, then
 ;;      (load "guile-sis.scm")
 ;;      (load-source-bootstrap)
 
@@ -34,10 +34,11 @@
     (rnrs files)
     (rnrs syntax-case)
     (rnrs arithmetic bitwise) ;; st-number.scm
-    (scheme base)
-    (scheme char)
-    (scheme inexact)
-    (scheme complex)
+    (rnrs bytevectors)
+;;    (scheme base)
+;;    (scheme char)
+;;    (scheme inexact)
+;;    (scheme complex)
     (scheme time)
     ;; (primitives
     ;;    structure-printer structure? make-structure record?
@@ -48,7 +49,7 @@
     ;;    equal-hash string-hash symbol-hash
     ;;    procedure-name procedure-name-set! procedure-arity
     ;;    port-position port-has-set-port-position!?
-    ;;    ratnum?
+    ;;    rational?
     ;;    current-directory
     ;;    file-exists?
     ;;    system ;; for directory creation
@@ -61,17 +62,16 @@
     (srfi :27) ;; random-integer
     (srfi :69) ;; hash-by-identity (eq? hash)
     ;; For st-eval (in "st-xlate.scm")
-    (scheme eval) 
-    (scheme repl) ; (interaction-environment)
+;;    (scheme eval) 
+;;    (scheme repl) ; (interaction-environment)
     (rnrs conditions)
 ;;  (rnrs records syntactic)
     (rnrs records procedural)
     (rnrs records inspection)
 )
 
-;; (r5rs:require 'apropos) ;; NB: need both IMPORT and REQUIRE.
-
 ;;(load "apropos.scm") -- imports wrong (interaction-environment)
+
 (load "define-structure.scm")
 
 ;; Helpers

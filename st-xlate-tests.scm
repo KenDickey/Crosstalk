@@ -67,13 +67,13 @@
 
 (add-equal-test 'st-xlate
   (vector 1 2 3 'a #\b "c")
-  (st-eval (symbol->string '|{ 1. 2. 3. #a. $b. 'c'.}|))
-  (symbol->string '|{ 1. 2. 3. #a. $b. 'c'.}|))
+  (st-eval "{ 1. 2. 3. #a. $b. 'c'.}")
+  "{ 1. 2. 3. #a. $b. 'c'.}")
 
 (add-equal-test 'st-xlate
   (vector 1 5 9 'a #\b "c")
-  (st-eval (symbol->string '|{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}|))
-  (symbol->string '|{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}|))
+  (st-eval "{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}")
+  "{ 1. 2 + 3. 3 squared. #a. $b. 'c'.}")
 
 (add-equal-test 'st-xlate
   '(let ((%%val%%
