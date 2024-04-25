@@ -15,6 +15,14 @@
   (set! %%dict%% #f)
 )
 
+;; NOTA BENE:
+;; (hash-fold (lambda (k v a) (cons (cons k v) a)) '() %%dict%%)
+;; $25 = ((a . 1) (c . 3) (b . 2))
+;; scheme@(guile-user)> (hash-ref %%dict%% 'b)
+;; $26 = 2
+;; scheme@(guile-user)> (hashq-ref %%dict%% 'b)
+;; $27 = #f
+
 (add-test-suite 'st-dictionary
                 setup-st-dictionary
                 cleanup-st-dictionary)
@@ -30,7 +38,7 @@
   "at:")
 
 (add-equal-test 'st-dictionary
-  '(c b a)
+  '(b c a)
   (let ( (keys '()) )
     ($: %%dict%%
       'keysDo:
@@ -49,9 +57,8 @@
      total)
   "valuesDo:")
 
-
 (add-equal-test 'st-dictionary
-  (vector '(c b a) 6)
+  (vector '(a c b) 6)
   (let ( (keys '()) (total 0) )
     ($: %%dict%%
       'keysAndValuesDo:

@@ -23,13 +23,13 @@
 
 ;; (requires 'st-set)
 
-(define Dictionary
+(define Dictionary ;; equal-hashtable
   (newSubclassName:iVars:cVars:
    Set
    'Dictionary '() '())
 )
 
-(define IdentityDictionary
+(define IdentityDictionary  ;; eq-hashtable
   (newSubclassName:iVars:cVars:
    Dictionary
    'IdentityDictionary '() '())
@@ -100,7 +100,7 @@
      (class IdentityDictionary)
      'new
      (lambda (self)
-       (make-hashtable)))
+       (make-eq-hashtable)))
 
 
 (addSelector:withMethod:
@@ -123,7 +123,7 @@
      IdentityDictionary
      'at:ifAbsent:
      (lambda (self key absentThunk)
-       (if (hashtable-contains? self key)
+       (if (eq-hashtable-contains? self key)
            (hashq-ref self key nil)
            (if (st-nil? absentThunk) ;; St ideom
                st-nil
@@ -153,7 +153,7 @@
      IdentityDictionary
      'at:ifAbsentPut:
      (lambda (self key valueThunk)
-       (when (hashtable-contains? self key)
+       (when (eq-hashtable-contains? self key)
          (hashq-set! self key (valueThunk)))
        self)
 )
@@ -171,7 +171,7 @@
      Dictionary
      'at:ifPresent:
      (lambda (self key presentThunk)
-       (if (hashtable-contains? self key)
+       (if (eq-hashtable-contains? self key)
            (presentThunk)
            self))
 )
@@ -180,21 +180,21 @@
      Dictionary
      'includesKey:
      (lambda (self key)
-       (and (hashq-get-handle self key) #t))
+       (and (hash-get-handle self key) #t))
 )
 
 (addSelector:withMethod:
      IdentityDictionary
      'includesKey:
      (lambda (self key)
-        (hashtable-contains? self key))
+       (and (hashq-get-handle self key) #t))
 )
 
 (addSelector:withMethod:
      Dictionary
      'at:put:
      (lambda (self key value)
-       (hashq-set! self key value)
+       (hash-set! self key value)
        value)
 )
 
@@ -202,7 +202,7 @@
      IdentityDictionary
      'at:put:
      (lambda (self key value)
-       (hashtable-set! self key value)
+       (hashq-set! self key value)
        value)
 )
 
@@ -224,7 +224,7 @@
      Dictionary
      'keysAndValuesDo: 
      (lambda (self twoArgBlock)
-       (hash-for-each self aBlock))
+       (hash-for-each twoArgBlock self))
 )
 
 
@@ -272,6 +272,15 @@
 )
 
 (addSelector:withMethod:
+     IdentityDictionary
+     'removeKey:ifAbsent:
+     (lambda (self key absentThunk)
+       (if (eq-hashtable-contains? self key)
+           (eq-hashtable-remove! self key)
+           (absentThunk)))
+)
+
+(addSelector:withMethod:
      Dictionary
      'removeKey:
      (lambda (self key)
@@ -285,7 +294,7 @@
      Dictionary
      'keysAndValuesRemove: 
      (lambda (self twoArgPredicate?)
-       (let-values ( ((keys-vec vals-vec)(hashtable-entries self)) )
+       (let-values ( ((keys-vec vals-vec) (hashtable-entries self)) )
          (let ( (keys-to-remove '()) )
            (vector-for-each
             (lambda (k v)

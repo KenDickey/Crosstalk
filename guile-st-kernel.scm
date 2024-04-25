@@ -13,7 +13,19 @@
 
 ;;; Method Dictionarys are Scheme hashtables
 
-;; eq-hashtable api fixup
+;; hashtable api fixup
+
+;; NOTA BENE:
+;; In Guile, hash fun is NOT kept with/in table.
+;; Different hash functions yiels different results!
+;;
+;; (hash-fold (lambda (k v a) (cons (cons k v) a)) '() %%dict%%)
+;;  ==> ((a . 1) (c . 3) (b . 2))
+;; scheme@(guile-user)> (hash-ref %%dict%% 'b)
+;;  ==> 2
+;; scheme@(guile-user)> (hashq-ref %%dict%% 'b)
+;;  ==> #f
+
 (define (make-eq-hashtable . optional-size)
   (let ( (table (make-hash-table
                  (if (null? optional-size) 31 (car optional-size))))
@@ -21,24 +33,34 @@
     (set-object-property! table 'hash-table-equivalence-function eq?)
     table))
 (define make-hashtable make-hash-table)
+(define (eq-hashtable? thing)
+  (and (hash-table? thing)
+       (eq? eq? (object-property thing 'hash-table-equivalence-function))))
 (define hashtable-ref hashq-ref)
 (define hashtable-set! hashq-set!)
 (define (hashtable-contains? table key)
+  (and (hash-get-handle table key) #t))
+(define (eq-hashtable-contains? table key)
   (and (hashq-get-handle table key) #t))
 (define (hashtable-keys table)
   (hash-fold (lambda (key val accum) (cons key accum)) '() table))
 (define hash-table-keys hashtable-keys)
 (define (hashtable-size table) (hash-count (const #t) table))
-(define hashtable-delete! hashq-remove!)
+(define hashtable-delete! hash-remove!
+(define eq-hashtable-delete! hashq-remove!)
 (define (hashtable-copy table)
-  (let ( (copy (make-hash-table (hashtable-size table))) )
+  (let ( (copy (if (eq-hashtable? table)
+                   (make-eq-hash-table (hashtable-size table))
+                   (make-hash-table    (hashtable-size table)))) )
     (hash-for-each (lambda (key val) (hashq-set! copy key val)) table)
     copy))
+
+
 ;; Syntactic sugar tastes sweeter ;^)
 
-(define make-method-dictionary make-hash-table)
+(define make-method-dictionary make-eq-hashtable)
 
-(define method-dictionary? hash-table?)
+(define method-dictionary? eq-hash-table?)
 
 (define method-dictionary-size hashtable-size)
 
@@ -93,7 +115,7 @@
 ;; methodDict selectors
 (define (primSelectors methodDict) (hash-table-keys methodDict))
 
-(define primIncludesSelector: hashtable-contains?) ;; contains
+(define primIncludesSelector: eq-hashtable-contains?) ;; contains
 
 (define (primSelectorsDo: methodDict closure)
   (vector-for-each closure (hash-table-keys methodDict)))
@@ -380,6 +402,7 @@
          (error "Wierd port: " thing)))
       )
       ((hash-table? thing)
+       ;; eq-hashtable? duplicates the hash-table? check
        (if (eq? eq? (object-property thing 'hash-table-equivalence-function))
            st-identity-dictionary-behavior
            st-dictionary-behavior)
