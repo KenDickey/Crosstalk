@@ -87,7 +87,7 @@
      (class IdentityDictionary)
      'new:
      (lambda (self size) ;; eq -> #==
-       (make-hashtable size)))
+       (make-eq-hashtable size)))
 
 
 (addSelector:withMethod:

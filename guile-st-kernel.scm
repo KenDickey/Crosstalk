@@ -14,7 +14,12 @@
 ;;; Method Dictionarys are Scheme hashtables
 
 ;; eq-hashtable api fixup
-(define make-eq-hashtable  make-hash-table)
+(define (make-eq-hashtable . optional-size)
+  (let ( (table (make-hash-table
+                 (if (null? optional-size) 31 (car optional-size))))
+         )
+    (set-object-property! table 'hash-table-equivalence-function eq?)
+    table))
 (define make-hashtable make-hash-table)
 (define hashtable-ref hashq-ref)
 (define hashtable-set! hashq-set!)
@@ -375,7 +380,7 @@
          (error "Wierd port: " thing)))
       )
       ((hash-table? thing)
-       (if (eq? eq? (hash-table-equivalence-function thing))
+       (if (eq? eq? (object-property thing 'hash-table-equivalence-function))
            st-identity-dictionary-behavior
            st-dictionary-behavior)
        )
