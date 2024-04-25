@@ -32,10 +32,12 @@
          )
     (set-object-property! table 'hash-table-equivalence-function eq?)
     table))
+(define make-eq-hash-table make-eq-hashtable)
 (define make-hashtable make-hash-table)
 (define (eq-hashtable? thing)
   (and (hash-table? thing)
        (eq? eq? (object-property thing 'hash-table-equivalence-function))))
+(define eq-hash-table? eq-hashtable?)
 (define hashtable-ref hashq-ref)
 (define hashtable-set! hashq-set!)
 (define (hashtable-contains? table key)
@@ -46,7 +48,7 @@
   (hash-fold (lambda (key val accum) (cons key accum)) '() table))
 (define hash-table-keys hashtable-keys)
 (define (hashtable-size table) (hash-count (const #t) table))
-(define hashtable-delete! hash-remove!
+(define hashtable-delete! hash-remove!)
 (define eq-hashtable-delete! hashq-remove!)
 (define (hashtable-copy table)
   (let ( (copy (if (eq-hashtable? table)
@@ -64,7 +66,8 @@
 
 (define method-dictionary-size hashtable-size)
 
-(define (object-hash obj) (hash obj most-positive-fixnum)) ;; equal-hash 
+(define (object-hash obj) (hash obj most-positive-fixnum))
+(define equal-hash object-hash)
 
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)

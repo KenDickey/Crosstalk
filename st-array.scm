@@ -105,6 +105,9 @@
          (list->vector (reverse elts)))))
 
 
+(define (vector-for-each proc vec)
+  (for-each proc (vector->list vec)))
+  
 (addSelector:withMethod:
      Array
      'do:
