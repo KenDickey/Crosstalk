@@ -13,7 +13,7 @@
 
 (add-equal-test 'st-symbol
      6
-     ($ '|123456| 'size)
+     ($ (string->symbol "123456") 'size)
      "size")
 
 ;; (ensure-exception-raised 'st-symbol

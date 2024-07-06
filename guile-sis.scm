@@ -1,9 +1,9 @@
 ;;; FILE: "guile-sis.scm"
 ;;; IMPLEMENTS: Crosstalk: Smalltalk in Scheme -- kernel ST bootstrap
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 15 April 2024
+;;; DATE:   17 May 2024
 
-; Implementation Language/platform: Guile Scheme
+; Implementation Language/platform: Guile Scheme: Guile 3.0.7
 ;   https://www.gnu.org/software/guile/
 ;   https://www.gnu.org/software/guile/learn/
 
@@ -17,6 +17,7 @@
 
 ;; Scheme core unit tests:
 ;;      (load "guile-sis-tests.scm")
+;;      (break-on-test-error? #f) ;; test all
 ;;      (run-source-tests)
 
 ;; Smalltalk
@@ -64,7 +65,11 @@
     ;; For st-eval (in "st-xlate.scm")
 ;;    (scheme eval) 
 ;;    (scheme repl) ; (interaction-environment)
-    (rnrs conditions)
+;;  (rnrs conditions)
+    (srfi :34)
+    (srfi :35)
+;; (use-modules (srfi srfi-35))
+;;  (ice-9 exceptions)
 ;;  (rnrs records syntactic)
     (rnrs records procedural)
     (rnrs records inspection)
