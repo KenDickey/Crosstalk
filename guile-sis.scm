@@ -68,6 +68,7 @@
 ;;  (rnrs conditions)
     (srfi :34)
     (srfi :35)
+    (rnrs exceptions (6))
 ;; (use-modules (srfi srfi-35))
 ;;  (ice-9 exceptions)
 ;;  (rnrs records syntactic)
