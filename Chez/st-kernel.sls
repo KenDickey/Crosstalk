@@ -1,23 +1,25 @@
 #!r6rs
-;;; FILE: "st-kernel.sls"
+;;; File: "st-kernel.sls"
 ;;; IMPLEMENTS: Basic Smalltalk object mechanics
-;;; LANGUAGE: Scheme (R6RS)
+;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 12 May 2016 -- Updated February 2025 port to Chez Scheme
+;;; DATE:  February 2025
 
-;;; We will start with object behaviors -- not the objects themselves.
+;;; We will start with object behaviors
 ;;; A behavior is just a (method) dictionary / hashtable
 
 (library (st-kernel)
+
   (export
    method-dictionary?
    make-method-dictionary
    method-dictionary-size
+   method-name
+   method-arity
 
    primLookup:
    primSet:toValue:
    primLookup:
-   class?
    send-failed
    primAddSelector:withMethod
    primSelectors
@@ -48,12 +50,12 @@
    st-object-behavior
    st-byte-stream
    st-char-stream
-   st-date+time
-   st-time-behavior
-   st-duration-behavior
+;;   st-date+time
+;;   st-time-behavior
+;;   st-duration-behavior
    st-condition-behavior
    st-dictionary-behavior
-   st-identity-dictionary
+   st-identity-dictionary-behavior
 
    ;; Polymorphic method
    printString
@@ -61,7 +63,7 @@
    ;; Smalltalk Object Representation
    st-object?
    make-st-object
-   st-object-length ;; ?
+   st-object-length ;; internal
    behavior ;; answers a method dictionary
    add-getters&setters ;; internal
    add-array-accessors ;; internal
@@ -84,7 +86,7 @@
    inst-method-names
    display-ivars
    safer-printString
-   display-object
+   display-obj
    describe
    respondsTo:
    
@@ -104,13 +106,18 @@
    %:::: superPerform:with:with:with:with:
    %&    superPerform:withArguments: ;; args array
    %*    superPerform:withArgsList:  ;; args list
-
-
    )
+
   (import
    (rnrs base)
    (rnrs bytevectors (6))
+   (rnrs io simple (6))
    (rnrs io ports (6))
+   (rnrs lists (6))
+   (rnrs bytevectors (6))
+   (rnrs control (6))
+   (rnrs conditions (6))
+   (rnrs sorting (6))
    (rnrs hashtables (6))
       ;;; Method Dictionarys are Scheme hashtables
    (rename ;; Syntactic sugar tastes sweeter ;^)
@@ -121,23 +128,29 @@
     (hashtable-set!	primSet:toValue:)
     (hashtable-contains? primIncludesSelector:)
     )
-   (only (chezscheme) format)
+   (only (chezscheme)
+         format
+         make-parameter
+         parameterize
+         procedure-arity-mask
+         make-arity-wrapper-procedure
+         wrapper-procedure-data
+         wrapper-procedure?
+         open-output-string
+         get-output-string
+         vector-copy
+       )
    )
 
-  ;; FORWARDS REQUIRED???
- (define class?) (define perform:) (define $)
- (define make-messageSend) (define behavior)
+;; Set! elsewhere
+(define asException)  ;; def'ed in "st-condition.scm"
+(define condition->dictionary)
 
-;;  Nota Bene: send-failed is redefined in "st-error-obj.scm"
-(define (send-failed receiver selector rest-args)
-  (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-    (error (format #f "**Failed message send: #~a to: ~a"
-                   selector
-                   (if (class? receiver)
-                       ($ receiver 'name)
-                       receiver))
-           rest-args)
-) )
+  
+;;; Message lookup
+
+(define (lookupSelector: self selectorSym) ;; Polymorphic
+  (primLookup: (behavior self) selectorSym))
 
 ;; methodDict primLookup: aSymbol
 (define (primLookup: methodDict symbol)
@@ -148,21 +161,62 @@
                    ;; (make-messageSend self symbol rest-args)))
 )
 
-;
+;;  Nota Bene: send-failed is redefined in "st-error-obj.sls"
+(define (send-failed receiver selector rest-args)
+  (let ( (messageSend (make-messageSend receiver selector rest-args)) )
+    (error (format #f "**Failed message send: #~a to: ~a"
+                   selector
+                   (if (st-object? receiver) ;; (class? receiver)
+                       ($ receiver 'printString)
+                       receiver))
+           rest-args)
+) )
 
-;;; Message lookup
+(define (make-messageSend receiver selector args-list)
+  ;; args list was captured by a .rest
+  (let* ( (argArray    (ensure-st-array args-list))
+;; (messageSend (make-st-object st-messageSend-behavior 3))
+;; (perform:with: messageSend 'receiver:  receiver)
+;; (perform:with: messageSend 'selector:  selector)
+;; (perform:with: messageSend 'arguments: argArray)
+;; messageSend)
+          (messageSend
+           (vector (get-messageSend-behavior)
+                   receiver
+                   selector
+                   argArray))
+         )
+    messageSend
+) )
 
-(define (lookupSelector: self selectorSym) ;; Polymorphic
-  (primLookup: (behavior self) selectorSym))
+(define list->st-array list->vector)
+
+(define (ensure-st-array args)
+  ;; args are a list captured by a .rest
+  ;; Flatten & vectorise into st-array
+  ;; Last element may be a Scheme vector,
+  ;;  if so, add as a list at end..
+  (let* ( (rev-args (reverse args))
+          (reversed-args
+           (cond
+            ((null? rev-args) '())
+            ((vector? (car rev-args))
+             (append ;; spread
+              (reverse (vector->list (car rev-args)))
+              (cdr rev-args))
+             )
+            (else rev-args)))
+         )
+    (list->st-array (reverse reversed-args))
+) )
 
 ;; All methods in Smalltalk have an exact number of arguments
 ;; The 'receiver' of the message is #self,
 ;;   so all messages have at least one argument
 ;; The most common usages have the fewest arguments
 
-(set! perform:
-      (lambda (self selectorSym)
-        ((lookupSelector: self selectorSym) self)))
+(define (perform: self selectorSym)
+  ((lookupSelector: self selectorSym) self))
 
 (define (perform:with: self selectorSym arg)
   ((lookupSelector: self selectorSym) self arg))
@@ -298,7 +352,7 @@
              (cons self argsList)))))
 
 ;;; Shorter Syntax
-(set! $     perform:)
+(define $     perform:)
 (define $:    perform:with:)
 (define $::   perform:with:with:)
 (define $:::  perform:with:with:with:)
@@ -324,18 +378,85 @@
      (else (loop (perform: super-class 'superclass))))
 ) )
 
-(set! class?
-      (lambda (thing)
-        (cond
-         ((not (st-object? thing)) #f)
-         (else (saferIsKindOf: thing Class)))))
+;; (define (class? thing)
+;;   (cond
+;;    ((not (st-object? thing)) #f)
+;;    (else (saferIsKindOf: thing Class))))
+
+;; shortcuts
+(define (class      obj) (perform: obj 'class))
+(define (superclass obj) (perform: obj 'superclass))
+
+(define (isKindOf: self someClass)
+  (let loop ( (super-class (perform: self 'class)) )
+    (cond
+     ((null? super-class) #f)
+     ((eq? super-class someClass) #t)
+     ((not (st-object? super-class)) #f)
+     (else (loop (perform: super-class 'superclass))))
+) )
+
+(define (className: thing)
+  (cond
+   ((respondsTo: thing 'class)
+    (let ( (thing-class (class thing)) )
+      (if (respondsTo: thing-class 'name)
+        ($ thing-class 'name)
+        (format #f "~a" thing-class)))
+    )
+   (else "#<classless Object>")))
+
+
+;; Smalltalk BlockClosures know their name and arity..
+(define (method-arity blockClosure)
+  ;; "thing foo: 3"  ==> ((lambda (self x) ...) thing 3)
+  ;; so reduce procedure arity by 1 to get method arity
+  (- (exact (log (procedure-arity-mask blockClosure) 2))
+     1 ))
+
+(define (arity->mask anInteger) (expt 2 anInteger))
+
+(define (selector-arity selector-symbol)
+  ;; selector symbols have a colon for each argument
+  ;; 'foo	-> 0
+  ;; 'foo:	-> 1
+  ;; 'foo:bar:	-> 2
+  (let* ( (char-vec (symbol->string selector-symbol))
+          (num-chars (string-length char-vec))
+        )
+    (let loop ((count 0) (index 0))
+      (cond
+       ((>= index num-chars) count)
+       ((char=? #\: (string-ref char-vec index))
+        (loop (+ count 1)(+ index 1)))
+       (else (loop count (+ index 1)))))))
+
+(define (annotate-procedure proc name-symbol)
+  ;; Take a Scheme closure & wrap to annotate
+  ;; with method selector and arity.
+  ;; Add 1 for hidden SELF first argument.
+  (make-arity-wrapper-procedure
+   proc
+   (arity->mask (+ 1 (selector-arity name-symbol)))
+   name-symbol))
+
+(define (method-name method)
+  (wrapper-procedure-data method))
+
+(define (insure-annotated procOrMethod selectorSymbol)
+  (if (wrapper-procedure? procOrMethod)
+      procOrMethod
+      (annotate-procedure procOrMethod selectorSymbol)))
 
 ;;; methodDict primAddSelector: selector withMethod: compiledMethod
 (define (primAddSelector:withMethod: methodDict symbol methodClosure)
   (if (not (procedure? methodClosure))
       (error "Methods must be closures" methodClosure))
-  (procedure-name-set! methodClosure symbol) 
-  (hashtable-set! methodDict symbol methodClosure))
+
+  (hashtable-set! methodDict
+                  symbol
+                  (insure-annotated methodClosure symbol)
+                 ))
 
 ;; methodDict selectors
 (define (primSelectors methodDict) (vector->list (hashtable-keys methodDict)))
@@ -428,30 +549,29 @@
 
 ;; @@FIXME: optimize dispatch
 
-(set! behavior
-      (lambda (thing)
+(define (behavior thing)
   (case thing  
     ;; immediates -- tagtype -> err
-`    ((#t)	st-true-behavior)
+    ((#t)	st-true-behavior)
     ((#f)	st-false-behavior)
     (( '() )	st-nil-behavior)
 ;; eof-object -- err
     (else
-;; @@FIXME: rep tag -> index into vector of behaviors
+;; @@FIXME: optimize this test..
      (cond  
-      ((char?    thing)    st-character-behavior) ;; err
-      ((integer? thing)    st-integer-behavior) ;;bignum->tag=4,else err
+      ((char?    thing)    st-character-behavior) 
+      ((integer? thing)    st-integer-behavior)
       ((number?  thing)
-       (cond  ;; coalesc into a single type?
-        ((rational? thing) st-fraction-behavior) ;; tag=2
-        ((real?     thing) st-real-behavior)     ;; tag=2
-        ((complex?  thing) st-complex-behavior)  ;; tag=1
+       (cond
+        ((rational? thing) st-fraction-behavior) 
+        ((real?     thing) st-real-behavior)     
+        ((complex?  thing) st-complex-behavior)  
         ;; FIXME:: Scaled Decimal
         (else (error 'Behavior
                      "Unknown Scheme number representation"
                      thing))
        ))
-      ((vector? thing) st-array-behavior) ;; Scheme vector ;; tag=0
+      ((vector? thing)	   st-array-behavior) ;; Scheme vector ;; tag=0
       ((string? thing)     st-string-behavior) ;; tag=5
       ((symbol? thing)     st-symbol-behavior) ;; tag=3
       ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
@@ -493,10 +613,11 @@
       ;; output-bytevector 4
       ;; hashtable; other records & record types 5
       ;; @@FIXME ...
-      (else (error "#behavior can't deal with other Scheme types yet"
-                 thing))
-    ))
-) ) )
+      (else (error 'behavior
+                   "#behavior can't deal with other Scheme types yet"
+                   thing))
+    ) ) )
+)
 
 
 (define (printString obj) ;; polymorphic
@@ -505,108 +626,6 @@
     (perform:with: obj 'printOn: outport)
     (get-output-string outport)))
 
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printOn:
-        (lambda (self port)
-          (display "nil" port)))
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'notNil
-        (lambda (self)
-          #f))
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'asSymbol
-        (lambda (self) 'nil)) ;; @@?? UndefinedObject ??@@
-
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'isNil
-        (lambda (self)
-          #t))
-
-(primAddSelector:withMethod: 
- 	st-true-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-true-behavior
-        'printOn:
-        (lambda (self port)
-          (display "true" port)))
-
-(primAddSelector:withMethod: 
- 	st-false-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-false-behavior
-        'printOn:
-        (lambda (self port)
-          (display "false" port)))
-
-(primAddSelector:withMethod: 
- 	st-string-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-string-behavior
-        'printOn:
-        (lambda (self port)
-          (format port "'~a'" self))
-)
-
-(primAddSelector:withMethod: 
- 	st-character-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-character-behavior
-        'printOn:
-        (lambda (self port)
-          (display "$" port)
-          (display self port))
-)
-
-(primAddSelector:withMethod: 
- 	st-symbol-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-symbol-behavior
-        'printOn:
-        (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
-          (format port "#'~a'" self))
-)
-
-(primAddSelector:withMethod: 
- 	st-blockClosure-behavior
-        'selector
-        (lambda (self) (procedure-name self)))
-
-(primAddSelector:withMethod: 
- 	st-blockClosure-behavior
-        'argumentCount
-        (lambda (self) (procedure-arity self)))
-
-(primAddSelector:withMethod:  ;; alias
- 	st-blockClosure-behavior
-        'numArgs
-        (lambda (self) (procedure-arity self)))
 
 ;; (define allocate-classID
 ;;   (let ( (counter 0) )
@@ -664,8 +683,6 @@
 )
 
 
-
-
 ;; Scheme immediates, vector, bytevector
 
 (define (make-st-bytevector numBytes initialValue)
@@ -677,37 +694,8 @@
     (make-bytevector numBytes initVal)
 ) )
 
-
-(primAddSelector:withMethod:
-     st-bytevector-behavior
-     'at:
-     (lambda (self index)
-       ;; NB: ST 1-based, Scheme 0-based
-       (if (<= 1 index (bytevector-length self))
-           (bytevector-ref self (- index 1))
-           (error "Index out of range" self index))))
-     
-(primAddSelector:withMethod:
-     st-bytevector-behavior
-     'at:put:
-     (lambda (self index newVal)
-       (if (<= 1 index (bytevector-length self))
-           (bytevector-set! self (- index 1) newVal)
-           (error "Index out of range" self index))))
-
-(primAddSelector:withMethod:
-     st-bytevector-behavior
-     'size 
-     (lambda (self)
-       (bytevector-length self)))
-
-(primAddSelector:withMethod:
-     st-bytevector-behavior
-     'basicSize
-     (lambda (self)
-       (bytevector-length self)))
-
-
+(define bytevector-ref  bytevector-u8-ref)
+(define bytevector-set! bytevector-u8-set!)
   
 ;; Done at class creation
 ;; NB: start-index includes num-header-slots, which is the minimum index
@@ -799,103 +787,8 @@
 ;;  -- redefined in "st-error-obj.scm"
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
-(add-getters&setters st-messageSend-behavior
-		;; first slot as index skips header
-                     num-header-slots 
-                     '(receiver selector arguments))
+(define (get-messageSend-behavior) st-messageSend-behavior)
 
-(primAddSelector:withMethod: 
- 	st-messageSend-behavior
-        'value    ;; retry original message send
-        (lambda (self)  
-          (let ( (receiver  (perform: self 'receiver))
-                 (selector  (perform: self 'selector))
-                 (arguments (perform: self 'arguments)) ;;@@@?@@@ vec or list?
-               )
-          (if (zero? (vector-length arguments))
-              (perform: receiver selector)
-              (perform:withArguments: receiver selector arguments))))
-)
-
-(primAddSelector:withMethod: 
- 	st-messageSend-behavior
-        'valueWithArguments:  ;; retry w different args
-        (lambda (self newArgsArray)  
-          (let ( (receiver  (perform: self 'receiver))
-                 (selector  (perform: self 'selector))
-               )
-          (if (zero? (vector-length arguments))
-              (perform: receiver selector)
-              (perform:withArguments:
-                  receiver
-                  selector
-                  newArgsArray))))
-)
-
-
-(set! make-messageSend
-      (lambda (receiver selector args-list)
-  ;; args list was captured by a .rest
-  (let* ( (argArray    (ensure-st-array args-list))
-;;        (messageSend (make-st-object st-messageSend-behavior 3))
-    ;; (perform:with: messageSend 'receiver:  receiver)
-    ;; (perform:with: messageSend 'selector:  selector)
-    ;; (perform:with: messageSend 'arguments: argArray)
-    ;; messageSend)
-          (messageSend
-           (vector st-messageSend-behavior
-                   receiver
-                   selector
-                   argArray))
-         )
-    (typetag-set! messageSend st-typetag)
-    messageSend
-) ) )
-
-
-;;  ST Arrays are Scheme vectors..
-(add-array-accessors st-array-behavior 0)
-
-(primAddSelector:withMethod:
-     st-array-behavior
-     'size 
-     (lambda (self)
-       (vector-length self)))
-
-(define list->st-array list->vector)
-
-(define (ensure-st-array args)
-  ;; args are a list captured by a .rest
-  ;; Flatten & vectorise into st-array
-  ;; Last element may be a Scheme vector,
-  ;;  if so, add as a list at end..
-  (let* ( (rev-args (reverse args))
-          (reversed-args
-           (cond
-            ((null? rev-args) '())
-            ((vector? (car rev-args))
-             (append ;; spread
-              (reverse (vector->list (car rev-args)))
-              (cdr rev-args))
-             )
-            (else rev-args)))
-         )
-    (list->st-array (reverse reversed-args))
-) )
-
-(primAddSelector:withMethod:
-     st-condition-behavior
-     'asException  ;; def'ed in "st-condition.scm"
-     (lambda (self)
-       (asException self)))
-
-(primAddSelector:withMethod:
-     st-condition-behavior
-     'asDictionary  ;; def'ed in "st-condition.scm"
-     (lambda (self)
-       (condition->dictionary self)))
-
-;;;
 
 (define (primSetClass: behavior class)
   (primSet:toValue: behavior 'class (lambda (self) class)))
@@ -908,6 +801,8 @@
 ;;; What do we have here?
 
 ;; Smalltalk
+
+(define Smalltalk (make-eq-hashtable))
 
 (define (symbol<? a b)
   (string<? (symbol->string a) (symbol->string b)))
@@ -1089,7 +984,216 @@
 (define (subclassResponsibility self)
   (error "My subclass should have overwridden this method" self))
 
+(define (st-obj-copy st-obj)
+  (unless (st-object? st-obj)
+    (error "st-object-copy: not a Smalltalk object!" st-obj))
+  (vector-copy st-obj)) ;; shallow copy
 
+
+;;;======================================================
+;;; R6RS Libraries: Definitions before Expressions
+;;;======================================================
+
+;; 
+
+;; BlockClosure
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'printOn:
+        (lambda (self port)
+          (display "nil" port)))
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'notNil
+        (lambda (self)
+          #f))
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'asSymbol
+        (lambda (self) 'nil)) ;; @@?? UndefinedObject ??@@
+
+
+(primAddSelector:withMethod: 
+ 	st-nil-behavior
+        'isNil
+        (lambda (self)
+          #t))
+
+(primAddSelector:withMethod: 
+ 	st-true-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-true-behavior
+        'printOn:
+        (lambda (self port)
+          (display "true" port)))
+
+(primAddSelector:withMethod: 
+ 	st-false-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-false-behavior
+        'printOn:
+        (lambda (self port)
+          (display "false" port)))
+
+(primAddSelector:withMethod: 
+ 	st-string-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-string-behavior
+        'printOn:
+        (lambda (self port)
+          (format port "'~a'" self))
+)
+
+(primAddSelector:withMethod: 
+ 	st-character-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-character-behavior
+        'printOn:
+        (lambda (self port)
+          (display "$" port)
+          (display self port))
+)
+
+(primAddSelector:withMethod: 
+ 	st-symbol-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-symbol-behavior
+        'printOn:
+        (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
+          (format port "#'~a'" self))
+)
+
+(primAddSelector:withMethod: 
+ 	st-blockClosure-behavior
+        'selector
+        (lambda (self) (method-name self)))
+
+(primAddSelector:withMethod: 
+ 	st-blockClosure-behavior
+        'argumentCount
+        (lambda (self) (method-arity self)))
+
+(primAddSelector:withMethod:  ;; alias
+ 	st-blockClosure-behavior
+        'numArgs
+        (lambda (self) (method-arity self)))
+
+
+;; ByteVector
+
+(primAddSelector:withMethod:
+     st-bytevector-behavior
+     'at:
+     (lambda (self index)
+       ;; NB: ST 1-based, Scheme 0-based
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-ref self (- index 1))
+           (error "Index out of range" self index))))
+     
+(primAddSelector:withMethod:
+     st-bytevector-behavior
+     'at:put:
+     (lambda (self index newVal)
+       (if (<= 1 index (bytevector-length self))
+           (bytevector-set! self (- index 1) newVal)
+           (error "Index out of range" self index))))
+
+(primAddSelector:withMethod:
+     st-bytevector-behavior
+     'size 
+     (lambda (self)
+       (bytevector-length self)))
+
+(primAddSelector:withMethod:
+     st-bytevector-behavior
+     'basicSize
+     (lambda (self)
+       (bytevector-length self)))
+
+
+;; MessageSend
+
+(add-getters&setters st-messageSend-behavior
+		;; first slot as index skips header
+                     num-header-slots 
+                     '(receiver selector arguments))
+
+(primAddSelector:withMethod: 
+ 	st-messageSend-behavior
+        'value    ;; retry original message send
+        (lambda (self)  
+          (let ( (receiver  (perform: self 'receiver))
+                 (selector  (perform: self 'selector))
+                 (arguments (perform: self 'arguments)) ;;@@@?@@@ vec or list?
+               )
+          (if (zero? (vector-length arguments))
+              (perform: receiver selector)
+              (perform:withArguments: receiver selector arguments))))
+)
+
+(primAddSelector:withMethod: 
+ 	st-messageSend-behavior
+        'valueWithArguments:  ;; retry w different args
+        (lambda (self newArgsArray)  
+          (let ( (receiver  (perform: self 'receiver))
+                 (selector  (perform: self 'selector))
+               )
+          (if (zero? (vector-length newArgsArray))
+              (perform: receiver selector)
+              (perform:withArguments:
+                  receiver
+                  selector
+                  newArgsArray))))
+)
+
+
+;;;
+
+;;  ST Arrays are Scheme vectors..
+(add-array-accessors st-array-behavior 0)
+
+(primAddSelector:withMethod:
+     st-array-behavior
+     'size 
+     (lambda (self)
+       (vector-length self)))
+
+(primAddSelector:withMethod:
+     st-condition-behavior
+     'asException  ;; def'ed in "st-condition.scm"
+     (lambda (self)
+       (asException self)))
+
+(primAddSelector:withMethod:
+     st-condition-behavior
+     'asDictionary  ;; def'ed in "st-condition.scm"
+     (lambda (self)
+       (condition->dictionary self)))
+
+;; Object
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -1159,12 +1263,12 @@
 (primAddSelector:withMethod:
  	st-object-behavior
         'hash   ;; ANSI
-        object-hash) ;; @@CHECK-ME@@ equal-hash
+        equal-hash) 
 
 (primAddSelector:withMethod:
  	st-object-behavior
         'identityHash   ;; ANSI
-        object-hash)
+        equal-hash) ;; @@CHECKME: eq-kash ??
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -1220,20 +1324,11 @@
             ((st-object? self)  (st-object-length self))
             ((vector? self)     (vector-length self))
             ((string? self)     (string-length self))
-            ((symbol? self)     (symbol-length self))
+            ((symbol? self)     (string-length (symbol->string self)))
             ((bytevector? self) (bytevector-length self))
             (else 0)
         ) )
 )
-
-(define (st-obj-copy st-obj)
-  (unless (st-object? st-obj)
-    (error "st-object-copy: not a Smalltalk object!" st-obj))
-  (set-typetag! st-obj vector-typetag)
-  (let ( (result (vector-copy st-obj)) )
-    (set-typetag st-obj st-typetag)
-    (set-typetag result st-typetag)
-    result))
 
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -1270,11 +1365,12 @@
             ((st-object? self)  (st-obj-copy self))
             ((vector? self)     (vector-copy self)) 
             ((string? self)     (string-copy self))
-            ((symbol? self)     (symbol-copy self))
-            ((procedure?  self) (procedure-copy  self))
+            ((symbol? self)     self)
+;;;            ((procedure?  self) (procedure-copy  self))
             ((bytevector? self) (bytevector-copy self))
             ((hashtable?  self) (hashtable-copy  self))
-            ((list? self)       (list-copy self))
+ ;;;           ((list? self)       (list-copy self))
+            ((list? self)       (fold-right cons '() self))
             ;;@@ environment, port, ..?
             (else self) ;; immediates not copyable!
         ) )
