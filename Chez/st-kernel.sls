@@ -14,15 +14,26 @@
 ;;; ==> in method dictionary for class Number:
 ;;;  'add: -> (lambda (self other) (+ self other))
 
+;;; Use Scheme immediates, vectors, bytevectors, closures ..
+;;; See (define (behavior thing) ...) below.
+
+;;; Absent way to name new data types, Smalltalk objects
+;;; are just Scheme Vectors were the 1st slot contains
+;;; a method dictionary including a binding of
+;;; 'class -> (lambda (self) <class>)
+
 (library (st-kernel)
 
   (export
+   Smalltalk 
    method-dictionary?
    make-method-dictionary
    method-dictionary-size
    method-name
    method-arity
 
+;;; Basic access & lookup
+   lookupSelector:
    primLookup:
    primSet:toValue:
    primLookup:
@@ -34,11 +45,13 @@
    primMethodsDo:
    clone-method-dictionary
    clone-behavior
-   ; Basic Objects
+
+;;; Basic Objects
    nil true false
    st-nil st-true st-false
    st-nil?
-   ;; Method/Behavior Dictionaries
+
+;;; Method/Behavior Dictionaries
    st-nil-behavior
    st-true-behavior
    st-false-behavior
@@ -67,7 +80,7 @@
    ;; Polymorphic method
    printString
 
-   ;; Smalltalk Object Representation
+;;; Smalltalk Object Representation
    st-object?
    make-st-object
    st-object-length ;; internal
@@ -75,13 +88,10 @@
    add-getters&setters ;; internal
    add-array-accessors ;; internal
    
-   ;; Message lookup
-   lookupSelector:
-
    ;; primSetClass:
    setClass:
 
-   ; Debug helpers (interactive)
+;;; Debug helpers (interactive)
    smalltalk-keys
    selectors
    display-selectors
@@ -92,7 +102,7 @@
    describe
    respondsTo:
    
-   ;; perform: friends and aliases
+;;; perform - friends and aliases
    $     perform:
    $:    perform:with:
    $::   perform:with:with:
@@ -529,6 +539,7 @@
 ;; @@FIXME: optimize dispatch
 
 (define (behavior thing)
+;; return method-dictionary for thing
   (case thing  
     ;; immediates -- tagtype -> err
     ((#t)	st-true-behavior)
@@ -617,15 +628,6 @@
 ;;;
 ;;; Smalltalk Object Representation
 ;;;
-
-; Use Scheme immediates, vectors, bytevectors, closures ..
-; See (define (behavior obj) ...) below
-;	byte-tag + mask -> index into table of classes
-
-; Absent way to name new data types, Smalltalk objects
-; are just Scheme Vectors were the 1st slot contains
-; a method dictionary including a binding of
-; 'class->(lambda (self) <class>)
 
 (define st-obj-behavior-index 0) ;; 1st slot in a st-object
 
@@ -928,18 +930,6 @@
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
-;; Only setup structure-printer once
-;; (unless structure-printer-set?
-;;   (set! structure-printer-set? #t)
-;;   (structure-printer
-;;      (lambda (obj port quote?)
-;;        (if (st-object? obj)
-;;            (format port
-;;                    (if quote? "~s" "~a")
-;;                    (if (respondsTo: obj 'printString)
-;;                        (perform: obj 'printString)
-;;                        "#<an Object>"))
-;;            (old-structure-printer obj port quote?)))))
 
 ;;;======================================================
 
@@ -1269,6 +1259,7 @@
 ;;;
 
 ;;  ST Arrays are Scheme vectors..
+
 (add-array-accessors st-array-behavior 0)
 
 (primAddSelector:withMethod:
