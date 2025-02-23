@@ -7,6 +7,12 @@
 
 ;;; We will start with object behaviors
 ;;; A behavior is just a (method) dictionary / hashtable
+;;; Each method takes a 'self' first argument and has
+;;; a fixed arity.  Methods know their name and arity.
+
+;;; Number >> add: other [ self + other ].
+;;; ==> in method dictionary for class Number:
+;;;  'add: -> (lambda (self other) (+ self other))
 
 (library (st-kernel)
 
@@ -21,7 +27,7 @@
    primSet:toValue:
    primLookup:
    send-failed
-   primAddSelector:withMethod
+   primAddSelector:withMethod:
    primSelectors
    primSelectorsDo
    primSelectorsAndMethodsDo:
@@ -48,14 +54,15 @@
    st-bytevector-behavior
    st-blockClosure-behavior
    st-object-behavior
-   st-byte-stream
-   st-char-stream
+   st-byte-stream-behavior
+   st-char-stream-behavior
 ;;   st-date+time
 ;;   st-time-behavior
 ;;   st-duration-behavior
    st-condition-behavior
    st-dictionary-behavior
    st-identity-dictionary-behavior
+   st-messageSend-behavior
 
    ;; Polymorphic method
    printString
@@ -70,11 +77,6 @@
    
    ;; Message lookup
    lookupSelector:
-
-   ;; For Error Reporting (#doesNotUnderstand:)
-   ;;  -- redefined in "st-error-obj.scm"
-   st-messageSend-behavior
-   make-messageSend
 
    ;; primSetClass:
    setClass:
@@ -167,27 +169,17 @@
     (error (format #f "**Failed message send: #~a to: ~a"
                    selector
                    (if (st-object? receiver) ;; (class? receiver)
-                       ($ receiver 'printString)
+                       (safer-printString receiver)
                        receiver))
            rest-args)
 ) )
 
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
-  (let* ( (argArray    (ensure-st-array args-list))
-;; (messageSend (make-st-object st-messageSend-behavior 3))
-;; (perform:with: messageSend 'receiver:  receiver)
-;; (perform:with: messageSend 'selector:  selector)
-;; (perform:with: messageSend 'arguments: argArray)
-;; messageSend)
-          (messageSend
-           (vector (get-messageSend-behavior)
-                   receiver
-                   selector
-                   argArray))
-         )
-    messageSend
-) )
+  (vector st-messageSend-behavior
+          receiver
+          selector
+          (ensure-st-array args-list)))
 
 (define list->st-array list->vector)
 
@@ -368,21 +360,6 @@
 (define %&    superPerform:withArguments:) ;; args array
 (define %*    superPerform:withArgsList:)  ;; args list
 
-;;;
-(define (saferIsKindOf: self someClass)
-  (let loop ( (super-class (perform: self 'class)) )
-    (cond
-     ((null? super-class) #f)
-     ((eq? super-class someClass) #t)
-     ((not (st-object? super-class)) #f)
-     (else (loop (perform: super-class 'superclass))))
-) )
-
-;; (define (class? thing)
-;;   (cond
-;;    ((not (st-object? thing)) #f)
-;;    (else (saferIsKindOf: thing Class))))
-
 ;; shortcuts
 (define (class      obj) (perform: obj 'class))
 (define (superclass obj) (perform: obj 'superclass))
@@ -406,8 +383,9 @@
     )
    (else "#<classless Object>")))
 
-
-;; Smalltalk BlockClosures know their name and arity..
+;;;
+;;; Smalltalk BlockClosures know their name and arity..
+;;;
 (define (method-arity blockClosure)
   ;; "thing foo: 3"  ==> ((lambda (self x) ...) thing 3)
   ;; so reduce procedure arity by 1 to get method arity
@@ -786,9 +764,6 @@
 ;; For Error Reporting (#doesNotUnderstand:)
 ;;  -- redefined in "st-error-obj.scm"
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
-
-(define (get-messageSend-behavior) st-messageSend-behavior)
-
 
 (define (primSetClass: behavior class)
   (primSet:toValue: behavior 'class (lambda (self) class)))
