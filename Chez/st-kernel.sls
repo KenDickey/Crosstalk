@@ -118,8 +118,11 @@
    (rnrs lists (6))
    (rnrs bytevectors (6))
    (rnrs control (6))
-   (rnrs conditions (6))
+   (rnrs records inspection (6))
+   (rnrs records procedural (6))
+   (rnrs conditions (6))   
    (rnrs sorting (6))
+   (rnrs unicode (6))
    (rnrs hashtables (6))
       ;;; Method Dictionarys are Scheme hashtables
    (rename ;; Syntactic sugar tastes sweeter ;^)
@@ -144,13 +147,10 @@
        )
    )
 
-;; Set! elsewhere
-(define asException)  ;; def'ed in "st-condition.scm"
-(define condition->dictionary)
-
-  
+;;;  
 ;;; Message lookup
-
+;;;
+  
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (primLookup: (behavior self) selectorSym))
 
@@ -166,11 +166,11 @@
 ;;  Nota Bene: send-failed is redefined in "st-error-obj.sls"
 (define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-    (error (format #f "**Failed message send: #~a to: ~a"
+    (error 'send-failed
+           (format #f
+                   "**Failed message send: #~a to: ~a"
                    selector
-                   (if (st-object? receiver) ;; (class? receiver)
-                       (safer-printString receiver)
-                       receiver))
+                   (safer-printString receiver))
            rest-args)
 ) )
 
@@ -386,6 +386,7 @@
 ;;;
 ;;; Smalltalk BlockClosures know their name and arity..
 ;;;
+
 (define (method-arity blockClosure)
   ;; "thing foo: 3"  ==> ((lambda (self x) ...) thing 3)
   ;; so reduce procedure arity by 1 to get method arity
@@ -521,9 +522,9 @@
 (define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
 (define st-identity-dictionary-behavior (make-mDict-placeholder 'IdentityDictionary))
 
-;; Behavior adds intelligence to structure
-
-;;; (behavior obj)
+;;;
+;;; Behavior adds intelligence to structure
+;;;	   (behavior obj)
 
 ;; @@FIXME: optimize dispatch
 
@@ -772,12 +773,21 @@
   (primSetClass: (behavior obj) class))
 
 ;;;
-;;;======================================================
-;;; What do we have here?
-
-;; Smalltalk
+;;; The Smalltalk Global Environment
+;;;
 
 (define Smalltalk (make-eq-hashtable))
+
+(define (smalltalkAt: aSymbol)
+  (hashtable-ref Smalltalk aSymbol st-nil))
+
+(define (smalltalkAt:Put: aSymbol aValue)
+  (primSet:toValue: Smalltalk aSymbol aValue))
+
+;;;
+;;;======================================================
+;;; Interactive/REPL debug helpers.
+;;;   What do we have here?
 
 (define (symbol<? a b)
   (string<? (symbol->string a) (symbol->string b)))
@@ -801,6 +811,32 @@
    symbol<?
    (perform: class 'myMethodNames)))
     
+(define (safer-printString obj)
+  (if (not (st-object? obj))
+      (format #f "~a" obj)
+      (cond ;; smalltalk object
+       ;; ((respondsTo: obj 'name)
+       ;;  (format #f "'~a'" (perform: obj 'name))
+       ;;  )
+       ((respondsTo: obj 'printString)
+        (perform: obj 'printString)
+        )
+       ((respondsTo: obj 'class)
+        (let ( (class (perform: obj 'class)) )
+          (cond
+           ((or (symbol? class) (string? class))
+            (format #f "<instance of #~a>" class)
+            )
+           ((respondsTo: class 'name)
+            (format #f "<instance of #~a>" (perform: class 'name)))
+           (else (format #f "~a" obj)))
+          ))
+       (else "#<object>")
+       )
+) )
+
+(define (display-obj obj) (display (safer-printString obj)))
+  
 ;; Most useful..
 (define (display-ivars st-obj)
   (if (not (st-object? st-obj))
@@ -830,32 +866,6 @@
   (newline)
 )
 
-(define (safer-printString obj)
-  (if (not (st-object? obj))
-      (format #f "~a" obj)
-      (cond ;; smalltalk object
-       ;; ((respondsTo: obj 'name)
-       ;;  (format #f "'~a'" (perform: obj 'name))
-       ;;  )
-       ((respondsTo: obj 'printString)
-        (perform: obj 'printString)
-        )
-       ((respondsTo: obj 'class)
-        (let ( (class (perform: obj 'class)) )
-          (cond
-           ((or (symbol? class) (string? class))
-            (format #f "<instance of #~a>" class)
-            )
-           ((respondsTo: class 'name)
-            (format #f "<instance of #~a>" (perform: class 'name)))
-           (else (format #f "~a" obj)))
-          ))
-       (else "#<object>")
-       )
-) )
-
-(define (display-obj obj) (display (safer-printString obj)))
-  
 (define (describe obj)
   (cond
    ((null? obj) (display "nil")
@@ -964,14 +974,125 @@
     (error "st-object-copy: not a Smalltalk object!" st-obj))
   (vector-copy st-obj)) ;; shallow copy
 
+;;;
+;;; Scheme Conditions
+;;;
+;; Nota Bene:
+;;   Scheme compound-conditions differ from St ExceptionSets
+;; They are more like a Bag.  No one-to-one mapping exists.
+;; We try to do the simple thing here..
+
+; Exception>>doesNotUnderstand: (See file "st-error-obj.scm")
+; Allows conditionDict identifiers as selectors to Exceptions
+
+(define (asException aCondition)
+  (unless (condition? aCondition)
+    (error "Non-condtion passed to #asException" aCondition))
+  (let ( (cDict (condition->dictionary aCondition)) )
+    (cond
+     ((or (error? aCondition) ( message-condition? aCondition))
+      (let ((receiver ($ (smalltalkAt: 'Error) 'new)))
+        ($: receiver 'conditionDict: cDict)
+        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+      )
+     ((warning? aCondition)
+      (let ((receiver ($ (smalltalkAt: 'Warning) 'new)))
+        ($: receiver 'conditionDict: cDict)
+        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+      )
+     (else
+      (newline)
+      (display (dict->alist cDict))
+      (error "asException unhandled @@NYI@@" aCondition))))
+ )
+
+(define (condition-name simple-condition)
+  (record-type-name
+   (record-rtd simple-condition)))
+
+(define (condition-names condition)
+  (map condition-name
+       (simple-conditions condition)))
+
+(define (simple-condition? condition)
+  (and (condition? condition)
+       (= 1 (length (simple-conditions condition)))))
+
+(define (condition-name->predicate-symbol simple-condition)
+  (let loop ( (source-chars
+               (string->list
+                (symbol->string
+                 (condition-name simple-condition))))
+              (dest-chars '(#\s #\i))
+              (char-case-fn char-upcase)
+            )
+    (cond
+     ((null? source-chars)
+      (string->symbol
+       (list->string
+        (reverse dest-chars)))
+      )
+     ((let ( (next-char (car source-chars)) )
+        (not (or (char-alphabetic? next-char)
+                 (char-numeric? next-char))))
+      (loop (cdr source-chars)
+            dest-chars
+            char-upcase)
+      )
+     (else
+      (loop (cdr source-chars)
+            (cons (char-case-fn (car source-chars))
+                  dest-chars)
+            char-downcase)))))
+
+(define (condition->dictionary condition)
+  (let ( (dict (make-eq-hashtable))
+         (conditions
+          ;; In case of same field names,
+          ;; first use of field name predominates,
+          ;; so add back to front..
+          (reverse (simple-conditions condition)))
+       )
+      (for-each
+       (lambda (cdn)
+         (let ( (rtd (record-rtd cdn)) )
+           (hashtable-set! dict
+                           (condition-name->predicate-symbol cdn)
+                           #t)
+           (let loop ( (field-names
+                        (vector->list
+                         (record-type-field-names rtd)))
+                       (index 0)
+                     )
+             (if (>= index (length field-names))
+                 dict
+                 (begin
+                   (hashtable-set! dict
+                                   (car field-names)
+                                   ((record-accessor rtd index) cdn))
+                   (loop (cdr field-names) (+ index 1))))
+         ) ) )
+         conditions)
+      dict)
+)
+
+(define (dict->alist dict)
+  (let-values ( ((keys-vec vals-vec)
+                 (hashtable-entries dict)) )
+    (vector->list (vector-map cons keys-vec vals-vec))))
+
 
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-;; 
+;;; Enable reflective introspection
+;; Note: Dictionary Class is undefined at this point..
+(smalltalkAt:Put: 'Smalltalk Smalltalk)
 
-;; BlockClosure
+;;;
+;;; BlockClosure
+;;;
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
