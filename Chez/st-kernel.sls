@@ -31,6 +31,7 @@
    method-dictionary-size
    method-name
    method-arity
+   num-header-slots
 
 ;;; Basic access & lookup
    lookupSelector:
@@ -45,6 +46,13 @@
    primMethodsDo:
    clone-method-dictionary
    clone-behavior
+   primSetClass:
+   setClass:
+   class
+   superclass
+   isKindOf:
+   smalltalkAt:Put:
+   smalltalkAt:
 
 ;;; Basic Objects
    nil true false
@@ -101,8 +109,11 @@
    display-obj
    describe
    respondsTo:
+
+;;; Various Helpers   
+   list-copy
    
-;;; perform - friends and aliases
+;;; perform
    $     perform:
    $:    perform:with:
    $::   perform:with:with:
@@ -110,14 +121,6 @@
    $:::: perform:with:with:with:with:
    $&    perform:withArguments: ;; args array
    $*    perform:withArgsList:  ;; args list
-
-   %     superPerform:
-   %:    superPerform:with:
-   %::   superPerform:with:with:
-   %:::  superPerform:with:with:with:
-   %:::: superPerform:with:with:with:with:
-   %&    superPerform:withArguments: ;; args array
-   %*    superPerform:withArgsList:  ;; args list
    )
 
   (import
@@ -126,7 +129,6 @@
    (rnrs io simple (6))
    (rnrs io ports (6))
    (rnrs lists (6))
-   (rnrs bytevectors (6))
    (rnrs control (6))
    (rnrs records inspection (6))
    (rnrs records procedural (6))
@@ -247,111 +249,6 @@
          (cons self (vector->list argsArray))))
 
 
-;;; "send to super"
-;
-; Message sent to a superclass method may invoke a message to
-; its superclass method, so one has to track the meaning of
-; "super" to allow multi-level super dispatch.
-;
-; Given multithreading, multiple comtexts may be active, so
-; one cannot use, e.g. a hidden ivar, as the same object may
-; me active in multiple threads.
-;
-; Two strategies are
-;  [1] Use an object wrapper, which would be per-thread to
-; keep track of super.
-;  [2] Use a dynamic thread-local variable to keep track of super.
-;
-; The strategy here is [2], using Scheme's parameter objects with
-; an association-list of (.. (obj super) ..) as per-thread stacks.
-; Per-thread stacks are required as multiple send-to-super's may be
-; used within a given thread.
-;
-; [2] has less mechanical involvement with dispatch where it is
-; not used.  So send-to-super pays no cost where it is not used.
-
-(define super-chain-alist (make-parameter '()))
-
-(define (next-super-for obj)
-  ;; Answer next superclass for obj
-  (superclass
-   (cond
-    ((assq obj (super-chain-alist)) => cdr)
-    (else (class obj))))
-)
-
-(define (superPerform: self selectorSym)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-      ((primLookup: ($ the-super 'methodDict) selectorSym) self))))
-
-(define (superPerform:with: self selectorSym arg)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg))))
-
-(define (superPerform:with:with: self selectorSym arg1 arg2)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2))))
-
-(define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3))))
-
-(define (superPerform:with:with:with:with:
-         self selectorSym arg1 arg2 arg3 arg4)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3 arg4))))
-
-(define (superPerform:withArguments: self selectorSym argsArray)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
-             (cons self (vector->list argsArray))))))
-
-(define (superPerform:withArgsList: self selectorSym argsList)
-  (let ( (the-super   (next-super-for self))
-         (super-alist (super-chain-alist))
-       )
-    (parameterize ( (super-chain-alist
-                     (cons (cons self the-super)
-                           super-alist))
-                  )
-      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
-             (cons self argsList)))))
 
 ;;; Shorter Syntax
 (define $     perform:)
@@ -361,14 +258,6 @@
 (define $:::: perform:with:with:with:with:)
 (define $&    perform:withArguments:) ;; args array
 (define $*    perform:withArgsList:)  ;; args list
-
-(define %     superPerform:)
-(define %:    superPerform:with:)
-(define %::   superPerform:with:with:)
-(define %:::  superPerform:with:with:with:)
-(define %:::: superPerform:with:with:with:with:)
-(define %&    superPerform:withArguments:) ;; args array
-(define %*    superPerform:withArgsList:)  ;; args list
 
 ;; shortcuts
 (define (class      obj) (perform: obj 'class))
@@ -561,11 +450,11 @@
                      "Unknown Scheme number representation"
                      thing))
        ))
-      ((vector? thing)	   st-array-behavior) ;; Scheme vector ;; tag=0
-      ((string? thing)     st-string-behavior) ;; tag=5
-      ((symbol? thing)     st-symbol-behavior) ;; tag=3
-      ((procedure? thing)  st-blockClosure-behavior) ;; tag=7
-      ((bytevector? thing) st-bytevector-behavior)   ;; tag=0
+      ((vector? thing)	   st-array-behavior)
+      ((string? thing)     st-string-behavior) 
+      ((symbol? thing)     st-symbol-behavior) 
+      ((procedure? thing)  st-blockClosure-behavior) 
+      ((bytevector? thing) st-bytevector-behavior)   
       ((port? thing)
        (cond
         ((textual-port? thing) st-char-stream-behavior)
@@ -1072,6 +961,9 @@
     (vector->list (vector-map cons keys-vec vals-vec))))
 
 
+(define (list-copy some-list)
+  (fold-right cons '() some-list))
+
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
@@ -1456,8 +1348,7 @@
 ;;;            ((procedure?  self) (procedure-copy  self))
             ((bytevector? self) (bytevector-copy self))
             ((hashtable?  self) (hashtable-copy  self))
- ;;;           ((list? self)       (list-copy self))
-            ((list? self)       (fold-right cons '() self))
+            ((list? self)       (list-copy self))
             ;;@@ environment, port, ..?
             (else self) ;; immediates not copyable!
         ) )
