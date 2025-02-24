@@ -15,6 +15,14 @@
    %:::: superPerform:with:with:with:with:
    %&    superPerform:withArguments: ;; args array
    %*    superPerform:withArgsList:  ;; args list
+;;; "Debug"
+   Collection
+   Set
+   IdentitySet
+   SequenceableCollection
+   ArrayedCollection
+   Array
+   ByteArray
    )
   
   (import
@@ -543,7 +551,7 @@
    'ArrayedCollection '() '())
 )
 
-(define Array
+(define Array 
   (newSubclassName:iVars:cVars:
    ArrayedCollection
    'Array '() '())

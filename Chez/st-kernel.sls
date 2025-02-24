@@ -156,6 +156,7 @@
          open-output-string
          get-output-string
          vector-copy
+         void
        )
    )
 
@@ -427,13 +428,14 @@
 
 ;; @@FIXME: optimize dispatch
 
+(define unspecified (void))
+
 (define (behavior thing)
 ;; return method-dictionary for thing
   (case thing  
     ;; immediates -- tagtype -> err
     ((#t)	st-true-behavior)
     ((#f)	st-false-behavior)
-    (( '() )	st-nil-behavior)
 ;; eof-object -- err
     (else
 ;; @@FIXME: optimize this test..
@@ -492,6 +494,8 @@
       ;; output-bytevector 4
       ;; hashtable; other records & record types 5
       ;; @@FIXME ...
+      ((or (null? thing) (eq? thing (void)))
+       st-nil-behavior)
       (else (error 'behavior
                    "#behavior can't deal with other Scheme types yet"
                    thing))
