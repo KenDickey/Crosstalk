@@ -148,7 +148,6 @@
     (make-eq-hashtable	 make-method-dictionary)
     (hashtable?		 method-dictionary?)
     (hashtable-size	 method-dictionary-size)
-    (hashtable-copy	 clone-method-dictionary)
     (hashtable-set!	 primSet:toValue:)
     (hashtable-contains? primIncludesSelector:)
     )
@@ -364,14 +363,8 @@
                  (hashtable-entries methodDict)) )
     (vector-for-each closure methods))) 
 
-;; (define (clone-method-dictionary mDict)
-;;   (let ( (clone (make-eq-hashtable (hashtable-size mDict))) )
-;;     (primSelectorsAndMethodsDo:
-;;      	mDict
-;;         (lambda (selector method)
-;;           (primAddSelector:withMethod: clone selector method)))
-;;     clone)
-;; )
+ (define (clone-method-dictionary mDict)
+   (hashtable-copy mDict true)) ;; ensure mutable
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
 
@@ -1241,6 +1234,13 @@
  	st-object-behavior
         'respondsTo:    ;; ANSI
         respondsTo:)
+
+(primAddSelector:withMethod: ;; ANSI
+ 	st-object-behavior
+        'isKindOf:
+        isKindOf:
+)
+
 
 (primAddSelector:withMethod:
  	st-object-behavior
