@@ -25,15 +25,11 @@
 (library (st-kernel)
 
   (export
+
    Smalltalk 
-   method-dictionary?
-   make-method-dictionary
-   method-dictionary-size
-   method-name
-   method-arity
-   num-header-slots
 
 ;;; Basic access & lookup
+
    lookupSelector:
    primLookup:
    primSet:toValue:
@@ -46,20 +42,29 @@
    primMethodsDo:
    clone-method-dictionary
    clone-behavior
-   primSetClass:
+   primSetClass: ;; (primSetClass: behavior class)
    setClass:
    class
    superclass
    isKindOf:
+   respondsTo:
    smalltalkAt:Put:
    smalltalkAt:
 
 ;;; Basic Objects
+
    nil true false
    st-nil st-true st-false
    st-nil?
 
 ;;; Method/Behavior Dictionaries
+
+   method-dictionary?
+   make-method-dictionary
+   method-dictionary-size
+   method-name
+   method-arity
+
    st-nil-behavior
    st-true-behavior
    st-false-behavior
@@ -85,21 +90,22 @@
    st-identity-dictionary-behavior
    st-messageSend-behavior
 
-   ;; Polymorphic method
+;;; Polymorphic method
    printString
 
 ;;; Smalltalk Object Representation
+
    st-object?
    make-st-object
+   num-header-slots
    st-object-length ;; internal
    behavior ;; answers a method dictionary
    add-getters&setters ;; internal
    add-array-accessors ;; internal
    
-   ;; primSetClass:
-   setClass:
 
 ;;; Debug helpers (interactive)
+
    smalltalk-keys
    selectors
    display-selectors
@@ -108,12 +114,12 @@
    safer-printString
    display-obj
    describe
-   respondsTo:
 
 ;;; Various Helpers   
    list-copy
    
-;;; perform
+;;; Perform
+
    $     perform:
    $:    perform:with:
    $::   perform:with:with:
@@ -139,10 +145,11 @@
       ;;; Method Dictionarys are Scheme hashtables
    (rename ;; Syntactic sugar tastes sweeter ;^)
     (rnrs hashtables (6))
-    (make-eq-hashtable	make-method-dictionary)
-    (hashtable?		method-dictionary?)
-    (hashtable-size	method-dictionary-size)
-    (hashtable-set!	primSet:toValue:)
+    (make-eq-hashtable	 make-method-dictionary)
+    (hashtable?		 method-dictionary?)
+    (hashtable-size	 method-dictionary-size)
+    (hashtable-copy	 clone-method-dictionary)
+    (hashtable-set!	 primSet:toValue:)
     (hashtable-contains? primIncludesSelector:)
     )
    (only (chezscheme)
@@ -273,6 +280,9 @@
      (else (loop (perform: super-class 'superclass))))
 ) )
 
+(define (respondsTo: self selector)
+  (primIncludesSelector: (behavior self) selector))
+
 (define (className: thing)
   (cond
    ((respondsTo: thing 'class)
@@ -350,17 +360,18 @@
     (vector-for-each closure selectors methods)))
 
 (define (primMethodsDo: methodDict closure)
-  (let-values ( ((ignored-selectors methods) (hashtable-entries methodDict)) )
+  (let-values ( ((ignored-selectors methods)
+                 (hashtable-entries methodDict)) )
     (vector-for-each closure methods))) 
 
-(define (clone-method-dictionary mDict)
-  (let ( (clone (make-eq-hashtable (hashtable-size mDict))) )
-    (primSelectorsAndMethodsDo:
-     	mDict
-        (lambda (selector method)
-          (primAddSelector:withMethod: clone selector method)))
-    clone)
-)
+;; (define (clone-method-dictionary mDict)
+;;   (let ( (clone (make-eq-hashtable (hashtable-size mDict))) )
+;;     (primSelectorsAndMethodsDo:
+;;      	mDict
+;;         (lambda (selector method)
+;;           (primAddSelector:withMethod: clone selector method)))
+;;     clone)
+;; )
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
 
@@ -618,7 +629,9 @@
        (let ( (vec-index (+ start-index user-index -1)) )
          (if (< pre-start vec-index (vector-length self))
              (vector-ref self vec-index)
-             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+             (error 'at:
+                    "Index out of range"
+                    user-index))))
    )
 
     (primAddSelector:withMethod:
@@ -631,7 +644,9 @@
              (begin
                (vector-set! self vec-index newVal)
                self)
-             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+             (error 'at:put:
+                    "Index out of range"
+                    user-index))))
      )
 
     (primAddSelector:withMethod:
@@ -646,7 +661,9 @@
                             vec-index
                             (aBlock original-elt))
                self)
-             (error "Index out of range" user-index)))) ;; @@FIXME: conditions
+             (error 'at:modify:
+                    "Index out of range"
+                    user-index)))) 
      )
 
     (primAddSelector:withMethod:
@@ -658,7 +675,7 @@
 ) )
 
 ;; For Error Reporting (#doesNotUnderstand:)
-;;  -- redefined in "st-error-obj.scm"
+;;  NB: behavior redefined in "st-error-obj.scm"
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 
 (define (primSetClass: behavior class)
@@ -687,7 +704,7 @@
 (define (symbol<? a b)
   (string<? (symbol->string a) (symbol->string b)))
 
-(define (smalltalk-keys)
+(define (smalltalk-keys) ;; sorted
   (vector-sort
    symbol<?
    (hashtable-keys Smalltalk)))
@@ -820,8 +837,6 @@
     (thunk)
     (get-output-string (current-output-port))))
 
-(define (respondsTo: self selector)
-  (primIncludesSelector: (behavior self) selector))
 
 
 ;;;======================================================
@@ -829,7 +844,7 @@
 ;; @@FIXME: pre-Smalltalk namespace
 
 (define (doesNotUnderstand: self selector) ;; ANSI
-;; NB: redefined in "st-error-obj.scm"
+;; NB: method redefined in "st-error-obj.scm"
   (error (format #f "#~a not understood by ~a"
                  selector
                  self)
@@ -870,7 +885,9 @@
 
 (define (asException aCondition)
   (unless (condition? aCondition)
-    (error "Non-condtion passed to #asException" aCondition))
+    (error 'asException
+           "Non-condtion passed to #asException"
+           aCondition))
   (let ( (cDict (condition->dictionary aCondition)) )
     (cond
      ((or (error? aCondition) ( message-condition? aCondition))
@@ -886,7 +903,7 @@
      (else
       (newline)
       (display (dict->alist cDict))
-      (error "asException unhandled @@NYI@@" aCondition))))
+      (error 'asException "asException unhandled @@NYI@@" aCondition))))
  )
 
 (define (condition-name simple-condition)
@@ -977,7 +994,7 @@
 (smalltalkAt:Put: 'Smalltalk Smalltalk)
 
 ;;;
-;;; BlockClosure
+;;; Some Fundamental Methods
 ;;;
 
 (primAddSelector:withMethod: 
@@ -1068,6 +1085,8 @@
           (format port "#'~a'" self))
 )
 
+;;; Method Info
+
 (primAddSelector:withMethod: 
  	st-blockClosure-behavior
         'selector
@@ -1154,7 +1173,7 @@
 
 ;;;
 
-;;  ST Arrays are Scheme vectors..
+;;  Smalltalk Arrays are Scheme Vectors..
 
 (add-array-accessors st-array-behavior 0)
 
@@ -1332,7 +1351,6 @@
         'yourself    ;; ANSI
         (lambda (self) self)
 )
-
 
 (primAddSelector:withMethod:
  	st-object-behavior
