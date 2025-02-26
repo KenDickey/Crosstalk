@@ -307,3 +307,4 @@
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
 )
+
