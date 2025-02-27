@@ -77,7 +77,7 @@
    st-symbol-behavior
    st-array-behavior
    st-list-behavior
-   st-bytevector-behavior
+   st-bytearray-behavior
    st-blockClosure-behavior
    st-object-behavior
    st-byte-stream-behavior
@@ -339,7 +339,9 @@
 ;;; methodDict primAddSelector: selector withMethod: compiledMethod
 (define (primAddSelector:withMethod: methodDict symbol methodClosure)
   (if (not (procedure? methodClosure))
-      (error "Methods must be closures" methodClosure))
+      (error 'primAddSelector:withMethod:
+             "Methods must be closures"
+             methodClosure))
 
   (hashtable-set! methodDict
                   symbol
@@ -413,7 +415,7 @@
 (define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
 (define st-array-behavior        (make-mDict-placeholder 'Array))
 (define st-list-behavior         (make-mDict-placeholder 'List))
-(define st-bytevector-behavior   (make-mDict-placeholder 'Bytevector))
+(define st-bytearray-behavior   (make-mDict-placeholder 'ByteArray))
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior       (make-mDict-placeholder 'Object))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
@@ -452,7 +454,7 @@
         ((real?     thing) st-real-behavior)     
         ((complex?  thing) st-complex-behavior)  
         ;; FIXME:: Scaled Decimal
-        (else (error 'Behavior
+        (else (error 'behavior
                      "Unknown Scheme number representation"
                      thing))
        ))
@@ -460,13 +462,13 @@
       ((string? thing)     st-string-behavior) 
       ((symbol? thing)     st-symbol-behavior) 
       ((procedure? thing)  st-blockClosure-behavior) 
-      ((bytevector? thing) st-bytevector-behavior)   
+      ((bytevector? thing) st-bytearray-behavior)   
       ((port? thing)
        (cond
         ((textual-port? thing) st-char-stream-behavior)
         ((binary-port?  thing) st-byte-stream-behavior)
         (else
-         (error "Wierd port: " thing)))
+         (error 'behavior "Wierd port: " thing)))
       )
       ((hashtable? thing)
        (if (eq? eq? (hashtable-equivalence-function thing))
@@ -491,15 +493,9 @@
 ;;      ((date? thing)          st-date+time-behavior)
       ((condition? thing)     st-condition-behavior)
       ((st-object? thing) (vector-ref thing st-obj-behavior-index))
-      ;; input-file 4
-      ;; output-file 4
-      ;; output-string 4
-      ;; (current-*-port) 4
-      ;; output-bytevector 4
       ;; hashtable; other records & record types 5
       ;; @@FIXME ...
-      ((or (null? thing) (eq? thing (void)))
-       st-nil-behavior)
+      ((or (null? thing) (eq? thing (void)))   st-nil-behavior)
       (else (error 'behavior
                    "#behavior can't deal with other Scheme types yet"
                    thing))
@@ -563,7 +559,7 @@
 
 ;; Scheme immediates, vector, bytevector
 
-(define (make-st-bytevector numBytes initialValue)
+(define (make-st-bytearray numBytes initialValue)
   (let ( (initVal (if (and (integer? initialValue)
                            (<= 0 initialValue 255))
                       initialValue
@@ -612,6 +608,7 @@
 )
 
 (define (add-array-accessors behavior start-index)
+;; #at: #at:put: #basicSize #at:modify
   (let ( (pre-start (- start-index 1)) )
 
     (primAddSelector:withMethod:
@@ -838,7 +835,8 @@
 
 (define (doesNotUnderstand: self selector) ;; ANSI
 ;; NB: method redefined in "st-error-obj.scm"
-  (error (format #f "#~a not understood by ~a"
+  (error 'doesNotUnderstand:
+         (format #f "#~a not understood by ~a"
                  selector
                  self)
          self)
@@ -852,17 +850,21 @@
               (symbol->string selector)))
          )
       (lambda (self)
-        (error err-msg
+        (error 'subclassResponsibility
+               err-msg
                self
                selector)))
 ) )
 
 (define (subclassResponsibility self)
-  (error "My subclass should have overwridden this method" self))
+  (error 'subclassResponsibility
+         "My subclass should have overwridden this method"
+         self))
 
 (define (st-obj-copy st-obj)
   (unless (st-object? st-obj)
-    (error "st-object-copy: not a Smalltalk object!" st-obj))
+    (error 'st-object-copy
+           "Not a Smalltalk object!" st-obj))
   (vector-copy st-obj)) ;; shallow copy
 
 ;;;
@@ -1096,33 +1098,33 @@
         (lambda (self) (method-arity self)))
 
 
-;; ByteVector
+;; ByteArray [Scheme bytevector]
 
 (primAddSelector:withMethod:
-     st-bytevector-behavior
+     st-bytearray-behavior
      'at:
      (lambda (self index)
        ;; NB: ST 1-based, Scheme 0-based
        (if (<= 1 index (bytevector-length self))
            (bytevector-ref self (- index 1))
-           (error "Index out of range" self index))))
+           (error 'at: "Index out of range" self index))))
      
 (primAddSelector:withMethod:
-     st-bytevector-behavior
+     st-bytearray-behavior
      'at:put:
      (lambda (self index newVal)
        (if (<= 1 index (bytevector-length self))
            (bytevector-set! self (- index 1) newVal)
-           (error "Index out of range" self index))))
+           (error 'at:put: "Index out of range" self index))))
 
 (primAddSelector:withMethod:
-     st-bytevector-behavior
+     st-bytearray-behavior
      'size 
      (lambda (self)
        (bytevector-length self)))
 
 (primAddSelector:withMethod:
-     st-bytevector-behavior
+     st-bytearray-behavior
      'basicSize
      (lambda (self)
        (bytevector-length self)))

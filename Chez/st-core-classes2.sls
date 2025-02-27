@@ -30,6 +30,7 @@
    (only (chezscheme)
          format
          vector-copy
+         trace-lambda ;; debug
        )
    (st-kernel)
    (st-core-classes)
@@ -39,12 +40,16 @@
 ;; Just enough behavior to allow instantiation bootstrap
 ;; to call: newSubclassName:iVars:cVars:
 
-(define broken #f)
-
-(define (make-protoClass
-         name behav slot-names
-         mDict child-ivar-names
-         class super )
+(define make-protoClass
+  (trace-lambda make-protoClass
+       (
+         name
+         behav  ; method-dict of this class
+         slot-names
+         mDict  ; shared method-dict for all instances
+         child-ivar-names
+         class
+         super )
   (let* ( (behavior   (clone-behavior behav))
           (methodDict (clone-method-dictionary mDict))
           (class-instance
@@ -57,7 +62,7 @@
     (perform:with: class-instance 'methodDict: methodDict)
    ;; return the new Class instance
     class-instance
-) )
+) ) )
 
 ;;; Miminal Scaffolding
 ;; Temp for bootstrap -- re-relate later
@@ -120,7 +125,7 @@
 ;;;   Ask MetaClass to make the metaClass
 ;;;   Then ask the metaClass to make its instance
 
-;; Helper. Create an instance of a Class or MetaClass
+;; Helper. Create an INSTANCE of a Class or MetaClass
 (define (instantiateName:superclass:ivars:
          selfClass
          nameSymbol
@@ -290,6 +295,7 @@
 ;;; Make proper linkages
 
 (perform:with: ClassClass     'thisClass:  Class)
+
 (setClass:     ClassClass     MetaClass)
 (perform:with: MetaClassClass 'thisClass:  MetaClass)
 (perform:with: MetaClassClass 'superclass: ClassClass) ;; ClassDescription class

@@ -684,7 +684,7 @@
 (perform:with:
      Array
      'comment:
-"I present an ArrayedCollection whose elements are objects."
+     "I present an ArrayedCollection whose elements are objects."
 )
 
 (perform:with:
@@ -699,11 +699,7 @@
            (superPerform:with: self 'is: symbol))))
 
 
-;; Scheme Vectors
-;;(set! st-array-behavior (perform: Array 'methodDict))
-
-;; #at: #at:put: #basicSize #at:modify
-(add-array-accessors st-array-behavior 0)
+;; Smalltalk Arrays are Scheme Vectors
 
 (addSelector:withMethod:
      Array
@@ -760,7 +756,6 @@
      (lambda (self obj1 obj2 obj3 obj4)
        (vector obj1 obj2 obj3 obj4)))
 
-
 (addSelector:withMethod:
      (class Array)
      'withAll:
@@ -791,7 +786,6 @@
         self)
        (display ")" port))
 )
-
 
 (addSelector:withMethod:
      Array
@@ -849,7 +843,7 @@
          (vector-set! self index1 elt2)
          self)))
 
-;;; Bytevector
+;;; Smalltalk ByteArrays are Scheme Bytevectors
 
 (addSelector:withMethod:
      ByteArray
@@ -867,9 +861,6 @@
 (perform:with:
      ByteArray
      'category: 'Collections-Arrayed)
-
-;; Scheme bytevectors
-;;(set! st-bytevector-behavior (perform: ByteArray 'methodDict))
 
 (addSelector:withMethod:
      (class ByteArray)

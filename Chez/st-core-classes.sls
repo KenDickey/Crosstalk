@@ -92,8 +92,11 @@
 
 
 (define combined-classDescription-var-names
-  '(superclass methodDict format
-    instanceVariables organization))
+  '(superclass
+    methodDict ;; shared between instances
+    format ;; layout/structure
+    instanceVariables
+    organization))
 
 (define metaClass-added-var-names
   '(subclasses name
@@ -216,7 +219,7 @@
     newInst
 ) )
 
-(define st-class-behavior (clone-behavior st-object-behavior))
+(define st-class-behavior     (clone-behavior st-object-behavior))
 
 (define st-metaClass-behavior (clone-behavior st-class-behavior))
 
