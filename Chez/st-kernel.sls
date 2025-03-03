@@ -27,6 +27,8 @@
   (export
 
    Smalltalk 
+   smalltalkAt:
+   smalltalkAt:Put:
 
 ;;; Basic access & lookup
 
@@ -48,12 +50,9 @@
    superclass
    isKindOf:
    respondsTo:
-   smalltalkAt:Put:
-   smalltalkAt:
 
 ;;; Basic Objects
 
-   nil true false
    st-nil st-true st-false
    st-nil?
 
@@ -372,12 +371,9 @@
 
 ;;; Basic Objects
 
-(define nil      '())
-(define true     #t)
-(define false    #f)
-(define st-nil   nil)
-(define st-true  true)
-(define st-false false)
+(define st-nil      '())
+(define st-true     #t)
+(define st-false    #f)
 
 (define st-nil? null?)
 
@@ -415,7 +411,7 @@
 (define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
 (define st-array-behavior        (make-mDict-placeholder 'Array))
 (define st-list-behavior         (make-mDict-placeholder 'List))
-(define st-bytearray-behavior   (make-mDict-placeholder 'ByteArray))
+(define st-bytearray-behavior    (make-mDict-placeholder 'ByteArray))
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior       (make-mDict-placeholder 'Object))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
@@ -539,8 +535,7 @@
   ;; @@NB: Unchecked
   (- (vector-length obj) 1))
 
-;;; @@FIXME: convert to NATIVE TAG mask + index
-;;;       ..into vector of behaviors :FIXME@@
+;;; @@FIXME: Want new, native data type
 (define num-header-slots 1) ;; behavior
 
 ;;; Generic ST Object representation:
