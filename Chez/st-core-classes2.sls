@@ -40,9 +40,7 @@
 ;; Just enough behavior to allow instantiation bootstrap
 ;; to call: newSubclassName:iVars:cVars:
 
-(define make-protoClass
-  (trace-lambda make-protoClass
-       (
+(define (make-protoClass
          name
          behav  ; method-dict of this class
          slot-names
@@ -63,7 +61,7 @@
    ;; return the new Class instance
     (smalltalkAt:put: name class-instance)
     class-instance
-) ) )
+) )
 
 ;;; Miminal Scaffolding
 ;; Temp for bootstrap -- re-relate later

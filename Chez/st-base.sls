@@ -370,16 +370,16 @@
       (annotate-procedure procOrMethod selectorSymbol)))
 
 ;;; methodDict primAddSelector: selector withMethod: compiledMethod
-(define (primAddSelector:withMethod: methodDict symbol methodClosure)
+(define (primAddSelector:withMethod: methodDict selector methodClosure)
   (if (not (procedure? methodClosure))
       (error 'primAddSelector:withMethod:
              "Methods must be closures"
              methodClosure))
 
-  (hashtable-set! methodDict
-                  symbol
-                  (insure-annotated methodClosure symbol)
-                 ))
+  (primSet:toValue: methodDict
+                    selector
+                    (insure-annotated methodClosure selector)
+                    ))
 
 ;; methodDict selectors
 (define (primSelectors methodDict) (vector->list (hashtable-keys methodDict)))
