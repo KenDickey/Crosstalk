@@ -28,7 +28,7 @@
          format
          vector-copy
        )
-   (st-kernel)
+   (st-base)
    (st-core-classes)
    (st-core-classes2)
    )
@@ -124,8 +124,8 @@
                'subclasses: (list Class MetaClass))
 
 ;; make accessable to Smalltalk
-(smalltalkAt:Put: 'Class Class)
-(smalltalkAt:Put: 'MetaClass MetaClass)
+(smalltalkAt:put: 'Class Class)
+(smalltalkAt:put: 'MetaClass MetaClass)
 
 (perform:with: Object 'myMethodNames: (selectors Object))
 
@@ -381,7 +381,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
                         (eq? v
                              (hashtable-ref superDict
                                             k
-                                            nil)))
+                                            st-nil)))
                    ($ iSet 'add: k)))
                 ;; else must be local; add selector
                 (else ($: iSet 'add: k)))))
@@ -415,7 +415,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
                         (eq? v
                              (hashtable-ref superDict
                                             k
-                                            nil)))
+                                            st-nil)))
                    ($: iSet 'add: k)))
                 ;; else must be local; add selector
                 (else ($: iSet 'add: k)))))

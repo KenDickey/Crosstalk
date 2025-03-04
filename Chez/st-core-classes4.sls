@@ -26,7 +26,7 @@
          format
          vector-copy
        )
-   (st-kernel)
+   (st-base)
    (st-core-classes)
    (st-core-classes2)
    (st-core-classes3)
@@ -652,7 +652,7 @@
      (lambda (self aSequenceableCollection)
        (call/cc
          (lambda (return)
-           (let ((start nil))
+           (let ((start st-nil))
              ($: ($: ($ aSequenceableCollection 'isEmpty)
                      'or:
                      (lambda ()
@@ -660,7 +660,7 @@
                            '<
                            ($ aSequenceableCollection 'size))))
                  'ifTrue:
-                 (lambda () (return false)))
+                 (lambda () (return st-false)))
              (let ((%%val%%
                      ($: ($ self 'size)
                          '-
@@ -672,8 +672,8 @@
                  (lambda (each index)
                    ($: ($: ($: self 'at: ($: start '+ index)) '~= each)
                        'ifTrue:
-                       (lambda () (return false)))))
-             (return true))))))
+                       (lambda () (return st-false)))))
+             (return st-true))))))
 
 
 )

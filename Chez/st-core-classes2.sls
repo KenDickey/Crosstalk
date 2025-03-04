@@ -32,7 +32,7 @@
          vector-copy
          trace-lambda ;; debug
        )
-   (st-kernel)
+   (st-base)
    (st-core-classes)
    )
 
@@ -61,6 +61,7 @@
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
     (perform:with: class-instance 'methodDict: methodDict)
    ;; return the new Class instance
+    (smalltalkAt:put: name class-instance)
     class-instance
 ) ) )
 
@@ -246,7 +247,7 @@
         ) )
         classVarsList)
       (perform:with: newMetaClass 'thisClass: newSubclass)
-      (smalltalkAt:Put: nameSym newSubclass)
+      (smalltalkAt:put: nameSym newSubclass)
       newSubclass		;; @@??@@ move initialize to here?
 ) ) )
 

@@ -53,7 +53,7 @@
          format
          vector-copy
        )
-   (st-kernel)
+   (st-base)
    )
 
 ;;; We want to instantiate classes and bootstrap reflection

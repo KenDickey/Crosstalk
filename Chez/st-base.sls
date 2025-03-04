@@ -1,5 +1,5 @@
 #!r6rs
-;;; File: "st-kernel.sls"
+;;; File: "st-base.sls"
 ;;; IMPLEMENTS: Basic Smalltalk object mechanics
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
@@ -10,9 +10,9 @@
 ;;; Each method takes a 'self' first argument and has
 ;;; a fixed arity.  Methods know their name and arity.
 
-;;; Number >> add: other [ self + other ].
-;;; ==> in method dictionary for class Number:
-;;;  'add: -> (lambda (self other) (+ self other))
+;;; Number >> between:and: [ self min max ]
+;;;  ==> in method dictionary for class Number:
+;;; 'between:and: -> (lambda (self min max) (<= min self max))
 
 ;;; Use Scheme immediates, vectors, bytevectors, closures ..
 ;;; See (define (behavior thing) ...) below.
@@ -22,34 +22,39 @@
 ;;; a method dictionary including a binding of
 ;;; 'class -> (lambda (self) <class>)
 
-(library (st-kernel)
+(library (st-base)
 
   (export
-
+   
+;;; Namespace
+   
    Smalltalk 
    smalltalkAt:
-   smalltalkAt:Put:
+   smalltalkAt:put:
 
 ;;; Basic access & lookup
 
-   lookupSelector:
-   primLookup:
-   primSet:toValue:
-   primLookup:
-   send-failed
-   primAddSelector:withMethod:
-   primSelectors
-   primSelectorsDo
-   primSelectorsAndMethodsDo:
-   primMethodsDo:
-   clone-method-dictionary
-   clone-behavior
-   primSetClass: ;; (primSetClass: behavior class)
+   lookupSelector:	; (lookupSelector: obj 'selectorSymbol)
+   primLookup:		; (primLookup: methodDict selector)
+   primSet:toValue:     ; (primSet:toValue: methodDict selector method)
+   send-failed		; (send-failed receiver selector rest-args)
+   primSetClass:
    setClass:
    class
    superclass
+   className:
    isKindOf:
    respondsTo:
+
+;;; Perform and short-form aliases
+
+   $     perform:
+   $:    perform:with:
+   $::   perform:with:with:
+   $:::  perform:with:with:with:
+   $:::: perform:with:with:with:with:
+   $&    perform:withArguments: ;; args array
+   $*    perform:withArgsList:  ;; args list
 
 ;;; Basic Objects
 
@@ -63,7 +68,13 @@
    method-dictionary-size
    method-name
    method-arity
-
+   clone-behavior
+   clone-method-dictionary
+   primSelectorsDo:
+   primSelectorsAndMethodsDo:
+   primMethodsDo:
+   primAddSelector:withMethod:
+   
    st-nil-behavior
    st-true-behavior
    st-false-behavior
@@ -89,9 +100,6 @@
    st-identity-dictionary-behavior
    st-messageSend-behavior
 
-;;; Polymorphic method
-   printString
-
 ;;; Smalltalk Object Representation
 
    st-object?
@@ -105,32 +113,32 @@
 
 ;;; Debug helpers (interactive)
 
-   smalltalk-keys
-   selectors
+   smalltalk-keys	; (selectors Smalltalk
+   selectors		; (selectors obj) -> method names
    display-selectors
    inst-method-names
    display-ivars
-   safer-printString
-   display-obj
+   display-obj		; obj printString
    describe
 
-;;; Various Helpers   
+;;; Various internal Helpers   
    list-copy
+   doesNotUnderstand:		; (doesNotUnderstand: self selector)
+   printString
+   make-subclassResponsibility	; (make-subclassResponsibility selector)
+   subclassResponsibility
+   st-obj-copy
+   asException			; (asException aCondition)
    
-;;; Perform
-
-   $     perform:
-   $:    perform:with:
-   $::   perform:with:with:
-   $:::  perform:with:with:with:
-   $:::: perform:with:with:with:with:
-   $&    perform:withArguments: ;; args array
-   $*    perform:withArgsList:  ;; args list
    )
 
   (import
    (rnrs base)
    (rnrs bytevectors (6))
+   (rename (rnrs bytevectors (6))
+    (bytevector-u8-ref  bytevector-ref)
+    (bytevector-u8-set! bytevector-set!)
+    )
    (rnrs io simple (6))
    (rnrs io ports (6))
    (rnrs lists (6))
@@ -142,7 +150,7 @@
    (rnrs unicode (6))
    (rnrs hashtables (6))
       ;;; Method Dictionarys are Scheme hashtables
-   (rename ;; Syntactic sugar tastes sweeter ;^)
+   (rename ;; Syntactic sugar tastes sweeter 8^O
     (rnrs hashtables (6))
     (make-eq-hashtable	 make-method-dictionary)
     (hashtable?		 method-dictionary?)
@@ -165,9 +173,33 @@
        )
    )
 
-;;;  
+
+;;; A few Basic Objects
+
+(define unspecified (void))
+
+(define st-nil      '())
+(define st-true     #t)
+(define st-false    #f)
+
+(define st-nil? null?)
+
+;;; ============================================
+;;; The Smalltalk Global Environment/Namespace
+;;; ============================================
+
+(define Smalltalk (make-eq-hashtable))
+
+(define (smalltalkAt: aSymbol)
+  (hashtable-ref Smalltalk aSymbol st-nil))
+
+(define (smalltalkAt:put: aSymbol aValue)
+  (primSet:toValue: Smalltalk aSymbol aValue))
+
+
+;;; ============================================
 ;;; Message lookup
-;;;
+;;; ============================================
   
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (primLookup: (behavior self) selectorSym))
@@ -181,16 +213,18 @@
                    ;; (make-messageSend self symbol rest-args)))
 )
 
-;;  Nota Bene: send-failed is redefined in "st-error-obj.sls"
+;;  See "st-error.sls"
 (define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-    (error 'send-failed
-           (format #f
-                   "**Failed message send: #~a to: ~a"
-                   selector
-                   (safer-printString receiver))
-           rest-args)
-) )
+    (if (respondsTo: messageSend 'sendFailed)
+    	($ messageSend 'sendFailed)
+        (error 'send-failed
+               (format #f
+                       "**Failed message send: #~a to: ~a"
+                       selector
+                       (safer-printString receiver))
+               rest-args)
+) ) )
 
 (define (make-messageSend receiver selector args-list)
   ;; args list was captured by a .rest
@@ -352,7 +386,7 @@
 
 ;(define primIncludesSelector: hashtable-contains?)
 
-(define (primSelectorsDo methodDict closure)
+(define (primSelectorsDo: methodDict closure)
   (vector-for-each closure (hashtable-keys methodDict)))
 
 (define (primSelectorsAndMethodsDo: methodDict closure)
@@ -365,160 +399,18 @@
     (vector-for-each closure methods))) 
 
  (define (clone-method-dictionary mDict)
-   (hashtable-copy mDict true)) ;; ensure mutable
+   (hashtable-copy mDict #t)) ;; ensure mutable
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
 
-;;; Basic Objects
 
-(define st-nil      '())
-(define st-true     #t)
-(define st-false    #f)
-
-(define st-nil? null?)
-
-;; for debug..
-(define (make-mDict-placeholder classNameSym)
-  (let ( (mDict (make-method-dictionary)) )
-    (primAddSelector:withMethod: mDict
-                             'class
-                             (lambda (self) classNameSym))
-    (primAddSelector:withMethod: mDict
-                             'name
-                             (lambda (self) classNameSym))
-    mDict
-) )
-
-;;; Behavior adds brains to structure
-
-;; Nota Bene: st-*-behavior's are assigned when corresponding classes are created.
-;;
-;; Behaviors (method dictionaries) map selectors (symbols) to methods (closures)
-
-;;;  Smalltalk                      Scheme
-;;; anArray at: 2 put: 'foo'       (at:put: anArray 2 "foo")
-
-(define st-nil-behavior          (make-mDict-placeholder 'UndefinedObject))
-(define st-true-behavior         (make-mDict-placeholder 'True))
-(define st-false-behavior        (make-mDict-placeholder 'False))
-(define st-integer-behavior      (make-mDict-placeholder 'Integer))
-(define st-real-behavior         (make-mDict-placeholder 'Float))
-(define st-complex-behavior      (make-mDict-placeholder 'Complex))
-(define st-fraction-behavior     (make-mDict-placeholder 'Fraction))
-;; @@FIXME: Scaled Decimal
-(define st-character-behavior    (make-mDict-placeholder 'Character))
-(define st-string-behavior       (make-mDict-placeholder 'String))
-(define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
-(define st-array-behavior        (make-mDict-placeholder 'Array))
-(define st-list-behavior         (make-mDict-placeholder 'List))
-(define st-bytearray-behavior    (make-mDict-placeholder 'ByteArray))
-(define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
-(define st-object-behavior       (make-mDict-placeholder 'Object))
-(define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
-(define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
-(define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))
-(define st-time-behavior         (make-mDict-placeholder 'Time))
-(define st-duration-behavior     (make-mDict-placeholder 'Duration))
-(define st-condition-behavior    (make-mDict-placeholder 'Condition))
-;;(define st-record-behavior    (make-mDict-placeholder 'Record))
-(define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
-(define st-identity-dictionary-behavior (make-mDict-placeholder 'IdentityDictionary))
-
-;;;
-;;; Behavior adds intelligence to structure
-;;;	   (behavior obj)
-
-;; @@FIXME: optimize dispatch
-
-(define unspecified (void))
-
-(define (behavior thing)
-;; return method-dictionary for thing
-  (case thing  
-    ;; immediates -- tagtype -> err
-    ((#t)	st-true-behavior)
-    ((#f)	st-false-behavior)
-;; eof-object -- err
-    (else
-;; @@FIXME: optimize this test..
-     (cond  
-      ((char?    thing)    st-character-behavior) 
-      ((integer? thing)    st-integer-behavior)
-      ((number?  thing)
-       (cond
-        ((rational? thing) st-fraction-behavior) 
-        ((real?     thing) st-real-behavior)     
-        ((complex?  thing) st-complex-behavior)  
-        ;; FIXME:: Scaled Decimal
-        (else (error 'behavior
-                     "Unknown Scheme number representation"
-                     thing))
-       ))
-      ((vector? thing)	   st-array-behavior)
-      ((string? thing)     st-string-behavior) 
-      ((symbol? thing)     st-symbol-behavior) 
-      ((procedure? thing)  st-blockClosure-behavior) 
-      ((bytevector? thing) st-bytearray-behavior)   
-      ((port? thing)
-       (cond
-        ((textual-port? thing) st-char-stream-behavior)
-        ((binary-port?  thing) st-byte-stream-behavior)
-        (else
-         (error 'behavior "Wierd port: " thing)))
-      )
-      ((hashtable? thing)
-       (if (eq? eq? (hashtable-equivalence-function thing))
-           st-identity-dictionary-behavior
-           st-dictionary-behavior)
-       )
-      ((pair? thing)  st-list-behavior)
-      ;; ((time? thing)
-      ;;  (cond
-      ;;   ((eq? 'time-duration (time-type thing))
-      ;;    st-duration-behavior
-      ;;    )
-      ;;   ((eq? 'time-utc (time-type thing))
-      ;;    st-time-behavior
-      ;;    )
-        ;; 'time-tai
-        ;; 'time-monotonic
-        ;; 'time-thread
-        ;; 'time-process
-;;        (else (error "Unhandled type" (time-type thing) thing)))
-;;       )
-;;      ((date? thing)          st-date+time-behavior)
-      ((condition? thing)     st-condition-behavior)
-      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
-      ;; hashtable; other records & record types 5
-      ;; @@FIXME ...
-      ((or (null? thing) (eq? thing (void)))   st-nil-behavior)
-      (else (error 'behavior
-                   "#behavior can't deal with other Scheme types yet"
-                   thing))
-    ) ) )
-)
-
-
-(define (printString obj) ;; polymorphic
-;; String streamContents: [:s | self printOn: s]
-  (let ( (outport (open-output-string)) )
-    (perform:with: obj 'printOn: outport)
-    (get-output-string outport)))
-
-
-;; (define allocate-classID
-;;   (let ( (counter 0) )
-;;     (lambda ()
-;;       (set! counter (+ counter 1))
-;;       counter)
-;; ) )
-
-
-;;;
+;;; ============================================
 ;;; Smalltalk Object Representation
-;;;
+;;; ============================================
 
 (define st-obj-behavior-index 0) ;; 1st slot in a st-object
+
+(define num-header-slots 1) ;; behavior
 
 (define (st-obj-behavior obj)
   (vector-ref obj st-obj-behavior-index))
@@ -526,7 +418,7 @@
 (define (st-obj-behavior-set! obj new-behavior)
   (vector-set! obj st-obj-behavior-index new-behavior))
 
-(define (st-object? thing)  ;;@@FIXME: New Datatype
+(define (st-object? thing)  ;;@@FIXME: Should be New Datatype
   (and (vector? thing)
        (< 0 (vector-length thing))
        (hashtable? (vector-ref thing 0))))
@@ -535,19 +427,17 @@
   ;; @@NB: Unchecked
   (- (vector-length obj) 1))
 
-;;; @@FIXME: Want new, native data type
-(define num-header-slots 1) ;; behavior
 
 ;;; Generic ST Object representation:
 ;;; (vector:  behavior | optional-named-slots.. | optional-indexed-slots.. )
 
 
-(define (make-st-object Behavior num-object-slots)
+(define (make-st-object behavior num-object-slots)
   (let ( (st-obj (make-vector
                    (+ num-header-slots num-object-slots)
                    st-nil)) ;; init slots to UndefinedObject
        )
-    (vector-set! st-obj st-obj-behavior-index Behavior)
+    (vector-set! st-obj st-obj-behavior-index behavior)
     st-obj)
 )
 
@@ -562,9 +452,6 @@
        )
     (make-bytevector numBytes initVal)
 ) )
-
-(define bytevector-ref  bytevector-u8-ref)
-(define bytevector-set! bytevector-u8-set!)
   
 ;; Done at class creation
 ;; NB: start-index includes num-header-slots, which is the minimum index
@@ -659,29 +546,139 @@
      )
 ) )
 
-;; For Error Reporting (#doesNotUnderstand:)
-;;  NB: behavior redefined in "st-error-obj.scm"
-(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
-
 (define (primSetClass: behavior class)
   (primSet:toValue: behavior 'class (lambda (self) class)))
 
 (define (setClass: obj class)
   (primSetClass: (behavior obj) class))
 
-;;;
-;;; The Smalltalk Global Environment
-;;;
 
-(define Smalltalk (make-eq-hashtable))
+;;; ============================================
+;;; Behavior adds intelligence to structure
+;;;	   (behavior obj)
+;;; ============================================
 
-(define (smalltalkAt: aSymbol)
-  (hashtable-ref Smalltalk aSymbol st-nil))
 
-(define (smalltalkAt:Put: aSymbol aValue)
-  (primSet:toValue: Smalltalk aSymbol aValue))
+(define (behavior thing)    ;; @@FIXME: optimize dispatch
+  ;; Answer method-dictionary for thing
+  (case thing  
+    ;; immediates -- tagtype -> err
+    ((#t)	st-true-behavior)
+    ((#f)	st-false-behavior)
+;; eof-object -- err
+    (else
+     (cond  
+      ((char?    thing)    st-character-behavior) 
+      ((integer? thing)    st-integer-behavior)
+      ((number?  thing)
+       (cond
+        ((rational? thing) st-fraction-behavior) 
+        ((real?     thing) st-real-behavior)     
+        ((complex?  thing) st-complex-behavior)  
+        ;; FIXME:: Scaled Decimal
+        (else (error 'behavior
+                     "Unknown Scheme number representation"
+                     thing))
+       ))
+      ((vector? thing)	   st-array-behavior)
+      ((string? thing)     st-string-behavior) 
+      ((symbol? thing)     st-symbol-behavior) 
+      ((procedure? thing)  st-blockClosure-behavior) 
+      ((bytevector? thing) st-bytearray-behavior)   
+      ((port? thing)
+       (cond
+        ((textual-port? thing) st-char-stream-behavior)
+        ((binary-port?  thing) st-byte-stream-behavior)
+        (else
+         (error 'behavior "Wierd port: " thing)))
+      )
+      ((hashtable? thing)
+       (if (eq? eq? (hashtable-equivalence-function thing))
+           st-identity-dictionary-behavior
+           st-dictionary-behavior)
+       )
+      ((pair? thing)  st-list-behavior)
+      ;; ((time? thing)
+      ;;  (cond
+      ;;   ((eq? 'time-duration (time-type thing))
+      ;;    st-duration-behavior
+      ;;    )
+      ;;   ((eq? 'time-utc (time-type thing))
+      ;;    st-time-behavior
+      ;;    )
+        ;; 'time-tai
+        ;; 'time-monotonic
+        ;; 'time-thread
+        ;; 'time-process
+;;        (else (error "Unhandled type" (time-type thing) thing)))
+;;       )
+;;      ((date? thing)          st-date+time-behavior)
+      ((condition? thing)     st-condition-behavior)
+      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
+      ;; hashtable; other records & record types 5
+      ;; @@FIXME ...
+      ((or (null? thing) (eq? thing (void)))   st-nil-behavior)
+      (else (error 'behavior
+                   "#behavior can't deal with other Scheme types yet"
+                   thing))
+    ) ) )
+)
 
-;;;
+;; Behaviors (method dictionaries) map selectors (symbols) to methods (closures)
+
+;;;  Smalltalk                      Scheme
+;;; anArray at: 2 put: 'foo'       (at:put: anArray 2 "foo")
+
+;; for debug..
+(define (make-mDict-placeholder classNameSym)
+  (let ( (mDict (make-method-dictionary)) )
+    (primAddSelector:withMethod: mDict
+                             'class
+                             (lambda (self) classNameSym))
+    (primAddSelector:withMethod: mDict
+                             'name
+                             (lambda (self) classNameSym))
+    mDict
+) )
+
+(define st-nil-behavior          (make-mDict-placeholder 'UndefinedObject))
+(define st-true-behavior         (make-mDict-placeholder 'True))
+(define st-false-behavior        (make-mDict-placeholder 'False))
+(define st-integer-behavior      (make-mDict-placeholder 'Integer))
+(define st-real-behavior         (make-mDict-placeholder 'Float))
+(define st-complex-behavior      (make-mDict-placeholder 'Complex))
+(define st-fraction-behavior     (make-mDict-placeholder 'Fraction))
+;; @@FIXME: Scaled Decimal
+(define st-character-behavior    (make-mDict-placeholder 'Character))
+(define st-string-behavior       (make-mDict-placeholder 'String))
+(define st-symbol-behavior       (make-mDict-placeholder 'Symbol))
+(define st-array-behavior        (make-mDict-placeholder 'Array))
+(define st-list-behavior         (make-mDict-placeholder 'List))
+(define st-bytearray-behavior    (make-mDict-placeholder 'ByteArray))
+(define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
+(define st-object-behavior       (make-mDict-placeholder 'Object))
+(define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
+(define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
+(define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))
+(define st-time-behavior         (make-mDict-placeholder 'Time))
+(define st-duration-behavior     (make-mDict-placeholder 'Duration))
+(define st-condition-behavior    (make-mDict-placeholder 'Condition))
+;;(define st-record-behavior     (make-mDict-placeholder 'Record))
+(define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
+(define st-identity-dictionary-behavior
+				(make-mDict-placeholder 'IdentityDictionary))
+(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
+
+
+
+;;; Some basics
+
+(define (printString obj) ;; polymorphic
+;; String streamContents: [:s | self printOn: s]
+  (let ( (outport (open-output-string)) )
+    (perform:with: obj 'printOn: outport)
+    (get-output-string outport)))
+
 ;;;======================================================
 ;;; Interactive/REPL debug helpers.
 ;;;   What do we have here?
@@ -824,10 +821,6 @@
 
 
 
-;;;======================================================
-
-;; @@FIXME: pre-Smalltalk namespace
-
 (define (doesNotUnderstand: self selector) ;; ANSI
 ;; NB: method redefined in "st-error-obj.scm"
   (error 'doesNotUnderstand:
@@ -883,12 +876,12 @@
      ((or (error? aCondition) ( message-condition? aCondition))
       (let ((receiver ($ (smalltalkAt: 'Error) 'new)))
         ($: receiver 'conditionDict: cDict)
-        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+        ($: receiver 'messageText: (hashtable-ref cDict 'message st-nil)))
       )
      ((warning? aCondition)
       (let ((receiver ($ (smalltalkAt: 'Warning) 'new)))
         ($: receiver 'conditionDict: cDict)
-        ($: receiver 'messageText: (hashtable-ref cDict 'message nil)))
+        ($: receiver 'messageText: (hashtable-ref cDict 'message st-nil)))
       )
      (else
       (newline)
@@ -975,13 +968,16 @@
 (define (list-copy some-list)
   (fold-right cons '() some-list))
 
+
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(add-array-accessors st-array-behavior 0)
+
 ;;; Enable reflective introspection
-;; Note: Dictionary Class is undefined at this point..
-(smalltalkAt:Put: 'Smalltalk Smalltalk)
+(smalltalkAt:put: 'Smalltalk Smalltalk)
+
 
 ;;;
 ;;; Some Fundamental Methods
@@ -1238,7 +1234,6 @@
         isKindOf:
 )
 
-
 (primAddSelector:withMethod:
  	st-object-behavior
         '==    ;; ANSI
@@ -1385,7 +1380,6 @@
         (lambda (self) self)) ;; St ideom
 
 
-
 ;; @@@ From PharoCandle.  Don't know why these are in Object?!? @@@
 (primAddSelector:withMethod:
  	st-object-behavior
@@ -1406,6 +1400,4 @@
 ; #tryPrimitive:withArgs:
 
 )
-
-
-;;;			--- E O F ---			;;;
+;;;		--- E O F ---		;;;
