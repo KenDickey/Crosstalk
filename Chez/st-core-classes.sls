@@ -277,32 +277,6 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-
-(primAddSelector:withMethod:
-     st-class-behavior
-     'allInstVarNames allInstVarNames)
-
-(primAddSelector:withMethod:
-     st-class-behavior
-     'basicNew: basicNew:)
-
-(primAddSelector:withMethod:
-     st-class-behavior
-     'addSubclass: addSubclass:)
-
-(primAddSelector:withMethod:
-     st-metaClass-behavior
-     'allInstVarNames allInstVarNames)
-
-(primAddSelector:withMethod:
-     st-metaClass-behavior
-     'basicNew: basicNew:)
-
-(primAddSelector:withMethod:
-     st-metaClass-behavior
-     'addSubclass: addSubclass:)
-
-
 (add-getters&setters st-class-behavior
                      num-header-slots
                      combined-class-ivar-names)
@@ -310,6 +284,31 @@
 (add-getters&setters st-metaClass-behavior
                      num-header-slots
                      combined-metaClass-ivar-names)
+
+
+(primAddSelector:withMethod:
+     st-class-behavior
+     'allInstVarNames allInstVarNames)
+
+(primAddSelector:withMethod:
+     st-class-behavior
+     'basicNew: basicNew:)
+
+(primAddSelector:withMethod:
+     st-class-behavior
+     'addSubclass: addSubclass:)
+
+(primAddSelector:withMethod:
+     st-metaClass-behavior
+     'allInstVarNames allInstVarNames)
+
+(primAddSelector:withMethod:
+     st-metaClass-behavior
+     'basicNew: basicNew:)
+
+(primAddSelector:withMethod:
+     st-metaClass-behavior
+     'addSubclass: addSubclass:)
 
 
 )

@@ -580,6 +580,7 @@
                      "Unknown Scheme number representation"
                      thing))
        ))
+      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ((vector? thing)	   st-array-behavior)
       ((string? thing)     st-string-behavior) 
       ((symbol? thing)     st-symbol-behavior) 
@@ -614,7 +615,6 @@
 ;;       )
 ;;      ((date? thing)          st-date+time-behavior)
       ((condition? thing)     st-condition-behavior)
-      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ;; hashtable; other records & record types 5
       ;; @@FIXME ...
       ((or (null? thing) (eq? thing (void)))   st-nil-behavior)
