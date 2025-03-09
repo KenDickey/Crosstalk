@@ -570,6 +570,7 @@
      (cond  
       ((char?    thing)    st-character-behavior) 
       ((integer? thing)    st-integer-behavior)
+      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ((number?  thing)
        (cond
         ((rational? thing) st-fraction-behavior) 
@@ -580,7 +581,6 @@
                      "Unknown Scheme number representation"
                      thing))
        ))
-      ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ((vector? thing)	   st-array-behavior)
       ((string? thing)     st-string-behavior) 
       ((symbol? thing)     st-symbol-behavior) 
