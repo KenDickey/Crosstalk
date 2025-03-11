@@ -1,10 +1,10 @@
 #!r6rs
-;;; FILE: "st-core-classes2.sls"
+;;; FILE: "st-metaclass.sls"
 ;;; IMPLEMENTS: Basic Class mechanics
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: February 2025
 
-(library (st-core-classes2)
+(library (st-metaclass)
 
   (export
    ClassClass
@@ -20,20 +20,11 @@
   
   (import
    (rnrs base)
-   (rnrs lists (6))
-   (rnrs bytevectors (6))
-   (rnrs io simple (6))
    (rnrs control (6))
    (rnrs unicode (6))
-   (rnrs sorting (6))
-   (rnrs hashtables (6))
-   (only (chezscheme)
-         format
-         vector-copy
-         trace-lambda ;; debug
-       )
+   (rnrs lists (6))
    (st-base)
-   (st-core-classes)
+   (st-class-structure)
    )
 
 ;;; Scaffolding setup

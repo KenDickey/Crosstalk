@@ -1,10 +1,10 @@
 #!r6rs
-;;; FILE: "st-core-classes3.sls"
-;;; IMPLEMENTS: Basic Class mechanics
+;;; FILE: "st-behavior.sls"
+;;; IMPLEMENTS: Behavior, Collection, Set
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: February 2025
 
-(library (st-core-classes3)
+(library (st-behavior)
 
   (export
    Object
@@ -17,20 +17,11 @@
   
   (import
    (rnrs base)
-   (rnrs lists (6))
-   (rnrs bytevectors (6))
-   (rnrs io simple (6))
    (rnrs control (6))
-   (rnrs unicode (6))
-   (rnrs sorting (6))
    (rnrs hashtables (6))
-   (only (chezscheme)
-         format
-         vector-copy
-       )
    (st-base)
-   (st-core-classes)
-   (st-core-classes2)
+   (st-class-structure)
+   (st-metaclass)
    )
 
 ;;; OK.  Now use protoClasses to bootstrap core classes
@@ -49,6 +40,7 @@
   (newSubclassName:iVars:cVars:
    Behavior
    'ClassDescription '(instanceVariables organization) '()))
+
 
 (define Collection
   (newSubclassName:iVars:cVars:
@@ -422,5 +414,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
          iSet
       ) )
    )
+
+
 
 )

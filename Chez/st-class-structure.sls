@@ -1,10 +1,10 @@
 #!r6rs
-;;; FILE: "st-core-classes.sls"
-;;; IMPLEMENTS: Basic Class mechanics
+;;; FILE: "st-class-structure.sls"
+;;; IMPLEMENTS: Class structure
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: February 2025
 
-(library (st-core-classes)
+(library (st-class-structure)
 
   (export
 ;;   "Send to Super"
