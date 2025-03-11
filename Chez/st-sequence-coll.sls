@@ -17,6 +17,7 @@
    (st-class-structure)
    (st-metaclass)
    (st-behavior)
+   (st-collection)
    )
 
 

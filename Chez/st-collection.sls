@@ -1,10 +1,10 @@
 #!r6rs
-;;; FILE: "st-behavior.sls"
+;;; FILE: "st-collection.sls"
 ;;; IMPLEMENTS: Collection, Set, IdentitySet
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: February 2025
 
-(library (st-behavior)
+(library (st-collection)
 
   (export
    Collection
@@ -14,9 +14,13 @@
   
   (import
    (rnrs base)
+   (rnrs hashtables (6))
+   (rnrs control (6))
+   (rnrs io simple (6))
    (st-base)
    (st-class-structure)
    (st-metaclass)
+   (st-behavior)
    )
 
 
@@ -42,6 +46,62 @@
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
+
+
+(addSelector:withMethod:
+     Behavior
+     'selectors
+     ;; Answer identSet of non-inherited method selectors
+     (lambda (self)
+       (let ( (superDict
+               ($ (superclass self) 'methodDict))
+              (selfDict ($ self 'methodDict))
+              (iSet ($ IdentitySet 'new))
+            )
+         ($: selfDict
+             'keysAndValuesDo:
+             (lambda (k v)
+               (cond
+                ((hashtable-contains? superDict k)
+                 (when (not  ;; not same v as super
+                        (eq? v
+                             (hashtable-ref superDict
+                                            k
+                                            st-nil)))
+                   ($ iSet 'add: k)))
+                ;; else must be local; add selector
+                (else ($: iSet 'add: k)))))
+         iSet
+       ) )
+)
+
+(addSelector:withMethod:
+     (class Behavior)
+     'selectors
+     ;; Answer identSet of non-inherited method selectors
+     (lambda (self)
+       (let ( (superDict
+               ($ (superclass self) 'methodDict))
+              (selfDict ($ self 'methodDict))
+              (iSet ($ IdentitySet 'new))
+            )
+         ($: selfDict
+             'keysAndValuesDo:
+             (lambda (k v)
+               (cond
+                ((hashtable-contains? superDict k)
+                 (when (not  ;; not same v as super
+                        (eq? v
+                             (hashtable-ref superDict
+                                            k
+                                            st-nil)))
+                   ($: iSet 'add: k)))
+                ;; else must be local; add selector
+                (else ($: iSet 'add: k)))))
+         iSet
+      ) )
+   )
+
 
 ;;; Collections
 
@@ -127,25 +187,6 @@
 )    ) )
 
 (addSelector:withMethod:
-     Set
-     'init:
-     (lambda (self size)
-       ;; make large enough to hold size elts
-       ;; without growing -- see #fullCheck
-       (let ( (initialSize
-               (if (<= size 0)
-                   1
-                   (floor (/ (* (+ size 1) 4) 3))))
-            )
-         (superPerform: self 'initialize)
-         (perform:with: self 'tally: 0)
-         (perform:with: self
-                        'array:
-                        (perform:with: Array 'new: initialSize))
-         self))
-)
-
-(addSelector:withMethod:
      (class Set)
      'with:
      (lambda (self elt1)
@@ -197,27 +238,6 @@
          (unless (> (- array-size tally)
                     (max 1 (floor (/ array-size 4))))
            (perform: self 'grow)))))
-
-(addSelector:withMethod:
-     Set
-     'grow ;; private
-     (lambda (self)
-       (let* ( (old-array  (perform: self 'array))
-               (array-size (perform: old-array 'size))
-               (new-size (+ array-size (max array-size 2)))
-               (new-array
-                  (perform:with: Array 'new: new-size))
-             )
-         (perform:with: self 'array: new-array)
-         (perform:with: self 'tally: 0)
-         (perform:with: old-array
-                        'do:
-                        (lambda (elt)
-                          (unless (st-nil? elt)
-                            (perform:with: self
-                                           'noCheckAdd:
-                                           elt))))
-         self)))
 
 (addSelector:withMethod:
      Set

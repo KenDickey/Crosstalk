@@ -10,9 +10,6 @@
    Object
    Behavior
    ClassDescription   
-   Collection
-   Set
-   IdentitySet
    )
   
   (import
@@ -40,25 +37,6 @@
   (newSubclassName:iVars:cVars:
    Behavior
    'ClassDescription '(instanceVariables organization) '()))
-
-
-(define Collection
-  (newSubclassName:iVars:cVars:
-   Object
-   'Collection '() '())
-)
-
-(define Set
-  (newSubclassName:iVars:cVars:
-   Collection
-   'Set '(array tally) '())
-)
-
-(define IdentitySet
-  (newSubclassName:iVars:cVars:
-   Set
-   'IdentitySet '() '())
-)
 
 
 ;;;======================================================
@@ -355,66 +333,11 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
           'asIdentitySet))) ;; vector->identSet
 
 (addSelector:withMethod:
-     Behavior
-     'selectors
-     ;; Answer identSet of non-inherited method selectors
-     (lambda (self)
-       (let ( (superDict
-               ($ (superclass self) 'methodDict))
-              (selfDict ($ self 'methodDict))
-              (iSet ($ IdentitySet 'new))
-            )
-         ($: selfDict
-             'keysAndValuesDo:
-             (lambda (k v)
-               (cond
-                ((hashtable-contains? superDict k)
-                 (when (not  ;; not same v as super
-                        (eq? v
-                             (hashtable-ref superDict
-                                            k
-                                            st-nil)))
-                   ($ iSet 'add: k)))
-                ;; else must be local; add selector
-                (else ($: iSet 'add: k)))))
-         iSet
-       ) )
-)
-
-(addSelector:withMethod:
      (class Behavior)
      'allSelectors
      (lambda (self)
        ($ (hashtable-keys ($ self 'methodDict))
           'asIdentitySet))) ;; vector->identSet
-
-(addSelector:withMethod:
-     (class Behavior)
-     'selectors
-     ;; Answer identSet of non-inherited method selectors
-     (lambda (self)
-       (let ( (superDict
-               ($ (superclass self) 'methodDict))
-              (selfDict ($ self 'methodDict))
-              (iSet ($ IdentitySet 'new))
-            )
-         ($: selfDict
-             'keysAndValuesDo:
-             (lambda (k v)
-               (cond
-                ((hashtable-contains? superDict k)
-                 (when (not  ;; not same v as super
-                        (eq? v
-                             (hashtable-ref superDict
-                                            k
-                                            st-nil)))
-                   ($: iSet 'add: k)))
-                ;; else must be local; add selector
-                (else ($: iSet 'add: k)))))
-         iSet
-      ) )
-   )
-
 
 
 )

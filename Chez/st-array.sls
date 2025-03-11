@@ -25,6 +25,7 @@
    (st-class-structure)
    (st-metaclass)
    (st-behavior)
+   (st-collection)
    (st-sequence-coll)
    (st-array-coll)
    )
@@ -58,6 +59,49 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(addSelector:withMethod:
+     Set
+     'init:
+     (lambda (self size)
+       ;; make large enough to hold size elts
+       ;; without growing -- see #fullCheck
+       (let ( (initialSize
+               (if (<= size 0)
+                   1
+                   (floor (/ (* (+ size 1) 4) 3))))
+            )
+         (superPerform: self 'initialize)
+         (perform:with: self 'tally: 0)
+         (perform:with: self
+                        'array:
+                        (perform:with: Array 'new: initialSize))
+         self))
+)
+
+(addSelector:withMethod:
+     Set
+     'grow ;; private
+     (lambda (self)
+       (let* ( (old-array  (perform: self 'array))
+               (array-size (perform: old-array 'size))
+               (new-size (+ array-size (max array-size 2)))
+               (new-array
+                  (perform:with: Array 'new: new-size))
+             )
+         (perform:with: self 'array: new-array)
+         (perform:with: self 'tally: 0)
+         (perform:with: old-array
+                        'do:
+                        (lambda (elt)
+                          (unless (st-nil? elt)
+                            (perform:with: self
+                                           'noCheckAdd:
+                                           elt))))
+         self)))
+
+
+
+;;; Array 
 
 
 (addSelector:withMethod:

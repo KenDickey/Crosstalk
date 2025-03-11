@@ -123,6 +123,7 @@
 
 ;;; Various internal Helpers   
    list-copy
+   vector-copy
    doesNotUnderstand:		; (doesNotUnderstand: self selector)
    printString
    make-subclassResponsibility	; (make-subclassResponsibility selector)
