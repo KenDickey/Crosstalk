@@ -124,8 +124,11 @@
 ;;; Various internal Helpers   
    list-copy vector-copy
    every? any?
+   bytevector-ref
+   bytevector-set!
    doesNotUnderstand:		; (doesNotUnderstand: self selector)
    printString
+   format
    make-subclassResponsibility	; (make-subclassResponsibility selector)
    subclassResponsibility
    st-obj-copy

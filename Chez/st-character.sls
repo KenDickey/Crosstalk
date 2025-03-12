@@ -92,6 +92,7 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(perform:with: Character 'methodDict: st-character-behavior)
 
 (addSelector:withMethod:
      Character

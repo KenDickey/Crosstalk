@@ -12,6 +12,8 @@
    (st-array)
    (st-boolean)
    (st-character)
+   (st-string)
+   (st-symbol)
 )
 
 ;; (define scm-bootstrap-file-names

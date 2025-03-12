@@ -59,6 +59,10 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+
+(perform:with: Array	 'methodDict: st-array-behavior)
+(perform:with: ByteArray 'methodDict: st-bytearray-behavior)
+
 (addSelector:withMethod:
      Set
      'init:
