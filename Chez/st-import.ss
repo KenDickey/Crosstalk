@@ -14,6 +14,7 @@
    (st-character)
    (st-string)
    (st-symbol)
+   (st-list)
 )
 
 ;; (define scm-bootstrap-file-names
