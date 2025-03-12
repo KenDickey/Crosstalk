@@ -11,7 +11,7 @@
    Class
    MetaClassClass
    MetaClass
-   every?
+
    name->metaName
    instantiateName:superclass:ivars:
    newSubclassName:iVars:cVars:
@@ -102,14 +102,6 @@
      Class ;; super is really ClassDescription
  ) )
 
-;; Helper
-(define (every? proc list)
-  (let loop ( (remainder list) )
-    (cond
-     ((null? remainder) #t)
-     ((proc (car remainder)) (loop (cdr remainder)))
-     (else #f))
-) )
 
 ;;;The regular way to make a new (sub)class instance:
 ;;;   Ask MetaClass to make the metaClass
@@ -304,3 +296,4 @@
 
 )
 
+;;;			--- E O F ---			;;;

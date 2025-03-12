@@ -10,6 +10,7 @@
    Collection
    Set
    IdentitySet
+   Boolean
    )
   
   (import
@@ -23,6 +24,12 @@
    (st-behavior)
    )
 
+
+(define Boolean
+  (newSubclassName:iVars:cVars:
+   Object
+   'Boolean '() '())
+)
 
 (define Collection
   (newSubclassName:iVars:cVars:
@@ -530,3 +537,5 @@
 
 
 )
+
+;;;			--- E O F ---			;;;

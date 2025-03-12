@@ -122,8 +122,8 @@
    describe
 
 ;;; Various internal Helpers   
-   list-copy
-   vector-copy
+   list-copy vector-copy
+   every? any?
    doesNotUnderstand:		; (doesNotUnderstand: self selector)
    printString
    make-subclassResponsibility	; (make-subclassResponsibility selector)
@@ -969,6 +969,17 @@
 (define (list-copy some-list)
   (fold-right cons '() some-list))
 
+(define (every? proc? list)
+  (if (null? list)
+      #t
+      (and (proc? (car list))
+           (every? proc? (cdr list)))))
+
+(define (any? proc? list)
+  (if (null? list)
+      #f
+      (or (proc? (car list))
+          (any? proc? (cdr list)))))
 
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
@@ -1401,4 +1412,5 @@
 ; #tryPrimitive:withArgs:
 
 )
-;;;		--- E O F ---		;;;
+
+;;;			--- E O F ---			;;;

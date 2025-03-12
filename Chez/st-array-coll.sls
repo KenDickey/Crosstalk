@@ -41,3 +41,5 @@
            (superPerform:with: self 'is: symbol))))
 
 )
+
+;;;			--- E O F ---			;;;
