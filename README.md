@@ -1,7 +1,7 @@
 # Crosstalk
 
-## Smalltalk in Scheme -- Simple bootstrap of Smalltalk kernel in R6RS Scheme; 
-currently being ported to Chez Sceme 10 (in progress)
+## Smalltalk in Scheme -- Simple bootstrap of Smalltalk kernel in R6RS Scheme
+currently being ported to Chez Scheme 10 (in progress)
 
 Basically an exercise in deeply understanding Smalltalk.
 
@@ -138,7 +138,7 @@ This is very much a work in progress.
   - Develop sensible combined Foreign Function Interface & Debugging infrastructure
   - **Bootstrap Morphic** !    
 
-## Processing Notes
+## Processing Notes [outdated]
   - The control file is **"guile-sis.scm"**.  This imports Scheme functions and code to load the system.
   - There are two phases: the Scheme bootstrap **(load-source-bootstrap)** and the Smalltalk core classes **(add-st-kernel)**.
     + The Scheme bootstrap implements Smalltalk semanics and exposes Scheme datatypes.
@@ -173,4 +173,6 @@ How best to stage in Smalltalk functionality?
   - Dynamic class changes & schema evolution (w lazy instance update)
 
 
-## In Progress -- Guile port (basics, then read, compile ..)
+## In Progress -- Chez Scheme port (basics, then read, compile ..)
+
+https://github.com/cisco/ChezScheme
