@@ -1,7 +1,7 @@
 # Crosstalk
 
-## Smalltalk in Scheme -- clean room bootstrap of Smalltalk kernel in R7RS Larceny Scheme; 
-currently being ported to GNU Guile Scheme 3.0.7 (in progress)
+## Smalltalk in Scheme -- Simple bootstrap of Smalltalk kernel in R6RS Scheme; 
+currently being ported to Chez Sceme 10 (in progress)
 
 Basically an exercise in deeply understanding Smalltalk.
 
