@@ -78,6 +78,8 @@
    st-nil-behavior
    st-true-behavior
    st-false-behavior
+   st-magnitude-behavior
+   st-number-behavior
    st-integer-behavior
    st-real-behavior
    st-complex-behavior
@@ -648,6 +650,8 @@
 (define st-nil-behavior          (make-mDict-placeholder 'UndefinedObject))
 (define st-true-behavior         (make-mDict-placeholder 'True))
 (define st-false-behavior        (make-mDict-placeholder 'False))
+(define st-magnitude-behavior    (make-mDict-placeholder 'Magnitude))
+(define st-number-behavior       (make-mDict-placeholder 'Number))
 (define st-integer-behavior      (make-mDict-placeholder 'Integer))
 (define st-real-behavior         (make-mDict-placeholder 'Float))
 (define st-complex-behavior      (make-mDict-placeholder 'Complex))

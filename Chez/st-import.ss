@@ -16,6 +16,7 @@
    (st-symbol)
    (st-list)
    (st-magnitude)
+   (st-number)
 )
 
 ;; (define scm-bootstrap-file-names

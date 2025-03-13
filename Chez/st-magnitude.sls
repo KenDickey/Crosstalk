@@ -31,6 +31,8 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(perform:with: Magnitude 'methodDict: st-magnitude-behavior)
+
 (perform:with: Magnitude
                'comment:
 "I'm the abstract class Magnitude that provides common protocol for objects that have
