@@ -17,6 +17,7 @@
    (st-list)
    (st-magnitude)
    (st-number)
+   (st-complex)
 )
 
 ;; (define scm-bootstrap-file-names
