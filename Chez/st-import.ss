@@ -20,6 +20,7 @@
    (st-complex)
    (st-float)
    (st-fraction)
+   (st-integer)
 )
 
 ;; (define scm-bootstrap-file-names

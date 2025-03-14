@@ -17,6 +17,7 @@
    (rnrs mutable-strings (6))
    (rnrs unicode (6))
    (rnrs hashtables (6)) ; equal-hash
+   (rnrs arithmetic flonums (6))
    (rnrs r5rs (6)) ; modulo
    (st-base)
    (st-class-structure)
