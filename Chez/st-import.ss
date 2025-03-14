@@ -18,6 +18,8 @@
    (st-magnitude)
    (st-number)
    (st-complex)
+   (st-float)
+   (st-fraction)
 )
 
 ;; (define scm-bootstrap-file-names

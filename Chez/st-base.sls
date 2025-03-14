@@ -81,8 +81,8 @@
    st-magnitude-behavior
    st-number-behavior
    st-integer-behavior
-   st-real-behavior
    st-complex-behavior
+   st-float-behavior
    st-fraction-behavior
    st-character-behavior
    st-string-behavior
@@ -580,7 +580,7 @@
       ((number?  thing)
        (cond
         ((rational? thing) st-fraction-behavior) 
-        ((real?     thing) st-real-behavior)     
+        ((real?     thing) st-float-behavior)     
         ((complex?  thing) st-complex-behavior)  
         ;; FIXME:: Scaled Decimal
         (else (error 'behavior
@@ -653,9 +653,9 @@
 (define st-magnitude-behavior    (make-mDict-placeholder 'Magnitude))
 (define st-number-behavior       (make-mDict-placeholder 'Number))
 (define st-integer-behavior      (make-mDict-placeholder 'Integer))
-(define st-real-behavior         (make-mDict-placeholder 'Float))
 (define st-complex-behavior      (make-mDict-placeholder 'Complex))
 (define st-fraction-behavior     (make-mDict-placeholder 'Fraction))
+(define st-float-behavior	 (make-mDict-placeholder 'Float))
 ;; @@FIXME: Scaled Decimal
 (define st-character-behavior    (make-mDict-placeholder 'Character))
 (define st-string-behavior       (make-mDict-placeholder 'String))
