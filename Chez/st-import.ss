@@ -23,6 +23,7 @@
    (st-integer)
    (st-blockClosure)
    (st-dictionary)
+   (st-exception)
 )
 
 ;; (define scm-bootstrap-file-names

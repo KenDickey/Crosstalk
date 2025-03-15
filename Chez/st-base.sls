@@ -135,7 +135,7 @@
    subclassResponsibility
    st-obj-copy
    asException			; (asException aCondition)
-   
+   unspecified unspecified?
    )
 
   (import
@@ -183,6 +183,7 @@
 ;;; A few Basic Objects
 
 (define unspecified (void))
+(define (unspecified? value) (eq? value unspecified))
 
 (define st-nil      '())
 (define st-true     #t)
