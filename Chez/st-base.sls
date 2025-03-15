@@ -122,6 +122,7 @@
    display-ivars
    display-obj		; obj printString
    describe
+   safer-printString
 
 ;;; Various internal Helpers   
    list-copy vector-copy

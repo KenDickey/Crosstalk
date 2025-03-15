@@ -17,6 +17,7 @@
 
    in-send-failed?
    %%escape%%
+   debug-st-runtime
    )
 
   (import
@@ -78,7 +79,10 @@
 
 (define in-send-failed? (make-parameter #f))
 
-(define %%escape%% (make-parameter (lambda whatever '%%escape%%)))
+(define %%escape%%
+  (make-thread-parameter (lambda whatever '%%escape%%)))
+
+(define debug-st-runtime (make-parameter #t))
 
 (define (saferIsKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
@@ -100,9 +104,12 @@
 
 
 (perform:with: MessageSend  'methodDict: st-messageSend-behavior)
-(perform:with: Message      'methodDict: st-object-behavior)
-(perform:with: ExceptionSet 'methodDict: st-object-behavior)
-(perform:with: Exception    'methodDict: st-object-behavior)
+(perform:with: Message      'methodDict:
+               (clone-method-dictionary st-object-behavior))
+(perform:with: ExceptionSet 'methodDict:
+               (clone-method-dictionary st-object-behavior))
+(perform:with: Exception    'methodDict:
+               (clone-method-dictionary st-object-behavior))
 
 
 ; receiver -- nil or the receiver
@@ -311,11 +318,11 @@ Structure:
      'resumeUnchecked:
      (lambda (self resumptionValue)
 ;;@@DEBUG{
-;; (when (debug-st-runtime)
-;;   (format #t
-;;           "~%~a>>resumeUnchecked ~a"
-;;           ($ self 'printString)
-;;           resumptionValue))
+(when (debug-st-runtime)
+  (format #t
+          "~%~a>>resumeUnchecked ~a"
+          ($ self 'printString)
+          resumptionValue))
 ;;@@DEBUG}
        (($ self 'signalContext) resumptionValue)))
 
@@ -357,8 +364,8 @@ Structure:
          (lambda (returnToSignal)
            ($: ($ self 'signalExn) 'signalContext: returnToSignal)
 ;;@@DEBUG{
-;; (when (debug-st-runtime)
-;;   (format #t "~a" ($ ($ self 'signalExn) 'printString)))
+(when (debug-st-runtime)
+  (format #t "~a" ($ ($ self 'signalExn) 'printString)))
 ;;@@DEBUG}
              (raise-continuable ($ self 'signalExn))
 	)))
@@ -515,8 +522,8 @@ Structure:
 ;; If none handle this either then open debugger (see UnhandedError-defaultAction)"
      (lambda (self)
 ;;@@DEBUG{
-;; (when (debug-st-runtime)
-;;   (format #t "~%Exception>>noHandler for ~a~%" ($ self 'description)))
+(when (debug-st-runtime)
+  (format #t "~%Exception>>noHandler for ~a~%" ($ self 'description)))
 ;;@@DEBUG}
        ($: (smalltalkAt: 'UnhandledError) 'signalForException: self)))
 
@@ -590,11 +597,11 @@ Structure:
      'sendTo:
      (lambda (self newReceiver)
 ;;@@DEBUG{
-;; (when (debug-st-runtime)
-;;   (format #t
-;;           "~%** ~a sentTo: ~a"
-;;           (safer-printString self)
-;;           (safer-printString newReceiver)))
+(when (debug-st-runtime)
+  (format #t
+          "~%** ~a sentTo: ~a"
+          (safer-printString self)
+          (safer-printString newReceiver)))
 ;;@@DEBUG}
        ($:: newReceiver 
             'perform:withArguments:
@@ -708,10 +715,10 @@ Structure:
                 (arguments ($ self 'arguments))
               )
 ;;@@DEBUG{
-;; (when (debug-st-runtime)
-;;   (format #t
-;;           "~%send failed: ~a >> ~a ~a~%"
-;;           receiver selector arguments))
+(when (debug-st-runtime)
+  (format #t
+          "~%send failed: ~a >> ~a ~a~%"
+          receiver selector arguments))
 ;;@@DEBUG}
     (cond
      ((in-send-failed?)

@@ -24,6 +24,7 @@
    (st-blockClosure)
    (st-dictionary)
    (st-exception)
+   (st-error)
 )
 
 ;; (define scm-bootstrap-file-names
