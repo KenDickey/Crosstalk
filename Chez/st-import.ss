@@ -27,6 +27,7 @@
    (st-error)
    (st-error-subs)
    (st-arith-err-subs)
+   (st-stream)
 )
 
 ;; (define scm-bootstrap-file-names

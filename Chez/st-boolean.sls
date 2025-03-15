@@ -41,7 +41,7 @@
 (define True
   (newSubclassName:iVars:cVars:
    Boolean
-   'False '() '())
+   'True '() '())
 )
 
 (define UndefinedObject
@@ -65,6 +65,8 @@
 (perform:with: False	'methodDict: st-false-behavior)
 (perform:with: UndefinedObject 'methodDict: st-nil-behavior)
 
+
+;;; Boolean def'ed in "st-collection.sls"
 
 (addSelector:withMethod:
      Boolean

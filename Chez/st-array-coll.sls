@@ -32,6 +32,11 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(perform:with: ArrayedCollection
+               'methodDict:
+               (clone-method-dictionary
+                ($ SequenceableCollection 'methodDict)))
+
 
 (addSelector:withMethod:
      ArrayedCollection

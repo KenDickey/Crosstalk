@@ -54,6 +54,10 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
+(perform:with: Collection
+               'methodDict:
+               (clone-method-dictionary
+                ($ Object 'methodDict)))
 
 (addSelector:withMethod:
      Behavior
