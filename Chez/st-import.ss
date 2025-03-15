@@ -22,6 +22,7 @@
    (st-fraction)
    (st-integer)
    (st-blockClosure)
+   (st-dictionary)
 )
 
 ;; (define scm-bootstrap-file-names
