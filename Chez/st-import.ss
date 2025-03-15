@@ -26,6 +26,7 @@
    (st-exception)
    (st-error)
    (st-error-subs)
+   (st-warning-subs)
 )
 
 ;; (define scm-bootstrap-file-names
