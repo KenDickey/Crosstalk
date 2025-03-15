@@ -21,6 +21,7 @@
    (st-float)
    (st-fraction)
    (st-integer)
+   (st-blockClosure)
 )
 
 ;; (define scm-bootstrap-file-names
