@@ -25,6 +25,7 @@
    (st-dictionary)
    (st-exception)
    (st-error)
+   (st-error-subs)
 )
 
 ;; (define scm-bootstrap-file-names
