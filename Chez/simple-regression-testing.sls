@@ -1,10 +1,10 @@
 #!r6rs
 ;;; FILE: "simple-regression-testing.sls"
 ;;; IMPLEMENTS: Simple [minded] Regression Test System
-;;; LANGUAGE: (Larceny -r7r6) Scheme
+;;; LANGUAGE: R6RS Chez Scheme
 ;;; AUTHOR: Ken Dickey
 
-;;;COPYRIGHT (c) 2005, 2008, 2016 by Kenneth A Dickey. All rights reserved.
+;;;COPYRIGHT (c) 2005, 2008, 2016, 2025 by Kenneth A Dickey. All rights reserved.
 ;;;
 ;;;Permission is hereby granted, free of charge, to any person
 ;;;obtaining a copy of this software and associated documentation
@@ -27,7 +27,9 @@
 ;;;FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;;OTHER DEALINGS IN THE SOFTWARE.
 ;==============================================================;
-(library (kend simple-regression-testing)
+
+(library (simple-regression-testing)
+
   (export verbose-test-output? break-on-test-error?
           run-all-tests run-tests-for-suite
           add-test-suite remove-test-suite remove-all-test-suites
@@ -41,8 +43,10 @@
           (rnrs exceptions (6))
           (rnrs hashtables (6))
           (rnrs lists      (6))
-          (srfi :39) ; parameters
-          (srfi :48) ; format
+          (only (chezscheme)
+                make-parameter
+                parameterize
+                format)
           )
   
 ;==============================================================;
