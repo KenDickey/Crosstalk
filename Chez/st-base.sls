@@ -137,6 +137,12 @@
    st-obj-copy
    asException			; (asException aCondition)
    unspecified unspecified?
+
+   ;; For "st-base-tests.ss"
+   make-mDict-placeholder
+   make-st-bytearray
+   insure-annotated ;; closure->method
+   selector-arity
    )
 
   (import
