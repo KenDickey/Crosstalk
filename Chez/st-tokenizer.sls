@@ -19,6 +19,8 @@
    tokenizer-for-file-named
    ;; (token-parser-for-port inport source line column)
    token-parser-for-port
+
+   token->native ; (token->native token)
    )
 
   (import
@@ -32,6 +34,7 @@
    (rnrs unicode (6))
    (rnrs mutable-strings (6))
    (only (chezscheme)
+         define-structure
          format
          make-parameter
          parameterize
@@ -43,8 +46,6 @@
 
 
 (define-structure (token kind string location))
-
-(define make-token token)
 
 ;; (define token-tag (cons 'token '())) ;; not eq? to anything else
 
@@ -93,6 +94,8 @@
      verticalBar
      whitespace )
 )
+
+(define open-input-string open-string-input-port)
 
 (define (tokenizer-for-string aString)
   (token-parser-for-port

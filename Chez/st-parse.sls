@@ -9,7 +9,45 @@
 (library (st-parse)
 
   (export
+   set-parse-tokenizer ;; (set-parse-tokenizer tokenizer)
+   parse-st-code
 
+   parse-test ;; (parse-test input-string)
+
+;; Quick Check: in REPL
+;;(parse-test " anArray at: 3 put: 37 ")
+;;(parse-st-code) 
+
+   st->AST ;; (st->AST st-string) SmallTalk -> Abstract Syntax Tree
+;; astTag useful to debug?
+
+   ; parameters
+   debug-parser
+   trace-parse-methods
+   trace-skip-whitespace
+
+;;; AST Nodes
+   astAssignment
+   astBlock
+   astBrace
+   astCascade
+   astIdentifier
+   astLiteral
+   astSelector
+   astUnarySend
+   astBinarySend
+   astKeywordSend
+   astUnaryMessage
+   astBinaryMessage
+   astKeywordMessage
+   astMessageSend
+   astArray
+   astDynamicArray
+   astSequence
+   astMessageSequence
+   astLetTemps
+   astSubexpression
+   astReturn
    )
 
   (import
@@ -18,11 +56,13 @@
    (rnrs io ports (6))
    (rnrs lists (6))
    (rnrs control (6))
+   (rnrs bytevectors (6))
    (rnrs records inspection (6))
    (rnrs records procedural (6))
    (rnrs unicode (6))
    (rnrs mutable-strings (6))
    (only (chezscheme)
+         define-structure
          format
          make-parameter
          parameterize
@@ -30,7 +70,7 @@
          get-output-string
          void
        )
-   
+   (st-base)
    (st-tokenizer)
    )
 
@@ -60,17 +100,17 @@
 (define-structure (astReturn        expression))
 
 (define (ident-token->astLiteral ident-tok)
-  (astLiteral ident-tok 
+  (make-astLiteral ident-tok 
               `',(token->native ident-tok))
 )
 
 (define (ident-token->astIdentifier ident-tok)
-  (astIdentifier ident-tok (token->native ident-tok)))
+  (make-astIdentifier ident-tok (token->native ident-tok)))
 
 (define (ident-token->astBlockArg ident-tok)
   (let ( (ident-sym (token->native ident-tok)) )
-    (astIdentifier
-     (token 'blockArg
+    (make-astIdentifier
+     (make-token 'blockArg
             (string-append ":" (token-string ident-tok))
             (token-location ident-tok))
      ident-sym)
@@ -111,9 +151,14 @@
 
 ;; Quick Test
 (define next-st-token
-  (lambda ignored (error "next-st-token: input not defined !!")))
+  (lambda ignored (parse-error 'next-st-token: "input not defined !!")))
 (define curr-token #f)
 (define prev-token #f)
+
+(define (set-parse-tokenizer tokenizer)
+  (set! next-st-token tokenizer)
+  (set!  curr-token #f)
+  (set! prev-token #f))
 
 (define (parse-test input-string)
   (set! next-st-token (tokenizer-for-string input-string))
@@ -126,7 +171,7 @@
   (parse-test st-string)
   (parse-st-code))
 
-(parse-test " anArray at: 3 put: 37 ") ;; quick check
+;;(parse-test " anArray at: 3 put: 37 ") ;; quick check
 ;; Invoke (parse-st-code) in REPL to test.
 
 (define (curr-token-kind)
@@ -191,16 +236,16 @@
              (let* ( (temps      (parse-temps))
                      (statements (parse-statements))
                      )
-               (astLetTemps temps statements))
+               (make-astLetTemps temps statements))
              )
             ((eof)
-             (astSequence '()) ;; no action!?!
+             (make-astSequence '()) ;; no action!?!
              )
             (else
              (let ( (statements (parse-statements)) )
                (if (= 1 (length statements))
                    (car statements)
-                   (astSequence statements))
+                   (make-astSequence statements))
              ))
             )
           )
@@ -218,7 +263,7 @@
     (newline)
     (display " (parse-temps)"))
   (unless (eq? 'verticalBar (curr-token-kind))
-    (parse-error "parse-temps: expected $|" curr-token))
+    (parse-error 'parse-temps: "expected $|" curr-token))
   (consume-token!)
   (let loop ( (temps '()) )
     (skip-whitespace)
@@ -232,7 +277,7 @@
        (reverse temps)
        )
       (else
-       (parse-error "parse-temps: expected identifier or $|"
+       (parse-error 'parse-temps: "expected identifier or $|"
                     curr-token
                     (reverse temps))))
 ) )
@@ -255,10 +300,10 @@
      (let ( (return-exp (parse-expression)) )
         (when (eq? 'period (curr-token-kind))
           (consume-token!))
-        (list (astReturn return-exp)))
+        (list (make-astReturn return-exp)))
      )
     ((blockEnd) ;; don't process
-     nil
+     st-nil
      )
     (else
      (let ( (exp (parse-expression)) )
@@ -282,7 +327,7 @@
     (newline)
     (display " (parse-subexpression)"))
   (unless (eq? 'leftParen (curr-token-kind))
-    (parse-error "parse-subexpression: expected $("
+    (parse-error 'parse-subexpression: "expected $("
                  curr-token))
   (consume-token!)
   (let ( (subexpression (parse-expression)) )
@@ -290,8 +335,8 @@
     (if (eq? 'rightParen (curr-token-kind))
         (begin
           (consume-token!)
-          (astSubexpression subexpression))
-        (parse-error "parse-subexpression: expected $)"
+          (make-astSubexpression subexpression))
+        (parse-error 'parse-subexpression: "expected $)"
                      curr-token)))
 )
 
@@ -343,22 +388,22 @@
     (display " (parse-basic-expression)"))
   (skip-whitespace)
   (when (eq? (curr-token-kind) 'cascade)
-    (parse-error "parse-basic-expression: cascade without message "
+    (parse-error 'parse-basic-expression: "cascade without message "
                  curr-token))
   (let ( (message
           (case (curr-token-kind)
             ((identifier)
-             (astMessageSend
+             (make-astMessageSend
               receiver
               (parse-unary-message))
              )
              ((binarySelector)
-              (astMessageSend
+              (make-astMessageSend
               	receiver
                 (parse-binary-message))
               )
              ((keyword)
-              (astMessageSend
+              (make-astMessageSend
               	receiver
                 (parse-keyword-message))
               )
@@ -383,7 +428,7 @@
     (newline)
     (display " (parse-cascade)"))
   (unless (eq? 'cascade (curr-token-kind))
-    (parse-error "parse-cascade: expected $;" curr-token))
+    (parse-error 'parse-cascade: "expected $;" curr-token))
   (let-values ( ((cascade-rcvr cascade-first-msg)
                  (cascade-fixup receiver first-message)) )
     (consume-token!)
@@ -394,7 +439,7 @@
             (begin
               (consume-token!)
               (loop (cons message reversed-messages)))
-            (astCascade cascade-rcvr
+            (make-astCascade cascade-rcvr
                         (reverse (cons message reversed-messages))))
     ) )
   )
@@ -408,11 +453,11 @@
                         (astMessageSend-messages first-message))))
            )
 ;;      (format #t "~%rev-msg-seq: ~y~%" rev-msg-seq)
-        (values (astMessageSend
+        (values (make-astMessageSend
                      receiver
-                     (astMessageSequence (reverse (cdr rev-msg-seq))))
-                (astMessageSend
-                     (astLiteral (token 'identifier "receiver" (list "receiver" 0 0))
+                     (make-astMessageSequence (reverse (cdr rev-msg-seq))))
+                (make-astMessageSend
+                     (make-astLiteral (make-token 'identifier "receiver" (list "receiver" 0 0))
                                  'receiver)
                      (car rev-msg-seq))))
       (values receiver first-message)
@@ -421,13 +466,13 @@
 (define (pattern->ast selector args)
   (case (token-kind selector)
     ((unarySelector)
-     (astUnaryMessage selector)
+     (make-astUnaryMessage selector)
      )
     ((binarySelector)
-     (astBinaryMessage selector (car args))
+     (make-astBinaryMessage selector (car args))
      )
     ((keywordSelector)
-     (astKeywordMessage selector args)
+     (make-astKeywordMessage selector args)
      )
     (else (parse-error
            "pattern->ast: expected message send"
@@ -474,14 +519,14 @@
     (display " (parse-unary-message)"))
   (skip-whitespace)
   (unless (eq? 'identifier (curr-token-kind))
-    (error "parse-unary-message: expected unary selector" curr-token))
+    (parse-error 'parse-unary-message: "expected unary selector" curr-token))
   (consume-token!)
-  (let unary-loop ( (reversed-messages (list (astUnaryMessage prev-token))) )
+  (let unary-loop ( (reversed-messages (list (make-astUnaryMessage prev-token))) )
     (skip-whitespace)
     (if (eq? 'identifier (curr-token-kind))
         (begin
           (consume-token!)
-          (unary-loop (cons (astUnaryMessage prev-token)
+          (unary-loop (cons (make-astUnaryMessage prev-token)
                             reversed-messages)))
         (let* ( (rev-added-binary
                  (if (eq? 'binarySelector (curr-token-kind))
@@ -495,7 +540,7 @@
              )
           (if (= 1 (length sequence))
               (car sequence)
-              (astMessageSequence sequence))
+              (make-astMessageSequence sequence))
        )
     )
   )
@@ -511,7 +556,7 @@
     (display " (parse-binary-message)"))
   (skip-whitespace)
   (unless (eq? 'binarySelector (curr-token-kind))
-    (error "parse-binary-message: expected binary selector" curr-token))
+    (parse-error 'parse-binary-message: "expected binary selector" curr-token))
   (let bin-loop ( (reversed-messages
                    (list (prim-parse-binary-message)))
                 )
@@ -519,11 +564,11 @@
     (if (eq? 'binarySelector (curr-token-kind))
         (bin-loop (cons (prim-parse-binary-message) reversed-messages))
         (if (eq? 'keyword (curr-token-kind))
-            (astMessageSequence
+            (make-astMessageSequence
              (reverse (cons (parse-keyword-message) reversed-messages)))
             (if (= 1 (length reversed-messages))
                 (car reversed-messages) ;; unwrap single message
-                (astMessageSequence
+                (make-astMessageSequence
                  (reverse reversed-messages))
             )
         )
@@ -537,7 +582,7 @@
   ;; i.e. a binarySelector was seen but not consumed.
   (let ( (binary-selector (token->native curr-token)) )
     (consume-token!)
-    (astBinaryMessage binary-selector (parse-binary-argument))
+    (make-astBinaryMessage binary-selector (parse-binary-argument))
   )
 )
 
@@ -549,7 +594,7 @@
     (display " (parse-keyword-message)"))
   (skip-whitespace)
   (unless (eq? 'keyword (curr-token-kind))
-    (error "parse-keyword-message: expected a keyword" curr-token))
+    (parse-error 'parse-keyword-message: "expected a keyword" curr-token))
   ;; parse one or more <keyword, expression> pairs
   (let loop ( (results '()) )
     (skip-whitespace)
@@ -569,8 +614,8 @@
                (args (map cdr keys-and-args))
              )
          (when (null? keys-and-args)
-           (error "parse-keyword-send: expected a keyword" curr-token))
-         (astKeywordMessage selector args))
+           (parse-error 'parse-keyword-send: "expected a keyword" curr-token))
+         (make-astKeywordMessage selector args))
       )
     )
   )
@@ -582,21 +627,21 @@
     (newline)
     (display " (parse-negative-number)"))
   (unless (eq? 'minus (curr-token-kind))
-    (error "parse-negative-number: expected $-" curr-token))
+    (parse-error 'parse-negative-number: "expected $-" curr-token))
   (let ( (minus-token curr-token) )
     (consume-token!)
     ;; numeric digit MUST immediately follow $-
     ;; So no use of (skip-whitespace)
     (unless (st-number-token? curr-token)
-      (error "parse-negative-number: expected a number to follow $-"
+      (parse-error 'parse-negative-number: "expected a number to follow $-"
              curr-token))
     (let ( (new-token  ;; @@REVISIT: could recognize neg numbers in tokenizer
-            (token (token-kind curr-token)
+            (make-token (token-kind curr-token)
                    (string-append "-" (token-string curr-token))
                    (token-location minus-token)))
          )
       (consume-token!)
-      (astLiteral new-token (- (token->native prev-token)))))
+      (make-astLiteral new-token (- (token->native prev-token)))))
 )
 
 
@@ -617,7 +662,7 @@
     (newline)
     (display " (parse-literal-array)"))
   (unless (eq? 'litArrayStart (curr-token-kind))
-    (parse-error "parse-literal-array: expected '#('"
+    (parse-error 'parse-literal-array: "expected '#('"
                  curr-token))
   (let ( (start-location (token-location curr-token)) )
     (consume-token!)
@@ -630,7 +675,7 @@
           characterLiteral string symbol
           )
          (let ( (literal
-                 (astLiteral curr-token
+                 (make-astLiteral curr-token
                              (token->native curr-token)))
               )
            (consume-token!)
@@ -638,7 +683,7 @@
          )
         ((identifier)
          (let ( (identifier ;; a Symbol within an Array is unquoted
-                 (astLiteral curr-token (token->native curr-token)))
+                 (make-astLiteral curr-token (token->native curr-token)))
               )
            (consume-token!)
            (loop (cons identifier elts)))
@@ -658,7 +703,7 @@
          )
         ((rightParen)
          (consume-token!)
-         (astArray (reverse elts))
+         (make-astArray (reverse elts))
          )
         (else
          (parse-error
@@ -667,13 +712,14 @@
       ) ;; loop
 ) )
 
+(define list->bytevector u8-list->bytevector)
 
 (define (parse-literal-byte-array)
   (when (trace-parse-methods)
     (newline)
     (display " (parse-literal-byte-array)"))
   (unless (eq? 'litByteArrayStart (curr-token-kind))
-    (parse-error "parse-literal-byte-array: expected '#['"
+    (parse-error 'parse-literal-byte-array: "expected '#['"
                  curr-token))
   (let ( (start-location (token-location curr-token)) )
     (consume-token!)
@@ -692,7 +738,7 @@
          )
         ((blockEnd)
          (consume-token!)
-         (astLiteral (make-token 'byteArrayLiteral
+         (make-astLiteral (make-token 'byteArrayLiteral
                                  "#[...]"
                                  start-location)
                      (list->bytevector (reverse elts)))
@@ -706,7 +752,7 @@
 
 ;; (define (byte-value-token? tok)
 ;;   (and (eq? 'integer (token-kind tok))
-;;        (<= 0 (token->native (astLiteral-token t)) 256)))
+;;        (<= 0 (token->native (make-astLiteral-token t)) 256)))
 
 ;; (define (byte-value-literal? ast)
 ;;   (and (astLiteral? ast)
@@ -718,14 +764,14 @@
     (newline)
     (display " (parse-dynamic-array)"))
   (unless (eq? 'dynArrayStart (curr-token-kind))
-    (parse-error "parse-dynamic-array: expected ${" curr-token))
+    (parse-error 'parse-dynamic-array: "expected ${" curr-token))
   (consume-token!)
   (let loop ( (expressions '()) )
     (skip-whitespace)
     (if (eq? 'dynArrayEnd (curr-token-kind))
         (begin
           (consume-token!) ;; "#\}"
-          (astDynamicArray (reverse expressions)))
+          (make-astDynamicArray (reverse expressions)))
         (let ( (exp (parse-expression)) )
           (skip-whitespace)
           (if (eq? 'period (curr-token-kind))
@@ -748,7 +794,7 @@
     (newline)
     (display " (parse-block)"))
    (unless (eq? 'blockStart (curr-token-kind))
-    (error "parse-block: expected $[" curr-token))
+    (parse-error 'parse-block: "expected $[" curr-token))
   (consume-token!)
   (skip-whitespace)
   (let ( (args '())
@@ -763,13 +809,13 @@
   (if (eq? 'blockEnd (curr-token-kind))
       (begin ;; no statements
         (consume-token!)
-        (astBlock args temps '() #f))
+        (make-astBlock args temps '() #f))
       (let ( (statements (parse-statements)) )
         (skip-whitespace)
         (unless (eq? 'blockEnd (curr-token-kind))
-          (error "parse-block: expected $]" curr-token))
+          (parse-error 'parse-block: "expected $]" curr-token))
         (consume-token!)
-        (astBlock args
+        (make-astBlock args
                   temps
                   statements
                   (block-statements-have-return statements))))
@@ -843,7 +889,7 @@
        (reverse args)
        )
       (else
-       (parse-error "parse-block-args: expected :identifier or $|"
+       (parse-error 'parse-block-args: "expected :identifier or $|"
                     curr-token
                     (reverse args))))
 ) )
@@ -855,9 +901,9 @@
     (display " (parse-unary-send receiver)"))
   (skip-whitespace)
   (unless (eq? 'identifier (curr-token-kind))
-    (error "parse-unary-send: expected a unary selector" curr-token))
+    (parse-error 'parse-unary-send: "expected a unary selector" curr-token))
   (let ( (unary-message
-          (astUnarySend receiver (token->native curr-token))) )
+          (make-astUnarySend receiver (token->native curr-token))) )
     (consume-token!)
     (skip-whitespace)
     (case (curr-token-kind)
@@ -875,7 +921,7 @@
     (display " (parse-binary-send receiver)"))
   (skip-whitespace)
   (unless (eq? 'binarySelector (curr-token-kind))
-    (error "parse-binary-send: expected a binary selector"
+    (parse-error 'parse-binary-send: "expected a binary selector"
            curr-token))
   (let bin-loop ( (reversed-messages
                    (list (prim-parse-binary-message)))
@@ -883,11 +929,11 @@
     (skip-whitespace)
     (if (eq? 'binarySelector (curr-token-kind))
         (bin-loop (cons (prim-parse-binary-message) reversed-messages))
-        (astMessageSend receiver
+        (make-astMessageSend receiver
                         (if (= 1 (length reversed-messages))
                             ;; unwrap single message
                             (car reversed-messages)
-                            (astMessageSequence
+                            (make-astMessageSequence
                              (reverse reversed-messages))
         )               )
 
@@ -907,13 +953,13 @@
     (if (not (eq? 'identifier (curr-token-kind)))
         primary
         (let unary-loop ( (msg
-                           (astUnarySend primary
+                           (make-astUnarySend primary
                                          (token->native curr-token)))
                         )
           (consume-token!)
           (skip-whitespace)
           (if (eq? 'identifier (curr-token-kind))
-              (unary-loop (astUnarySend msg
+              (unary-loop (make-astUnarySend msg
                                         (token->native curr-token)))
               msg)
         )
@@ -927,7 +973,7 @@
     (newline)
     (display " (parse-keyword-send receiver)"))
   (unless (eq? 'keyword (curr-token-kind))
-    (error "parse-keyword-send: expected a keyword" curr-token))
+    (parse-error 'parse-keyword-send: "expected a keyword" curr-token))
   ;; parse one or more <keyword, expression> pairs
   (let loop ( (results '()) )
     (skip-whitespace)
@@ -950,8 +996,8 @@
                (args (map cdr keys-and-args))
              )
          (when (null? keys-and-args)
-           (error "parse-keyword-send: expected a keyword" curr-token))
-         (astKeywordSend receiver selector args)))
+           (parse-error 'parse-keyword-send: "expected a keyword" curr-token))
+         (make-astKeywordSend receiver selector args)))
 ) ) )
 
 
@@ -996,11 +1042,11 @@
               float floatWithExponent
               string characterLiteral)
      (consume-token!)
-     (astLiteral prev-token (token->native prev-token))
+     (make-astLiteral prev-token (token->native prev-token))
      )
     ((symbol)
      (consume-token!) ;; quote it!
-     (astLiteral prev-token `,(token->native prev-token)))
+     (make-astLiteral prev-token `,(token->native prev-token)))
     ((minus)
      (parse-negative-number)
      )
@@ -1022,10 +1068,10 @@
     ((sharp) ;; symbol
      (consume-token!) ;; #
      (consume-token!) ;; <a symbol>
-     (astLiteral prev-token `',(token->native prev-token))
+     (make-astLiteral prev-token `',(token->native prev-token))
      )
     (else
-     (parse-error "parse-primary: unexpected token"
+     (parse-error 'parse-primary: "unexpected token"
                   curr-token)
      )
 ) )
@@ -1036,11 +1082,11 @@
     (newline)
     (display " (parse-assignment receiver)"))
   (unless (eq? 'assignment (curr-token-kind))
-    (parse-error "parse-assignment: expected #:="
+    (parse-error 'parse-assignment: "expected #:="
                  curr-token))
   (consume-token!) ;; ":="
   (let ( (right-hand-side (parse-expression)) )
-    (astAssignment receiver right-hand-side))
+    (make-astAssignment receiver right-hand-side))
 )
 
 ;; <method-definition>
@@ -1062,7 +1108,7 @@
     (newline)
     (display " (parse-method-definition receiver)"))
   (unless (eq? 'methDef (curr-token-kind))
-    (parse-error "parse-method-definition: expected #~>"
+    (parse-error 'parse-method-definition: "expected #~>"
                  curr-token))
   (consume-token!)
   (skip-whitespace)
@@ -1070,17 +1116,17 @@
   (let-values ( ((selector args) (parse-message-pattern)) ) 
     (skip-whitespace)
     (unless (eq? 'blockStart (curr-token-kind))
-      (parse-error "parse-method-definition: expected $["
+      (parse-error 'parse-method-definition: "expected $["
                    curr-token))
     (let* ( (method-block (parse-block))
             (method-args ;; Prepend #:self block-arg
              (cons
-              (astIdentifier
-                 (token 'blockArg ":self" #(":self" 0 0))
+              (make-astIdentifier
+                 (make-token 'blockArg ":self" (vector ":self" 0 0))
                  'self)
               args))
           )
-      ;; (astBlock arguments temporaries statements hasReturn?)
+      ;; (make-astBlock arguments temporaries statements hasReturn?)
       (vector-set! method-block 1 method-args) 
       ;; Unlike block-closures, which return their last value,
       ;; method blocks return #self unless explicit ^return.
@@ -1088,11 +1134,13 @@
         (set-astBlock-statements!
          method-block
          (append (astBlock-statements method-block)
-                 (list (astIdentifier
-                        (token 'identifier "self" #("self" 0 0))
+                 (list (make-astIdentifier
+                        (make-token 'identifier
+                                    "self"
+                                    (vector "self" 0 0))
                         'self))))
       )
-      (astKeywordSend receiver
+      (make-astKeywordSend receiver
                       'addSelector:withMethod:
                       (list selector method-block))
 ) ) )
@@ -1142,7 +1190,7 @@
     (newline)
     (display " (parse-keyword-pattern)"))
   (unless (eq? 'keyword (curr-token-kind))
-    (error "parse-keyword-pattern: expected a keyword" curr-token))
+    (parse-error 'parse-keyword-pattern: "expected a keyword" curr-token))
   ;; parse one or more <keyword, identifier> pairs
   (let ( (start-token-location
           (token-location curr-token))
@@ -1172,8 +1220,8 @@
                          (map car keys-and-args)))
                  (args (map cdr keys-and-args))
               )
-           (values (astLiteral
-                    (token 'symbol
+           (values (make-astLiteral
+                    (make-token 'symbol
                            (string-append "#" selector-string)
                            start-token-location)
                     `',(string->symbol selector-string))

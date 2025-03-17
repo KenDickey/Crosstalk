@@ -7,7 +7,11 @@
 (library (st-xlate)
 
   (export
-
+   st->scm  ;; (st->scm aString)
+   xlate-st-file->scm ;; (xlate-st-file->scm infile-name)
+   AST->scm ;; (AST->scm ast)
+   ;; Note: (library (st-parse)) defines
+   ;;	  (st->AST st-string)
    )
 
   (import
@@ -269,7 +273,7 @@
          (selector (astUnarySend-selector ast))
        )
     (if (eq? receiver 'super)
-        `(@ self ',selector)
+        `(% self ',selector)
         `($ ,receiver ',selector))
 ) )
 
@@ -298,9 +302,6 @@
               (cdr messages)))
   )
 )
-
-(define (caddr l) (car (cddr l)))
-(define (cadddr l) (cadr (cddr l)))
 
 (define (rsa->perform rcvr selector arguments)
   (case (length arguments)
@@ -341,24 +342,24 @@
 
 (define (rsa->superPerform rcvr selector arguments)
   (case (length arguments)
-    ((0) `(@ self ',selector)
+    ((0) `(% self ',selector)
      )
-    ((1) `(@: self ',selector ,(car arguments))
+    ((1) `(%: self ',selector ,(car arguments))
      )
-    ((2) `(@::
+    ((2) `(%::
            self
            ',selector
            ,(car arguments)
            ,(cadr arguments))
      )
-    ((3) `(@:::
+    ((3) `(%:::
            self
            ',selector
            ,(car arguments)
            ,(cadr arguments)
            ,(caddr arguments))
      )
-    ((4) `(@::::
+    ((4) `(%::::
            self
            ',selector
            ,(car arguments)
@@ -368,7 +369,7 @@
      
      )
     (else         
-     `(@&
+     `(%&
        self
        ',selector
        ,(list->vector arguments))
@@ -414,14 +415,14 @@
       ))
      ((astUnaryMessage?   ast-msg)
       (if superSend?
-          `(@ self
+          `(% self
           ',(token->native (astUnaryMessage-selector ast-msg)))
           `($ ,rcvr
               ',(token->native (astUnaryMessage-selector ast-msg)))
       ))
      ((astBinaryMessage?  ast-msg)
       (if superSend?
-          `(@: self
+          `(%: self
                ',(astBinaryMessage-selector ast-msg)
                ,(AST->scm (astBinaryMessage-argument ast-msg)))
           `($: ,rcvr
@@ -442,7 +443,7 @@
            (eq? 'identifier (token-kind ast-msg)))
       ;; unary message
       (if superSend?
-          `(@ self ',(token->native ast-msg))
+          `(% self ',(token->native ast-msg))
           `($ ,rcvr ',(token->native ast-msg))
       ))
      (else
@@ -466,9 +467,7 @@
 
 
 (define (xlate-st-file->scm infile-name)
-  (set! next-st-token (tokenizer-for-file-named infile-name))
-  (set! curr-token #f)
-  (set! prev-token #f)
+  (set-parse-tokenizer (tokenizer-for-file-named infile-name))
   (call-with-port (current-output-port)
     (lambda (outp)
       (let loop ( (form (parse-st-code)) )
@@ -482,9 +481,7 @@
 
 
 (define (xlate-st-file->scm-file infile-name outfile-name)
-  (set! next-st-token (tokenizer-for-file-named infile-name))
-  (set! curr-token #f)
-  (set! prev-token #f)
+  (set-parse-tokenizer (tokenizer-for-file-named infile-name))
   (delete-file-if-exists outfile-name) ;; OK to fail
   (call-with-output-file outfile-name
     (lambda (outp)
