@@ -1,4 +1,4 @@
-;;; FILE: "st-parse.sls"
+;;; FILE: "st-parser.sls"
 ;;; IMPLEMENTS: Smalltalk source recursive descent parser
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 21 June 2016; March 2025
@@ -6,48 +6,27 @@
 ;; Method Grammar adapted from the ANSI ST Standard
 ;; <method definition> changed for Candle-like syntax.
 
-(library (st-parse)
+(library (st-parser)
 
   (export
    set-parse-tokenizer ;; (set-parse-tokenizer tokenizer)
    parse-st-code
-
+   skip-whitespace
+   
    parse-test ;; (parse-test input-string)
 
 ;; Quick Check: in REPL
 ;;(parse-test " anArray at: 3 put: 37 ")
 ;;(parse-st-code) 
 
+   ; xlate
+   curr-token-kind
    st->AST ;; (st->AST st-string) SmallTalk -> Abstract Syntax Tree
-;; astTag useful to debug?
 
    ; parameters
    debug-parser
    trace-parse-methods
    trace-skip-whitespace
-
-;;; AST Nodes
-   astAssignment
-   astBlock
-   astBrace
-   astCascade
-   astIdentifier
-   astLiteral
-   astSelector
-   astUnarySend
-   astBinarySend
-   astKeywordSend
-   astUnaryMessage
-   astBinaryMessage
-   astKeywordMessage
-   astMessageSend
-   astArray
-   astDynamicArray
-   astSequence
-   astMessageSequence
-   astLetTemps
-   astSubexpression
-   astReturn
    )
 
   (import
@@ -76,7 +55,7 @@
 
 
 ;;; AST Nodes
-
+  
 (define-structure (astAssignment  var val))
 (define-structure (astBlock arguments temporaries statements hasReturn?))
 (define-structure (astBrace       elements))

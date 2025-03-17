@@ -28,6 +28,9 @@
    (st-error-subs)
    (st-arith-err-subs)
    (st-stream)
+   (st-tokenizer)
+   (st-parser)
+   (st-xlate)
 )
 
 ;; (define scm-bootstrap-file-names

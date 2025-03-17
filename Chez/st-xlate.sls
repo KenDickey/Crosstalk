@@ -18,13 +18,17 @@
    (rnrs base)
    (rnrs io simple (6))
    (rnrs io ports (6))
+   (rnrs files (6))
    (rnrs lists (6))
    (rnrs control (6))
    (rnrs records inspection (6))
    (rnrs records procedural (6))
    (rnrs unicode (6))
    (rnrs mutable-strings (6))
+   (rnrs eval (6))
+   (rnrs exceptions (6))
    (only (chezscheme)
+         define-structure
          format
          make-parameter
          parameterize
@@ -32,10 +36,36 @@
          get-output-string
          void
        )
+   (st-base)
+   (st-exception)  ;; debug-st-runtime
+   (st-error-subs) ;; MessageNotUnderstood
    (st-tokenizer)
-   (st-parse)
+   (st-parser)
    )
 
+;;; AST Nodes
+  
+(define-structure (astAssignment  var val))
+(define-structure (astBlock arguments temporaries statements hasReturn?))
+(define-structure (astBrace       elements))
+(define-structure (astCascade     receiver messages))
+(define-structure (astIdentifier  token symbol))
+(define-structure (astLiteral     token value)) ;; elide token
+(define-structure (astSelector    value))
+(define-structure (astUnarySend   receiver selector))
+(define-structure (astBinarySend  receiver selector argument))
+(define-structure (astKeywordSend receiver selector arguments))
+(define-structure (astUnaryMessage   selector))
+(define-structure (astBinaryMessage  selector argument))
+(define-structure (astKeywordMessage selector arguments))
+(define-structure (astMessageSend receiver messages))
+(define-structure (astArray       elements)) ;; ??astLiteral
+(define-structure (astDynamicArray element-expressions))
+(define-structure (astSequence    statements))
+(define-structure (astMessageSequence messages))
+(define-structure (astLetTemps    temps statements))
+(define-structure (astSubexpression expression))
+(define-structure (astReturn        expression))
 
 (define (AST->scm ast)
 ;; transliterate Abstract Syntax Tree
@@ -90,7 +120,9 @@
 
 (define (st->scm aString)
   (unless (string? aString)
-    (error "st->scm requires a Smalltalk string to translate"))
+    (error 'st->scm
+           "requires a Smalltalk string to translate"
+           aString))
   (AST->scm (st->AST aString)))
 
 
@@ -482,7 +514,8 @@
 
 (define (xlate-st-file->scm-file infile-name outfile-name)
   (set-parse-tokenizer (tokenizer-for-file-named infile-name))
-  (delete-file-if-exists outfile-name) ;; OK to fail
+  (when (file-exists? outfile-name)
+    (delete-file  outfile-name))
   (call-with-output-file outfile-name
     (lambda (outp)
       (format outp "~%;; \"~a\" (translated)~%" outfile-name)
@@ -499,8 +532,39 @@
 
 ;;; st-eval
 
-;; In sis.scm
-;;(define %%escape%% (make-parameter (lambda whatever '|%%escape%%|)))
+;;(define %%escape%% (make-parameter (lambda whatever '%%escape%%)))
+
+(define st-environment
+  (environment
+   '(st-base)
+   '(st-class-structure)
+   '(st-metaclass)
+   '(st-behavior)
+   '(st-collection)	
+   '(st-sequence-coll)
+   '(st-array-coll)
+   '(st-array)
+   '(st-string)
+   '(st-symbol)
+   '(st-list)
+   '(st-magnitude)
+   '(st-number)
+   '(st-complex)
+   '(st-float)
+   '(st-fraction)
+   '(st-integer)
+   '(st-blockClosure)
+   '(st-dictionary)
+   '(st-exception)
+   '(st-error)
+   '(st-error-subs)
+   '(st-arith-err-subs)
+   '(st-stream)
+   '(st-tokenizer)
+   '(st-parser)
+   '(st-xlate)
+   )
+)
 
 (define (st-eval st-string)
   (call/cc
@@ -530,16 +594,14 @@
           ($ exception 'printString)))
 ;;@@@DEBUG}
                ($ exception 'defaultAction))))))
-        (lambda () (eval (st->scm st-string)
-                         (interaction-environment))))
+        (lambda () (eval (st->scm st-string) st-environment))
+        )
 ) ) ) )
 
 
 ;;; DEBUG -- fake a Transcript
 
-(smalltalkAt:Put: 'Transcript (current-output-port))
+(smalltalkAt:put: 'Transcript (current-output-port)))
 
-
-)
 
 ;;;			--- E O F ---			;;;

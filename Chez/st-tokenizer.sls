@@ -11,6 +11,7 @@
    token-kind	  ;; accessor
    token-string	  ;; accessor
    token-location ;; accessor
+   token?	  ;; predicate
    token-kinds
 
    ;; (tokenizer-for-string aString)
@@ -201,14 +202,17 @@
           ((#\^) (new-token 'carrot))
           ((#\-) (new-token 'minus)) ;; binaryOperatorChar
           (else
-           (error "Unexpected input" (new-token 'badToken))
+           (error 'next-token
+                  "Unexpected input"
+                  (new-token 'badToken))
           )
         ))))
 
     ;; read a char and add to buffer
     (define (next-char-keep)
       (when (>= token-len buf-len)
-        (error "Token size exceeds max"
+        (error 'next-char-keep
+               "Token size exceeds max"
                (new-token 'badToken)))
       (add-to-buffer (read-next-char)))
 
@@ -359,7 +363,9 @@
         (next-char-keep))
       (if (digit? next-char)
           (next-char-keep)
-          (error "badly formed exponent" (new-token 'badToken)))
+          (error 'scan-exponent
+                 "badly formed exponent"
+                 (new-token 'badToken)))
       (let loop ()
         (cond
          ((eof-object? next-char)
@@ -377,7 +383,9 @@
       ;; want: radixDigit+
       (if (radixDigit? next-char)
           (next-char-keep)
-          (error "badly formed radix" (new-token 'badToken)))
+          (error 'scan-radix
+                 "badly formed radix"
+                 (new-token 'badToken)))
       (let loop ()
         (cond
          ((eof-object? next-char)
@@ -409,7 +417,8 @@
       (let loop ()
         (cond
          ((eof-object? next-char)
-          (error "fell off end of input in comment"
+          (error 'consume-comment
+                 "fell off end of input in comment"
                  (new-token 'badToken))
           )
          ((safe-char=? #\" next-char)
@@ -425,7 +434,8 @@
       (let loop ()
         (cond
          ((eof-object? next-char)
-          (error "fell off end of input in string"
+          (error 'scan-string
+                 "fell off end of input in string"
                  (new-token 'badToken))
           )
          ((safe-char=? #\' next-char)
@@ -558,7 +568,9 @@
    (else #f)))
 
 (define (unicode-binop-char? char)
-  (error "Need to implement test for Unicode math symbol chars"))
+  (error 'unicode-binop-char?
+         "Need to implement test for Unicode math symbol chars"
+         char))
 
 ;; Default is ASCII (portable)
 (define unicode-in-identifiers #f)
@@ -655,7 +667,7 @@
      )
     ;; @@ OTHER CASES @@
     (else
-     (error "token->native: unhandled token kind" token))
+     (error 'token->native: "unhandled token kind" token))
      )
   ) )
 
