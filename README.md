@@ -11,6 +11,10 @@ Doing so in a different language with a well understood semantics is a good exer
 
 This is very much a work in progress.
 
+
+### If you are looking for Smalltalk-80 for Raspberry Pi see 
+  https://github.com/michaelengel/crosstalk
+
 ## Basics:
   - Message send 
     - Object behaviors are dictionaries/hash-tables
