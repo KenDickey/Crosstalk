@@ -367,25 +367,44 @@
         (map char->integer (string->list self))))
 )
 
-;; @@FIXME: string-contains
-;; (addSelector:withMethod:
-;;      String
-;;      'findString:startingAt:caseSensitive:
-;;      (lambda (self key start caseSensitive?)
-;;        (let ( (result
-;;                ((if caseSensitive?
-;;                    string-contains
-;;                    string-contains-ci)
-;;                  self
-;;                  key
-;;                  (- start 1) ;; Scheme 0-based, St 1-based
-;;                  (string-length self)))
-;;             )
-;;          (if result
-;;              (+ 1 result)
-;;              0) ; Answer 0 if no match
-;;          ))
-;; )
+;; simple, brute force compare
+;; Answers #f or source index of first match
+(define (string-contains aString wanted startIndex case-sensitive?)
+  (let* ( (compare? (if case-sensitive? char=? char-ci=?))
+          (endIndex (- (string-length aString) (string-length wanted)))
+          (wanted-stop-index (- (string-length wanted) 1))
+          (match-from?
+              (lambda (indx)
+                (let loop ( (strIndex indx) (wantedIndex 0) )
+                  (if (compare? (string-ref aString strIndex)
+                                (string-ref wanted wantedIndex))
+                      (if (< wantedIndex wanted-stop-index)
+                          (loop (+ strIndex 1) (+ wantedIndex 1))
+                          #t) ;; substring matches wanted
+                      #f))))  ;; not a match
+       )
+    (let loop ( (src-index startIndex) )
+      (if (> src-index endIndex)
+          #f ; failed -- too short to compare
+          (if (match-from? src-index)
+              src-index
+              (loop (+ src-index 1))))
+ ) ) )
+
+(addSelector:withMethod:
+     String
+     'findString:startingAt:caseSensitive:
+     (lambda (self key start caseSensitive?)
+       ;; Nota Bene:
+       ;;   Scheme strings 0 based; Smalltalk strings 1 based.
+       (let ( (result
+               (string-contains self key (- start 1) caseSensitive?))
+            )
+         (if result
+             (+ 1 result)
+             0) ; Answer 0 if no match
+         ))
+     )
 
 (addSelector:withMethod:
      String
