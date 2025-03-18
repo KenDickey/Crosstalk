@@ -85,12 +85,12 @@
 (add-equal-test 'st-base 
   1
   (method-arity (insure-annotated (lambda (self b) (+ self b)) 'bogusMethod:))
-  "1 arg closure")
+  "1 arg method (+self)")
 
 (add-equal-test 'st-base 
   2
   (method-arity (primLookup: st-array-behavior 'at:put:))
-  "2 arg closure")
+  "2 arg method (+self)")
 
 (add-equal-test 'st-base 
   'at:put:
