@@ -34,6 +34,32 @@
    'String '() '())
 )
 
+;; simple, brute force compare
+;; Answers #f or St source index of first match
+;; (Smalltalk indexing is based 1, Scheme based 0)
+(define (string-contains aString wanted startIndex case-sensitive?)
+  (let* ( (compare? (if case-sensitive? char=? char-ci=?))
+          (endIndex (- (string-length aString) (string-length wanted)))
+          (wanted-stop-index (- (string-length wanted) 1))
+          (match-from?
+              (lambda (indx)
+                (let loop ( (strIndex indx) (wantedIndex 0) )
+                  (if (compare? (string-ref aString strIndex)
+                                (string-ref wanted wantedIndex))
+                      (if (< wantedIndex wanted-stop-index)
+                          (loop (+ strIndex 1) (+ wantedIndex 1))
+                          #t) ;; substring matches wanted
+                      #f))))  ;; not a match
+       )
+    (let loop ( (src-index startIndex) )
+      (if (> src-index endIndex)
+          #f ; failed -- too short to compare
+          (if (match-from? src-index)
+              src-index
+              (loop (+ src-index 1))))
+ ) ) )
+
+
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
@@ -366,30 +392,6 @@
        (list->vector
         (map char->integer (string->list self))))
 )
-
-;; simple, brute force compare
-;; Answers #f or source index of first match
-(define (string-contains aString wanted startIndex case-sensitive?)
-  (let* ( (compare? (if case-sensitive? char=? char-ci=?))
-          (endIndex (- (string-length aString) (string-length wanted)))
-          (wanted-stop-index (- (string-length wanted) 1))
-          (match-from?
-              (lambda (indx)
-                (let loop ( (strIndex indx) (wantedIndex 0) )
-                  (if (compare? (string-ref aString strIndex)
-                                (string-ref wanted wantedIndex))
-                      (if (< wantedIndex wanted-stop-index)
-                          (loop (+ strIndex 1) (+ wantedIndex 1))
-                          #t) ;; substring matches wanted
-                      #f))))  ;; not a match
-       )
-    (let loop ( (src-index startIndex) )
-      (if (> src-index endIndex)
-          #f ; failed -- too short to compare
-          (if (match-from? src-index)
-              src-index
-              (loop (+ src-index 1))))
- ) ) )
 
 (addSelector:withMethod:
      String

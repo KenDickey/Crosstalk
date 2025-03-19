@@ -1,11 +1,26 @@
-;;; FILE: "st-date-time.scm"
+;;; FILE: "st-date-time.sls"
 ;;; IMPLEMENTS: PointInTime, DateAndTime, Duration
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 16 January 2017
+;;; DATE: 16 January 2017; March 2025
 
-;; (requires 'st-core-classes)
-;; (requires 'st-number)
-;; (import (srfi :19))
+(library (st-date-time)
+
+  (export
+   DateAndTime
+   PointInTime
+   Duration
+   )
+  
+  (import
+   (rnrs base)
+   (srfi: 19)
+   (st-base)
+   (st-class-structure)
+   (st-metaclass)
+   (st-behavior)
+   (st-collection)
+   (st-sequence-coll)
+   )
 
 ;; Date+Time has many nuanced representations.
 ;; Scheme and Smalltalk diverge somewhat in usage.
@@ -36,29 +51,32 @@
    'Duration '() '())
 )
 
-(set! st-date+time-behavior
-      (perform: DateAndTime 'methodDict))
+;;;======================================================
+;;; R6RS Libraries: Definitions before Expressions
+;;;======================================================
 
-(set! st-time-behavior
-      (perform: PointInTime 'methodDict))
 
-(set! st-duration-behavior
-      (perform: Duration    'methodDict))
+(perform:with: DateAndTime 'methodDict: st-date+time-behavior)
+
+(perform:with: PointInTime 'methodDict: st-time-behavior)
+
+(perform:with: Duration    'methodDict: st-duration-behavior)
+
 
 (perform:with:
      DateAndTime
      'category:
-     '|Kernel-Chronology|)
+     'Kernel-Chronology)
 
 (perform:with:
      PointInTime
      'category:
-     '|Kernel-Chronology|)
+     'Kernel-Chronology)
 
 (perform:with:
      Duration
      'category:
-     '|Kernel-Chronology|)
+     'Kernel-Chronology)
 
 (perform:with:
      DateAndTime
@@ -681,6 +699,6 @@
 
 ;;;;@@@FillMeIn
 
-;; (provides st-date-time)
+)
 
 ;;;			--- E O F ---			;;;
