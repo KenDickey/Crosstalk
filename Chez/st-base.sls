@@ -1019,25 +1019,22 @@
  	st-nil-behavior
         'printOn:
         (lambda (self port)
-          (display "nil" port)))
+          (display "UndefinedObject" port)))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
         'notNil
-        (lambda (self)
-          #f))
+        (lambda (self) st-false))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
         'asSymbol
-        (lambda (self) 'nil)) ;; @@?? UndefinedObject ??@@
-
+        (lambda (self) 'UndefinedObject))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
         'isNil
-        (lambda (self)
-          #t))
+        (lambda (self) st-true))
 
 (primAddSelector:withMethod: 
  	st-true-behavior
@@ -1097,6 +1094,54 @@
         (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
           (format port "#'~a'" self))
 )
+
+(primAddSelector:withMethod: 
+ 	st-integer-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-integer-behavior
+        'printOn:
+        (lambda (self port)
+          (display (number->string self) port))
+        )
+
+(primAddSelector:withMethod: 
+ 	st-float-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-float-behavior
+        'printOn:
+        (lambda (self port)
+          (display (number->string self) port))
+        )
+
+(primAddSelector:withMethod: 
+ 	st-complex-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-complex-behavior
+        'printOn:
+        (lambda (self port)
+          (display (number->string self) port))
+        )
+
+(primAddSelector:withMethod: 
+ 	st-fraction-behavior
+        'printString
+        printString)
+
+(primAddSelector:withMethod: 
+ 	st-fraction-behavior
+        'printOn:
+        (lambda (self port)
+          (display (number->string self) port))
+        )
 
 ;;; Method Info
 
