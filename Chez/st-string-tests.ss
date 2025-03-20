@@ -3,7 +3,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016; Marcg 2025
 
-(import (st-string))
+(import (simple-regression-testing)
+        (st-string))
 
 
 (define (setup-st-string)   #f)
@@ -72,6 +73,11 @@
   "abc"
   (perform: "AbC" 'asLowercase)
   "'AbC' asLowercase")
+
+(add-equal-test 'st-string
+  "'aString'"
+  (perform: "aString" 'printString)
+  "'aString' printString")
 
 (add-equal-test 'st-string
   "ABCD"

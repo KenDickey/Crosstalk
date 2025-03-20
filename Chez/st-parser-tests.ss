@@ -2,7 +2,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 15 August 2016; March 2025
 
-(import (st-parser))
+(import (simple-regression-testing)
+        (st-parser))
 
 (define (setup-st-parse)
   (debug-parser #f)

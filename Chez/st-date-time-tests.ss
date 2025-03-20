@@ -2,7 +2,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (st-date-time))
+(import (simple-regression-testing)
+        (st-date-time))
 
 (define (setup-st-date-time)   #f)
 (define (cleanup-st-date-time) #f)

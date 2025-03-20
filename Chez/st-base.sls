@@ -1019,7 +1019,7 @@
  	st-nil-behavior
         'printOn:
         (lambda (self port)
-          (display "UndefinedObject" port)))
+          (display "nil" port)))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
@@ -1029,7 +1029,7 @@
 (primAddSelector:withMethod: 
  	st-nil-behavior
         'asSymbol
-        (lambda (self) 'UndefinedObject))
+        (lambda (self) 'nil))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior

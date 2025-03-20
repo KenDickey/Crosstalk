@@ -3,7 +3,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016
 
-(import (st-number))
+(import (simple-regression-testing)
+        (st-number))
 
 (define (setup-st-number)   #f)
 (define (cleanup-st-number) #f)

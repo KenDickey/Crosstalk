@@ -2,7 +2,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017
 
-(import (st-conditions))
+(import (simple-regression-testing)
+        (st-conditions))
 
 (define zero-divide #f)
 (define frob-error  #f)

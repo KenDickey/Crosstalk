@@ -2,7 +2,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (st-dictionary))
+(import (simple-regression-testing)
+        (st-dictionary))
 
 (define %%dict%% #f)
 (define (setup-st-dictionary)

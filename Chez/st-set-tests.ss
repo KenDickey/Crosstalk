@@ -3,7 +3,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 21 July 2016; March 2025
 
-(import (st-collection))
+(import (simple-regression-testing)
+        (st-collection))
 
 (define set1 #f)
 (define set2 #f)

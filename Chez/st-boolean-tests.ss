@@ -3,7 +3,9 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016; March 2025
 
-(import (st-boolean))
+(import (simple-regression-testing)
+        (st-base)
+        (st-boolean))
 
 (define (setup-st-boolean) #f)
 (define (cleanup-st-boolean) #f)

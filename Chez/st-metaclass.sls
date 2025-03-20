@@ -39,8 +39,8 @@
          child-ivar-names
          class
          super )
-  (let* ( (behavior   (clone-behavior behav))
-          (methodDict (clone-method-dictionary mDict))
+  (let* ( (behavior   behav) ;;(clone-behavior behav))
+          (methodDict mDict) ;;(clone-method-dictionary mDict))
           (class-instance
              (make-st-object behavior (length slot-names)))
         )

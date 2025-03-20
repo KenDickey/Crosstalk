@@ -2,7 +2,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (st-symbol))
+(import (simple-regression-testing)
+        (st-symbol))
 
 (define (setup-st-symbol)   #f)
 (define (cleanup-st-symbol) #f)
@@ -15,6 +16,12 @@
      6
      ($ (string->symbol "123456") 'size)
      "size")
+
+(add-equal-test 'st-symbol
+  "#'aSymbol'"
+  (perform: 'aSymbol 'printString)
+  "#aSymbol printString")
+
 
 ;; (ensure-exception-raised 'st-symbol
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")

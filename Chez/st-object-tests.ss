@@ -4,10 +4,11 @@
 ;;; DATE: 18 May 2016; May 2025
 
 (import
-   (st-base)
-   (st-class-structure)
-   (st-metaclass)
-   (st-behavior)
+ (simple-regression-testing)
+ (st-base)
+ (st-class-structure)
+ (st-metaclass)
+ (st-behavior)
 )
 
 (define %%test-object #f)

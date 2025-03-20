@@ -3,7 +3,8 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016; March 2025
 
-(import (st-blockClosure))
+(import (simple-regression-testing)
+        (st-blockClosure))
 
 (define (setup-st-blockClosure)   #f)
 (define (cleanup-st-blockClosure) #f)

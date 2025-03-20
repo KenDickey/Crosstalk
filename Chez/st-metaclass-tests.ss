@@ -1,9 +1,10 @@
-;;; FILE: "st-core-classes-tests.scm"
-;;; IMPLEMENTS: Unit tests for st-core-classes.scm
+;;; FILE: "st-metaclass-tests.ss"
+;;; IMPLEMENTS: Unit tests for st-metaclass.sls
 ;;; AUTHOR: Ken Dickey
-;;; DATE: 18 May 2016
+;;; DATE: 18 May 2016; March 2025
 
 (import
+   (simple-regression-testing)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -12,41 +13,41 @@
 
 (define TestClass #f)
 
-(define (setup-st-core-classes)
+(define (setup-st-metaclass)
   #t)
 
-(define (cleanup-st-core-classes)
+(define (cleanup-st-metaclass)
   (set! TestClass #f)
 )
 
-(add-test-suite 'st-core-classes setup-st-core-classes cleanup-st-core-classes)
+(add-test-suite 'st-metaclass setup-st-metaclass cleanup-st-metaclass)
 
-;; (add-equal-test 'st-core-classes
+;; (add-equal-test 'st-metaclass
 ;;   "Class"
 ;;   (perform: Class 'printString)
 ;;   "Class printString")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   'Class
   (perform: Class 'name)
   "Class name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   (string->symbol "Class class")
   (perform: (perform: Class 'class) 'name)
   "Class class name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   'Object
   (perform: (perform: Behavior 'superclass) 'name)
   "Behavior superclass name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   'ClassDescription
   (perform: (perform: MetaClass 'superclass) 'name)
   "MetaClass superclass name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   (string->symbol "ClassDescription class")
   (perform:
    (perform:
@@ -55,7 +56,7 @@
    'name)
   "MetaClass superclass class name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   (string->symbol "ClassDescription class")
   (perform:
    (perform:
@@ -64,12 +65,12 @@
    'name)
   "MetaClass class superclass name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   (string->symbol "MetaClass class")
   (perform: (perform: MetaClass 'class) 'name)
   "MetaClass class name")
 
-(add-equal-test 'st-core-classes
+(add-equal-test 'st-metaclass
   'MetaClass
   (perform:
    (perform:
