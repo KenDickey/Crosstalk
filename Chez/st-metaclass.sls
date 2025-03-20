@@ -61,9 +61,9 @@
   (make-protoClass
      (string->symbol "Class class") ; name
      st-metaClass-behavior ; I am a MetaClass
-     combined-metaClass-ivar-names    ;; slot-names
+     combined-metaClass-ivar-names  ;; my slot-names
      st-class-behavior ; instances are Classes
-     combined-class-ivar-names  ;; child-ivar-names
+     combined-class-ivar-names      ;; instance ivar-names
      '() ; class
      '() ; super
 ) )
@@ -73,9 +73,9 @@
   (make-protoClass
      'Class ; name
      st-class-behavior
-     combined-class-ivar-names  ;; slot-names
+     combined-class-ivar-names  ;; my ivar-names
      st-class-behavior
-     combined-class-ivar-names ;; child-ivar-names
+     combined-class-ivar-names ;; instance ivar-names
      ClassClass ;; class
      '() ; super
 ) )
@@ -238,7 +238,8 @@
 ;;  See #subclassAddSelector:withMethod: below
 (define (add-method-name-to-myMethods self selector)
   (let ( (old-names (perform: self 'myMethodNames)) )
-    (perform:with: self 'myMethodNames: (cons selector old-names))
+    (unless (memq selectors old-names)
+      (perform:with: self 'myMethodNames: (cons selector old-names)))
     self
 ) )
 
@@ -247,7 +248,7 @@
 ;;;  so adding a selector_method to a class affects
 ;;;  its instances, NOT the class instance itself.
 (define (addSelector:withMethod: classSelf selector method)
-  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
+  (add-method-name-to-myMethods classSelf selector) ;; def'ed this class
   (subclassAddSelector:withMethod: classSelf selector method))
 
 ;;; NB: method added to methodDict of class
