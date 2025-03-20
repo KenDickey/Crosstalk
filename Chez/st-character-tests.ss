@@ -118,6 +118,11 @@
   "$a isSpecial")
 
 (add-equal-test 'st-character
+  "$c"
+  (perform: #\c 'printString)
+  "$c printString")
+
+(add-equal-test 'st-character
   st-true
   (perform: #\< 'isSpecial)
   "$< isSpecial")

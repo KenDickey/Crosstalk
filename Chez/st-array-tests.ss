@@ -85,6 +85,11 @@
   (perform: (vector #\a #\b #\c) 'printString)
   "#($a $b $c) printString")
 
+(add-equal-test 'st-array
+  "#( #'a' $b 3 )"
+  (perform: (vector 'a #\b 3) 'printString)
+  "#(#a $b 3) printString")
+
 ;; (ensure-exception-raised 'st-array
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
 ;;    (perform: %%test-object 'glerph)

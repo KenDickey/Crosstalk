@@ -233,6 +233,11 @@
 
 (addSelector:withMethod:
      Array
+     'printString
+     printString)
+
+(addSelector:withMethod:
+     Array
      'printOn:
      (lambda (self port)
        (display "#( " port)

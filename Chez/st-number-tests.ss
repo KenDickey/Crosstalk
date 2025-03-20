@@ -57,6 +57,28 @@
   ($: 3+634i 'printStringRadix: 12)
   "(3 + 634 i) printStringRadix: 12")
 
+(add-equal-test 'st-number
+  "6"
+  (perform:with: (* 2 3) 'printString)
+  "(* 2 3) printString")
+
+(add-equal-test 'st-number
+  "2/3"
+  (perform:with: (/ 2 3) 'printString)
+  "(/ 2 3) printString")
+
+(add-equal-test 'st-number
+  "0+2i"
+  (perform:with: (sqrt -4) 'printString)
+  "(sqrt -4) printString")
+
+(add-equal-test 'st-number
+  "2.3"
+  (perform:with: 2.3 'printString)
+  "2.3 printString")
+
+
+
 ;; @@@FIXME: many more tests needed!!
 
 ;;;			--- E O F ---			;;;
