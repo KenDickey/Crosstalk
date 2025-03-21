@@ -48,6 +48,9 @@
 ;;;======================================================
 
 (perform:with: Symbol 'methodDict: st-symbol-behavior)
+(perform:with: Symbol
+               'myMethodNames:
+               '(printOn:))
 
 (addSelector:withMethod:
      Symbol

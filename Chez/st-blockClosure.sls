@@ -37,6 +37,10 @@
 ;;;======================================================
 
 (perform:with: BlockClosure 'methodDict: st-blockClosure-behavior)
+; early defined methods
+(perform:with: BlockClosure '
+               myMethodNames:
+               '(selector argumentCount numArgs))
 
 
 (addSelector:withMethod:

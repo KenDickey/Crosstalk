@@ -93,6 +93,9 @@
 ;;;======================================================
 
 (perform:with: Character 'methodDict: st-character-behavior)
+(perform:with: Character
+               'myMethodNames:
+               '(printOn:))
 
 (addSelector:withMethod:
      Character

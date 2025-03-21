@@ -65,6 +65,9 @@
 ;;;======================================================
 
 (perform:with: String 'methodDict: st-string-behavior)
+(perform:with: String
+               'myMethodNames:
+               '(printOn:))
 
 (perform:with:
      String

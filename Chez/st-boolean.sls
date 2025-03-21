@@ -65,6 +65,18 @@
 (perform:with: False	'methodDict: st-false-behavior)
 (perform:with: UndefinedObject 'methodDict: st-nil-behavior)
 
+; early defined methods
+(perform:with: True
+               'myMethodNames:
+               '(printOn: notNil asSymbol isNil))
+
+(perform:with: False
+               'myMethodNames:
+               '(printOn: notNil asSymbol isNil))
+
+(perform:with: UndefinedObject
+               'myMethodNames:
+               '(printOn: notNil asSymbol isNil))
 
 ;;; Boolean def'ed in "st-collection.sls"
 
