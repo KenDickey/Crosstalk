@@ -65,9 +65,7 @@
 ;;;======================================================
 
 (perform:with: String 'methodDict: st-string-behavior)
-(perform:with: String
-               'myMethodNames:
-               '(printOn:))
+;;(primAppendLocalSelectors: String '(printOn:)) ;; early bound
 
 (perform:with:
      String

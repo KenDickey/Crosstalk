@@ -47,9 +47,7 @@
 
 
 (perform:with: Integer 'methodDict: st-integer-behavior)
-(perform:with: Integer
-               'myMethodNames:
-               '(printOn:))
+(primAppendLocalSelectors: Integer '(printOn:)) ;; early bound
 
 
 (addSelector:withMethod:

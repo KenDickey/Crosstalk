@@ -65,17 +65,14 @@
 (perform:with: False	'methodDict: st-false-behavior)
 (perform:with: UndefinedObject 'methodDict: st-nil-behavior)
 
-; early defined methods
-(perform:with: True
-               'myMethodNames:
+; early bound methods
+(primAppendLocalSelectors: True
                '(printOn: notNil asSymbol isNil))
 
-(perform:with: False
-               'myMethodNames:
+(primAppendLocalSelectors: False
                '(printOn: notNil asSymbol isNil))
 
-(perform:with: UndefinedObject
-               'myMethodNames:
+(primAppendLocalSelectors: UndefinedObject
                '(printOn: notNil asSymbol isNil))
 
 ;;; Boolean def'ed in "st-collection.sls"

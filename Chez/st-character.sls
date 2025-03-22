@@ -93,9 +93,7 @@
 ;;;======================================================
 
 (perform:with: Character 'methodDict: st-character-behavior)
-(perform:with: Character
-               'myMethodNames:
-               '(printOn:))
+(primAppendLocalSelectors: Character '(printOn:)) ;; early bound
 
 (addSelector:withMethod:
      Character

@@ -16,6 +16,7 @@
    instantiateName:superclass:ivars:
    newSubclassName:iVars:cVars:
    addSelector:withMethod:
+   primAppendLocalSelectors:
    )
   
   (import
@@ -53,6 +54,17 @@
     (smalltalkAt:put: name class-instance)
     class-instance
 ) )
+
+(define (primAppendLocalSelectors: aClass selector-list)
+  (let ( (old-selectors (perform: aClass 'myMethodNames)) )
+    (if (any? (lambda (sel) (memq sel old-selectors)) selector-list)
+        (error 'primAppendLocalSelectors:
+               "attempt to add duplicate selector"
+               selector-list old-selectors))
+    (perform:with: aClass 'myMethodNames:
+                   (append selector-list old-selectors))
+  ) )
+
 
 ;;; Miminal Scaffolding
 ;; Temp for bootstrap -- re-relate later

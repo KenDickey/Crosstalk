@@ -62,12 +62,12 @@
 
 (perform:with: Array	 'methodDict: st-array-behavior)
 (perform:with: ByteArray 'methodDict: st-bytearray-behavior)
-(perform:with: Array
-               'myMethodNames: ;; early bound
-               '(at: at:put: size))
+(primAppendLocalSelectors: Array
+               ;; early bound
+               '(at: at:put: size basicSize at:modify:))
 
-(perform:with: ByteArray
-               'myMethodNames: ;; early bound
+(primAppendLocalSelectors: ByteArray
+                ;; early bound
                '(at: at:put: size basicSize))
 
 (addSelector:withMethod:

@@ -104,8 +104,7 @@
 
 
 (perform:with: MessageSend  'methodDict: st-messageSend-behavior)
-(perform:with: MessageSend
-               'myMethodNames:  ;; early bound
+(primAppendLocalSelectors: MessageSend   ;; early bound
                '(value valueWithArguments:))
 (perform:with: Message      'methodDict:
                (clone-method-dictionary st-object-behavior))

@@ -74,6 +74,8 @@
    primSelectorsAndMethodsDo:
    primMethodsDo:
    primAddSelector:withMethod:
+
+;;; Method Dictionaries for supported Scheme objects
    
    st-nil-behavior
    st-true-behavior
@@ -209,6 +211,14 @@
 
 (define (smalltalkAt:put: aSymbol aValue)
   (primSet:toValue: Smalltalk aSymbol aValue))
+
+(define (symbol<? a b)
+  (string<? (symbol->string a) (symbol->string b)))
+
+(define (smalltalk-keys) ;; sorted
+  (vector-sort
+   symbol<?
+   (hashtable-keys Smalltalk)))
 
 
 ;;; ============================================
@@ -569,7 +579,9 @@
 
 ;;; ============================================
 ;;; Behavior adds intelligence to structure
-;;;	   (behavior obj)
+;;;    (behavior obj) answers a method-dictionary
+;;;	for supported Scheme objects as well
+;;;	as 'behaviors' for Smalltalk objects.
 ;;; ============================================
 
 
@@ -697,14 +709,6 @@
 ;;;======================================================
 ;;; Interactive/REPL debug helpers.
 ;;;   What do we have here?
-
-(define (symbol<? a b)
-  (string<? (symbol->string a) (symbol->string b)))
-
-(define (smalltalk-keys) ;; sorted
-  (vector-sort
-   symbol<?
-   (hashtable-keys Smalltalk)))
 
 ;; What selectors does  obj  respond to?
 (define (selectors obj)
@@ -995,6 +999,8 @@
       (or (proc? (car list))
           (any? proc? (cdr list)))))
 
+
+
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
@@ -1006,7 +1012,8 @@
 
 
 ;;;
-;;; Some Fundamental Methods
+;;; Some Fundamental Methods are early-bound
+;;;	to aid debugging in REPL
 ;;;
 
 (primAddSelector:withMethod: 
@@ -1059,6 +1066,11 @@
 
 (primAddSelector:withMethod: 
  	st-string-behavior
+        'asString
+        (lambda (self) self))
+
+(primAddSelector:withMethod: 
+ 	st-string-behavior
         'printString
         printString)
 
@@ -1078,9 +1090,12 @@
  	st-character-behavior
         'printOn:
         (lambda (self port)
-          (display "$" port)
-          (display self port))
-)
+          (format port "$~c" self)))
+
+(primAddSelector:withMethod: 
+ 	st-symbol-behavior
+        'asString
+        (lambda (self) (symbol->string self)))
 
 (primAddSelector:withMethod: 
  	st-symbol-behavior

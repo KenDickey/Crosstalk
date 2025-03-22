@@ -48,9 +48,7 @@
 ;;;======================================================
 
 (perform:with: Symbol 'methodDict: st-symbol-behavior)
-(perform:with: Symbol
-               'myMethodNames:
-               '(printOn:))
+(primAppendLocalSelectors: Symbol '(printOn: )) ; early bound
 
 (addSelector:withMethod:
      Symbol
