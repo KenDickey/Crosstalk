@@ -73,9 +73,9 @@
 (define ClassClass
   (make-protoClass
      (string->symbol "Class class") ; name
-     st-metaClass-behavior ; I am a MetaClass
+     (clone-behavior st-metaClass-behavior) ; I am a MetaClass
      combined-metaClass-ivar-names  ;; my slot-names
-     st-class-behavior ; instances are Classes
+     (clone-behavior st-class-behavior) ; instances are Classes
      combined-class-ivar-names      ;; instance ivar-names
      '() ; class
      '() ; super
@@ -85,9 +85,9 @@
 (define Class
   (make-protoClass
      'Class ; name
-     st-class-behavior
+     (clone-behavior st-class-behavior)
      combined-class-ivar-names  ;; my ivar-names
-     st-class-behavior
+     (clone-behavior st-class-behavior)
      combined-class-ivar-names ;; instance ivar-names
      ClassClass ;; class
      '() ; super
@@ -96,9 +96,9 @@
 (define MetaClassClass
   (make-protoClass
      (string->symbol "MetaClass class")
-     st-metaClass-behavior ;; I am a MetaClass
+     (clone-behavior st-metaClass-behavior) ;; I am a MetaClass
      combined-metaClass-ivar-names   ;; slot-names
-     st-class-behavior ;; that makes classes
+     (clone-behavior st-class-behavior) ;; that makes classes
      combined-class-ivar-names  ;; child-ivar-names
      '() ;; class is MetaClass
      ClassClass ;; super
@@ -107,9 +107,9 @@
 (define MetaClass
   (make-protoClass
      'MetaClass
-     st-class-behavior   ;; MetaClass is a class
+     (clone-behavior st-class-behavior)   ;; MetaClass is a class
      combined-class-ivar-names   ;; slot-names
-     st-metaClass-behavior ;; WHo's instances are meta-classes
+     (clone-behavior st-metaClass-behavior) ;; Who's instances are meta-classes
      combined-metaClass-ivar-names  ;; child-ivar-names
      Class ;; class
      Class ;; super is really ClassDescription

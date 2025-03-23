@@ -128,11 +128,7 @@ Boolean redefines #new so no instances of Boolean can be created.
 
 Notice how the truth-value checks become direct message sends, without the
  need for explicit testing.
-
-Be aware however that most of these methods are not sent as real messages in
- normal use. Most are inline coded by the compiler/translator - avoiding the
- overhead of the full message sends. So simply redefining these methods here
- will have no effect."
+"
 )
 
 (perform:with:

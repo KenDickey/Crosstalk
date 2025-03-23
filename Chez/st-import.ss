@@ -32,6 +32,9 @@
    (st-parser)
    (st-xlate)
 )
+(import (simple-regression-testing))
+(verbose-test-output? #f)
+(break-on-test-error? #f)
 
 ;; (define scm-bootstrap-file-names
 ;;   '( "st-kernel"       ;; message mechanics

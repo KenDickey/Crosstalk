@@ -148,9 +148,14 @@
 
 (addSelector:withMethod:
      List
+     'printString
+     printString)
+
+(addSelector:withMethod:
+     List
      'printOn:
      (lambda (self port)
-       (display ($ ($ self 'class) 'name) port)
+       (display "List" port)
        (display "( " port)
        (perform:with:
            self 'printElementsOn: port)

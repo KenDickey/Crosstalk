@@ -199,7 +199,8 @@
 (define st-true     #t)
 (define st-false    #f)
 
-(define st-nil? null?)
+(define (st-nil? val)
+  (or (null? val) (unspecified? val)))
 
 ;;; ============================================
 ;;; The Smalltalk Global Environment/Namespace
@@ -736,8 +737,8 @@
    (perform: class 'myMethodNames)))
     
 (define (safer-printString obj)
-  (if (not (st-object? obj))
-      (format #f "~a" obj)
+;;;  (if (not (st-object? obj))
+;;;      (format #f "~a" obj)
       (cond ;; smalltalk object
        ;; ((respondsTo: obj 'name)
        ;;  (format #f "'~a'" (perform: obj 'name))
@@ -757,7 +758,7 @@
           ))
        (else "#<object>")
        )
-) )
+) ;; )
 
 (define (display-obj obj) (display (safer-printString obj)))
   
@@ -1370,15 +1371,25 @@
  	st-object-behavior
         'printOn:  ;; ANSI
         (lambda (self outport)
-          (let ( (vowels (string->list "aeiouAEIOU"))
-                 (className ($ (className: self) 'asString))
-               )
-            (display
-             (string-append
-              (if (memq (string-ref className 0) vowels)
-                  "an " "a ")
-              className)
-             outport))))
+          (display
+           (string-append
+            "<instance of "
+            ($ (className: self) 'asString)
+            ">")))
+        )
+        ;; (lambda (self outport)
+        ;;   (let ( (vowels (string->list "aeiouAEIOU"))
+        ;;          (className ($ (className: self) 'asString))
+        ;;        )
+        ;;     (display
+        ;;      (string-append
+        ;;       "<"
+        ;;       (if (memq (string-ref className 0) vowels)
+        ;;           "an " "a ")
+        ;;       "instance of "
+        ;;       className
+        ;;       ">")
+        ;;      outport))))
 
 
 (primAddSelector:withMethod:
