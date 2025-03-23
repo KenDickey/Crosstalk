@@ -7,6 +7,7 @@
 (library (st-xlate)
 
   (export
+   st-eval
    st->scm  ;; (st->scm aString)
    xlate-st-file->scm ;; (xlate-st-file->scm infile-name)
    AST->scm ;; (AST->scm ast)

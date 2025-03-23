@@ -144,6 +144,7 @@
    make-mDict-placeholder
    make-st-bytearray
    insure-annotated ;; closure->method
+   annotate-procedure-with-arity 
    selector-arity
    )
 
@@ -384,6 +385,16 @@
    proc
    (arity->mask (+ 1 (selector-arity name-symbol)))
    name-symbol))
+
+(define (annotate-procedure-with-arity proc name-symbol arity)
+  ;; Some selectors (e.g. < , <=) do NOT have colons
+  ;; which can be counted to know their arity.
+  ;; RAW Arity: self arg counted
+  (make-arity-wrapper-procedure
+   proc
+   (arity->mask arity)
+   name-symbol))
+  
 
 (define (method-name method)
   (wrapper-procedure-data method))
@@ -1066,12 +1077,12 @@
 
 (primAddSelector:withMethod: 
  	st-string-behavior
-        'asString
+        'asString     ;; like Scheme: write (for value)
         (lambda (self) self))
 
 (primAddSelector:withMethod: 
  	st-string-behavior
-        'printString
+        'printString ;; like Scheme: display (for parsers)
         printString)
 
 (primAddSelector:withMethod: 

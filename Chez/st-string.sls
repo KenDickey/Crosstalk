@@ -164,14 +164,15 @@
     (lambda (self aBlock)
       (string-for-each aBlock self)))
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     String
     (string->symbol ",")
     (lambda (self aString)
       (string-append self
                      (if (symbol? aString)
                          (symbol->string aString)
-                         aString))))
+                         aString)))
+    2)
 
 (addSelector:withMethod: 
     (class String)
@@ -249,33 +250,38 @@
     'hash
     string-hash)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     String
     '<
     (lambda (self other)
       ;; @@FIXME: (string? other)
-      (string<? self other)))
+      (string<? self other))
+    2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     String
     '<=
     (lambda (self other)
       ;; @@FIXME: (string? other)
-      (string<=? self other)))
+      (string<=? self other))
+    2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     String
     '>
     (lambda (self other)
       ;; @@FIXME: (string? other)
-      (string>? self other)))
+      (string>? self other))
+    2)`
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     String
     '>=
     (lambda (self other)
       ;; @@FIXME: (string? other)
-      (string>=? self other)))
+      (string>=? self other))
+    2)
+
 
 (addSelector:withMethod: 
     String

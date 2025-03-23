@@ -65,13 +65,13 @@
       ;; @@FIXME: ''' & Scheme specifics
 )
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     Symbol
     '=
     (lambda (self other)
       (and (symbol? other)
            (symbol=? self other)))
-)
+    2)
 
 (addSelector:withMethod: 
     Symbol
@@ -79,21 +79,21 @@
     symbol-hash
 )
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     Symbol
     '<
     (lambda (self other)
       ;; @@FIXME: (symbol? other)
       (symbol<? self other))
-)
+    2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     Symbol
     '<
     (lambda (self other)
       ;; @@FIXME: (symbol? other)
       (symbol<? self other))
-)
+    2)
 
 (addSelector:withMethod: 
      Symbol
@@ -127,14 +127,15 @@
      'size ;; self basicSize
      (lambda (self) (string-length (symbol->string self))))
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
     Symbol
     (string->symbol ",")
     (lambda (self aString)
       (string-append (symbol->string self)
                      (if (symbol? aString)
                          (symbol->string aString)
-                         aString))))
+                         aString)))
+    2)
 
 (addSelector:withMethod: 
     Symbol

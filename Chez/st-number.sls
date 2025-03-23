@@ -213,35 +213,35 @@
         'radiansToDegrees
         radiansToDegrees)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '+
-        (lambda (self aNumber)
-          (+ self aNumber)))
+        (lambda (self aNumber) (+ self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '-
-        (lambda (self aNumber)
-          (- self aNumber)))
+        (lambda (self aNumber) (- self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '*
-        (lambda (self aNumber)
-          (* self aNumber)))
+        (lambda (self aNumber) (* self aNumber))
+	2)
 
-(addSelector:withMethod: ;; redefined in "st-erro-bj.scm"
+(addSelector:withMethod:arity: ;; redefined in "st-erro-bj.scm"
         Number
         (string->symbol "/")
-        (lambda (self aNumber)
-          (/ self aNumber)))
+	(lambda (self aNumber) (/ self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         (string->symbol "//")
-        (lambda (self aNumber)
-          (floor (/ self aNumber))))
+        (lambda (self aNumber) (floor (/ self aNumber)))
+	2)
 
 (addSelector:withMethod: 
         Number
@@ -255,35 +255,35 @@
         (lambda (self)
           (equal-hash self)))
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '<
-        (lambda (self aNumber)
-          (< self aNumber)))
+        (lambda (self aNumber) (< self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '>
-        (lambda (self aNumber)
-          (> self aNumber)))
+        (lambda (self aNumber) (> self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '<=
-        (lambda (self aNumber)
-          (<= self aNumber)))
+        (lambda (self aNumber) (<= self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         '>=
-        (lambda (self aNumber)
-          (>= self aNumber)))
+        (lambda (self aNumber) (>= self aNumber))
+	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number 
         (string->symbol "\\")
-        (lambda (self aNumber)
-          (modulo self aNumber)))
+        (lambda (self aNumber) (modulo self aNumber))
+	2)
 
 (addSelector:withMethod: 
         Number

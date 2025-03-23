@@ -16,6 +16,7 @@
    instantiateName:superclass:ivars:
    newSubclassName:iVars:cVars:
    addSelector:withMethod:
+   addSelector:withMethod:arity:
    primAppendLocalSelectors:
    )
   
@@ -40,8 +41,8 @@
          child-ivar-names
          class
          super )
-  (let* ( (behavior   behav) ;;(clone-behavior behav))
-          (methodDict mDict) ;;(clone-method-dictionary mDict))
+  (let* ( (behavior   behav) 
+          (methodDict mDict) 
           (class-instance
              (make-st-object behavior (length slot-names)))
         )
@@ -280,6 +281,10 @@
        subs))
   classSelf
 )
+
+(define (addSelector:withMethod:arity: classSelf selector method arity)
+  (let ( (annotated-proc (annotate-procedure-with-arity method selector arity)) )
+    (addSelector:withMethod: classSelf selector annotated-proc)))
 
 
 
