@@ -241,12 +241,13 @@ Structure:
        self))
 
 
-(addSelector:withMethod:
+(addSelector:withMethod:arity:
      ExceptionSet
      (string->symbol ",")
      (lambda (self anExceptionClass)
        ($: self 'add: anExceptionClass)
-       self))
+       self)
+     2)
 
 (addSelector:withMethod:
      ExceptionSet
@@ -392,11 +393,12 @@ Structure:
      (lambda (self aMessage)
        ($: ($ self 'new) 'signal: aMessage)))
 
-(addSelector:withMethod:
+(addSelector:withMethod:arity:
      (class Exception)
      (string->symbol ",")
      (lambda (self exceptionClass)
-       ($:: ExceptionSet 'with:with: self exceptionClass)))
+       ($:: ExceptionSet 'with:with: self exceptionClass))
+     2)
 
 (addSelector:withMethod:
      Exception

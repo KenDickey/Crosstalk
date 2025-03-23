@@ -305,25 +305,29 @@ Be aware however that most of these methods are not sent as real messages
 
 ;;; Boolean True False
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
  	True
         '&  ;; #&  logical and  (full)
-        (lambda (self aBoolean) aBoolean))
+        (lambda (self aBoolean) aBoolean)
+        2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
  	False
         '& ;; #&
-        (lambda (self aBoolean) st-false)) ;; self
+        (lambda (self aBoolean) st-false) ;; self
+        2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
  	True
         (string->symbol "|") ;; #| logical or (full)
-        (lambda (self aBoolean) st-true)) ;; self
+        (lambda (self aBoolean) st-true) ;; self
+        2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
  	False
         (string->symbol "|") ;; #|
-        (lambda (self aBoolean) aBoolean)) 
+        (lambda (self aBoolean) aBoolean)
+        2)
 
 (addSelector:withMethod: 
  	True

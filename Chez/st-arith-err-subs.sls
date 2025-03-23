@@ -66,13 +66,14 @@
      (lambda (self dvdnd)
        ($ ($: self 'dividend: dvdnd) 'signal)))
 
-(addSelector:withMethod:  ;; REDEFINE
+(addSelector:withMethod:arity:  ;; REDEFINE
         Number
         (string->symbol "/")
         (lambda (self aNumber)
           (when (zero? aNumber)
               ($: ZeroDivide 'signalWithDividend: self))
-          (/ self aNumber)))
+          (/ self aNumber))
+        2)
 
 )
 
