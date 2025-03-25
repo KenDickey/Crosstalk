@@ -417,6 +417,15 @@
                     (insure-annotated methodClosure selector)
                     ))
 
+;; used for > == ~= etc with no colons
+(define (primAddSelector:withMethod:arity:
+         methodDict selector methodClosure arity)
+  (primAddSelector:withMethod:
+   methodDict
+   selector
+   (annotate-procedure-with-arity methodClosure selector arity)))
+
+
 ;; methodDict selectors
 (define (primSelectors methodDict) (vector->list (hashtable-keys methodDict)))
 
@@ -1332,25 +1341,29 @@
         isKindOf:
 )
 
-(primAddSelector:withMethod:
+(primAddSelector:withMethod:arity:
  	st-object-behavior
         '==    ;; ANSI
-        (lambda (self other) (eq? self other)))
+        (lambda (self other) (eq? self other))
+        2)
 
-(primAddSelector:withMethod:
+(primAddSelector:withMethod:arity:
  	st-object-behavior
         '~~    ;; ANSI
-        (lambda (self other) (not (eq? self other))))
+        (lambda (self other) (not (eq? self other)))
+        2)
 
-(primAddSelector:withMethod:
+(primAddSelector:withMethod:arity:
  	st-object-behavior
         '=   ;; ANSI
-        (lambda (self other) (eqv? self other)))
+        (lambda (self other) (eqv? self other))
+        2)
 
-(primAddSelector:withMethod:
+(primAddSelector:withMethod:arity:
  	st-object-behavior
         '~=   ;; ANSI
-        (lambda (self other) (not (eqv? self other))))
+        (lambda (self other) (not (eqv? self other)))
+        2)
 
 (primAddSelector:withMethod:
  	st-object-behavior

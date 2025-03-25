@@ -51,6 +51,10 @@
     (perform:with: class-instance 'superclass: super) ;; may be nil
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
     (perform:with: class-instance 'methodDict: methodDict)
+    (unless (eq? class st-nil)
+      (perform:with: class
+                     'subclasses:
+                     (cons class-instance ($ class 'subclasses))))
    ;; return the new Class instance
     (smalltalkAt:put: name class-instance)
     class-instance

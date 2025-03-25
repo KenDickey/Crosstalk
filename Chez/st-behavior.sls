@@ -252,23 +252,25 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 ;; same.  For example, the species of Interval is Array."
      (lambda (self) (class self)))
 
-(addSelector:withMethod:
+(addSelector:withMethod:arity:
      (class Behavior)
      '>>
 ;; "Answer the compiled method associated with the argument, selector (a 
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
 ;; selector is not in the dictionary, create an error notification."
      (lambda (self selectorSymbol)
-       (primLookup: (perform: self 'methodDict) selectorSymbol)))
+       (primLookup: (perform: self 'methodDict) selectorSymbol))
+     2)
 
-(addSelector:withMethod:
+(addSelector:withMethod:arity:
      Object
      '>>
 ;; "Answer the compiled method associated with the argument, selector (a 
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
 ;; selector is not in the dictionary, create an error notification."
      (lambda (self selectorSymbol)
-       (primLookup: (perform: self 'methodDict) selectorSymbol)))
+       (primLookup: (perform: self 'methodDict) selectorSymbol))
+     2)
 
 (addSelector:withMethod:
  	(class Object)
