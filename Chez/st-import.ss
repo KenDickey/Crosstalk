@@ -37,5 +37,37 @@
 (verbose-test-output? #f)
 (break-on-test-error? #f)
 
+(define (test-from core-nameSym)
+  (load (string-append
+         "st-"
+         (symbol->string core-nameSym)
+         "-tests.ss")))
+
+(define test-names
+  '(
+    base
+    metaclass
+    object
+    boolean
+    number
+    character
+    string
+    symbol
+    array
+    list
+    set
+    stream
+    blockClosure
+    error
+    condition
+    dictionary
+    tokenizer
+    parser
+    xlate
+)  )
+
+;; (for-each test-from test-names)
+;; (run-all-tests)
+
 
 ;;;			--- E O F ---			;;;
