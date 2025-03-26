@@ -42,7 +42,7 @@
 ;;;======================================================
 
 
-(perform:with: Float 'methodDict: st-float-behavior)
+(rebase-mdict! Float st-float-behavior)
 
 ($: Float 'pi: (* 2 (acos 0)))
 ($: Float 'e: (exp 1))

@@ -36,7 +36,7 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: BlockClosure 'methodDict: st-blockClosure-behavior)
+(rebase-mdict! BlockClosure st-blockClosure-behavior)
 ; early defined methods
 (primAppendLocalSelectors: BlockClosure
                            '(selector argumentCount numArgs))

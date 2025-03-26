@@ -70,22 +70,26 @@
 
 (perform:with: Warning
                'methodDict:
-               (clone-method-dictionary
+               (behavior-add-from-other
+                ($ Warning 'methodDict)
                 ($ Notification 'methodDict)))
 
 (perform:with: MessageNotUnderstood
                'methodDict:
-               (clone-method-dictionary
+               (behavior-add-from-other
+                ($ MessageNotUnderstood 'methodDict)
                 ($ Error 'methodDict)))
 
 (perform:with: ArithmeticError
                'methodDict:
-               (clone-method-dictionary
+               (behavior-add-from-other
+                ($ ArithmeticError 'methodDict)
                 ($ Error 'methodDict)))
 
 (perform:with: AssertionFailure
                'methodDict:
-               (clone-method-dictionary
+               (behavior-add-from-other
+                ($ AssertionFailure 'methodDict)
                 ($ Halt 'methodDict)))
 
 (perform:with:

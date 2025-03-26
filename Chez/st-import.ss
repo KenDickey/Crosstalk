@@ -32,34 +32,10 @@
    (st-parser)
    (st-xlate)
 )
+
 (import (simple-regression-testing))
 (verbose-test-output? #f)
 (break-on-test-error? #f)
 
-;; (define scm-bootstrap-file-names
-;;   '( "st-kernel"       ;; message mechanics
-;;      "st-object"       ;; Object behavior
-;;      "st-core-classes" ;; Object Class MetaClass ClassDescription Behavior
-;;      "st-boolean"      ;; Boolean True False UndefinedObject (nil)
-;;      "st-character"    ;; Character
-;;      "st-magnitude"
-;;      "st-number"
-;;      "st-collection"
-;;      "st-string"       ;; String
-;;      "st-symbol"       ;; Symbol
-;;      "st-list"         ;; proper, immutable lists (interoperate w Scheme)
-;;      "st-blockClosure" ;; BlockClosure
-;;      "st-array"        ;; Array
-;;      "st-error-obj"    ;; Scheme error objects
-;;      "st-tokenizer"    ;; Stream -> tokens
-;;      "st-parse"        ;; tokens -> AST
-;;      "st-xlate"	       ;; AST -> Scheme
-;;      "st-stream"       ;; Stream CharStream ByteStream
-;;      "st-set"          ;; Set
-;;      "st-dictionary"   ;; Dictionary
-;;      "st-date-time"    ;; PointInTime Duration DateAndTime
-;;      "st-conditions"   ;; Map Scheme Conditions to St Exceptions
-;;     )
-;;  )
 
 ;;;			--- E O F ---			;;;

@@ -37,7 +37,7 @@
    basicNew:
 
    addSubclass:
-   
+   rebase-mdict!
    )
   
   (import
@@ -187,16 +187,17 @@
   (when (not (memq class shown))
     (newline)
     (display-spaces indent)
-    (display ($ class 'printString))
+    (display (printString class))
     (for-each
      (lambda (sub)
        (display-subs sub (cons class shown) (+ delta indent) delta))
-     (list-sort (lambda (c1 c2) ($: ($ c1 'name) '< ($ c2 'name)))
+     (list-sort (lambda (c1 c2) (symbol<? ($ c1 'name) ($ c2 'name)))
                 ($ class 'subclasses)))
 ) )
 
 (define (display-subclasses class)
-  (display-subs class '() 0 3))
+  (display-subs class '() 0 3)
+  (newline))
   
 ;; Below basicNew: Make a new instance of some class
 (define (primNew: classSelf num-object-slots)
@@ -231,6 +232,11 @@
                    (cons subclass
                          my-subclasses))
 ) )
+
+(define (rebase-mdict! aClass public-behavior)
+  (behavior-add-from-other public-behavior
+                           ($ aClass 'methodDict))
+  ($: aClass 'methodDict: public-behavior))
 
 ;;; Send to super
 (define (superPerform: self selectorSym)

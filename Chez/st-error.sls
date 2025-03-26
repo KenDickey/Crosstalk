@@ -76,19 +76,29 @@
 (let ( (exn-mdict ($ Exception 'methodDict)) )
   (perform:with: Error
                  'methodDict:
-                 (clone-method-dictionary exn-mdict))
+                 (behavior-add-from-other
+                  ($ Error 'methodDict)
+                  exn-mdict))
   (perform:with: Notification
                  'methodDict:
-                 (clone-method-dictionary exn-mdict))
+                 (behavior-add-from-other
+                  ($ Notification 'methodDict)
+                  exn-mdict))
   (perform:with: Halt
                  'methodDict:
-                 (clone-method-dictionary exn-mdict))
+                 (behavior-add-from-other
+                  ($ Halt 'methodDict)
+                  exn-mdict))
   (perform:with: UnhandledError
                  'methodDict:
-                 (clone-method-dictionary exn-mdict))
+                 (behavior-add-from-other
+                  ($ UnhandledError 'methodDict)
+                  exn-mdict))
   (perform:with: IllegalResumeAttempt
                  'methodDict:
-                 (clone-method-dictionary exn-mdict))
+                 (behavior-add-from-other
+                  ($ IllegalResumeAttempt 'methodDict)
+                  exn-mdict))
 )
 
 

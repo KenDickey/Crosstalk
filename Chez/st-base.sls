@@ -70,6 +70,7 @@
    method-arity
    clone-behavior
    clone-method-dictionary
+   behavior-add-from-other
    primSelectorsDo:
    primSelectorsAndMethodsDo:
    primMethodsDo:
@@ -129,6 +130,7 @@
 ;;; Various internal Helpers   
    list-copy vector-copy
    every? any?
+   symbol<?
    bytevector-ref
    bytevector-set!
    doesNotUnderstand:		; (doesNotUnderstand: self selector)
@@ -447,6 +449,13 @@
    (hashtable-copy mDict #t)) ;; ensure mutable
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
+
+(define (behavior-add-from-other behavior mdict)
+  (let-values ( ((sel-vec meth-vec) (hashtable-entries mdict)) )
+    (vector-for-each (lambda (s m) (hashtable-set! behavior s m))
+                     sel-vec
+                     meth-vec)))
+    
 
 
 ;;; ============================================
@@ -774,7 +783,7 @@
 ;; Most useful..
 (define (display-ivars st-obj)
   (if (not (st-object? st-obj))
-      (write st-obj)
+      (begin (describe st-obj) (display " has no instance vars"))
       (let* ( (obj-class (perform: st-obj 'class))
               (ivarNames
                (if (null? obj-class)
@@ -791,11 +800,12 @@
           (for-each
            (lambda (ivarName)
              (format #t
-                     "  ~a -> ~a~%"
+                     "  ~s -> ~a~%"
                      ivarName
                      (safer-printString ($ st-obj ivarName)))
            )
-           ivarNames))))
+           ivarNames))
+         ))
       )
   (newline)
 )

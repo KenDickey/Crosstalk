@@ -103,15 +103,21 @@
 ;;;======================================================
 
 
-(perform:with: MessageSend  'methodDict: st-messageSend-behavior)
+(rebase-mdict! MessageSend st-messageSend-behavior)
 (primAppendLocalSelectors: MessageSend   ;; early bound
                '(value valueWithArguments:))
 (perform:with: Message      'methodDict:
-               (clone-method-dictionary st-object-behavior))
+               (behavior-add-from-other
+                ($ Message 'methodDict)
+                st-object-behavior))
 (perform:with: ExceptionSet 'methodDict:
-               (clone-method-dictionary st-object-behavior))
+               (behavior-add-from-other
+                ($ ExceptionSet 'methodDict)
+                st-object-behavior))
 (perform:with: Exception    'methodDict:
-               (clone-method-dictionary st-object-behavior))
+               (behavior-add-from-other
+                ($ Exception 'methodDict)
+                st-object-behavior))
 
 
 ; receiver -- nil or the receiver

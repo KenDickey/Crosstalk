@@ -100,7 +100,7 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: Number 'methodDict: st-number-behavior)
+(rebase-mdict! Number st-number-behavior)
 
 (addSelector:withMethod:
      Number

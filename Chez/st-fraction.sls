@@ -41,7 +41,7 @@
 ;;;======================================================
 
 
-(perform:with: Fraction 'methodDict: st-fraction-behavior)
+(rebase-mdict! Fraction st-fraction-behavior)
 
 
 (addSelector:withMethod:

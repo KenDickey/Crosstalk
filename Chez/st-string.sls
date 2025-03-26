@@ -64,7 +64,7 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: String 'methodDict: st-string-behavior)
+(rebase-mdict! String st-string-behavior)
 ;;(primAppendLocalSelectors: String '(printOn:)) ;; early bound
 
 (perform:with:

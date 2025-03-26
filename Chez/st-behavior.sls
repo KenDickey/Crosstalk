@@ -52,7 +52,7 @@
 
 (perform:with: Object 'superclass: st-nil) ;; ground case
 (perform:with: (class Object) 'superclass: Class)
-(perform:with: Object 'methodDict: st-object-behavior)
+(rebase-mdict! Object st-object-behavior)
 
 ;; Redo relations
 

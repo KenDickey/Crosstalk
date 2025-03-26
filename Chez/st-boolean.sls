@@ -60,10 +60,10 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: Boolean	'methodDict: st-boolean-behavior)
-(perform:with: True	'methodDict: st-true-behavior)
-(perform:with: False	'methodDict: st-false-behavior)
-(perform:with: UndefinedObject 'methodDict: st-nil-behavior)
+(rebase-mdict! Boolean	 st-boolean-behavior)
+(rebase-mdict! True	 st-true-behavior)
+(rebase-mdict! False	 st-false-behavior)
+(rebase-mdict! UndefinedObject st-nil-behavior)
 
 ; early bound methods
 (primAppendLocalSelectors: True
@@ -74,6 +74,9 @@
 
 (primAppendLocalSelectors: UndefinedObject
                '(printOn: notNil asSymbol isNil))
+
+(addSubclass: Boolean True)
+(addSubclass: Boolean False)
 
 ;;; Boolean def'ed in "st-collection.sls"
 

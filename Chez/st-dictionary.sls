@@ -55,13 +55,9 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: Dictionary
-               'methodDict:
-               st-dictionary-behavior)
+(rebase-mdict! Dictionary        st-dictionary-behavior)
 
-(perform:with: IdentityDictionary
-               'methodDict:
-               st-identity-dictionary-behavior)
+(rebase-mdict! IdentityDictionary st-identity-dictionary-behavior)
 
 (perform:with:
      Dictionary

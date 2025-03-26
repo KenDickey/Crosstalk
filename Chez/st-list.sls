@@ -149,7 +149,7 @@
 (addSelector:withMethod:
      List
      'printString
-     printString)
+     safer-printString)
 
 (addSelector:withMethod:
      List

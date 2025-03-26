@@ -7,8 +7,6 @@
 
   (export
    Symbol
-
-   symbol<?
    )
 
   (import
@@ -38,16 +36,11 @@
    'Symbol '() '())
 )
 
-(define (symbol<? s1 s2)
-  (unless (and (symbol? s1) (symbol? s2))
-    (error 'symbol<? "requires 2 symbols" s1 s2))
-  (string<? (symbol->string s1) (symbol->string s2)))
-
 ;;;======================================================
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: Symbol 'methodDict: st-symbol-behavior)
+(rebase-mdict! Symbol st-symbol-behavior)
 (primAppendLocalSelectors: Symbol '(printOn: )) ; early bound
 
 (addSelector:withMethod:

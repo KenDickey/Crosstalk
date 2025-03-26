@@ -46,7 +46,7 @@
 ;;;======================================================
 
 
-(perform:with: Integer 'methodDict: st-integer-behavior)
+(rebase-mdict! Integer st-integer-behavior)
 (primAppendLocalSelectors: Integer '(printOn:)) ;; early bound
 
 

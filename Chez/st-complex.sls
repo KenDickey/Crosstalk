@@ -37,7 +37,7 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(perform:with: Complex 'methodDict: st-complex-behavior)
+(rebase-mdict! Complex st-complex-behavior)
 
 (addSelector:withMethod:
      Complex

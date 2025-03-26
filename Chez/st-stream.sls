@@ -61,16 +61,13 @@
 
 (perform:with: Stream
                'methodDict:
-               (clone-method-dictionary
+               (behavior-add-from-other
+                ($ Stream 'methodDict)
                 ($ Object 'methodDict)))
 
-(perform:with: CharStream
-               'methodDict:
-                st-char-stream-behavior)
+(rebase-mdict! CharStream st-char-stream-behavior)
 
-(perform:with: ByteStream
-               'methodDict:
-               st-byte-stream-behavior)
+(rebase-mdict! ByteStream st-byte-stream-behavior)
 
 ;;; Stream
 

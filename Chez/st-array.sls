@@ -60,8 +60,8 @@
 ;;;======================================================
 
 
-(perform:with: Array	 'methodDict: st-array-behavior)
-(perform:with: ByteArray 'methodDict: st-bytearray-behavior)
+(rebase-mdict! Array	 st-array-behavior)
+(rebase-mdict! ByteArray st-bytearray-behavior)
 (primAppendLocalSelectors: Array
                ;; early bound
                '(at: at:put: size basicSize at:modify:))

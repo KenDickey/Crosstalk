@@ -154,7 +154,7 @@
     )
     (setClass:     newInst    selfClass)
     (perform:with: newInst    'superclass: superClass)
-    (addSubclass:  superClass newInst)
+;;    (addSubclass:  superClass newInst)
     (perform:with: newInst    'name:       nameSymbol)
     (perform:with:
        newInst ;; ANSI requires a fresh (unshared) list
@@ -317,5 +317,7 @@
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
 )
+
+
 
 ;;;			--- E O F ---			;;;
