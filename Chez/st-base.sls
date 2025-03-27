@@ -734,6 +734,7 @@
 ;; String streamContents: [:s | self printOn: s]
   (let ( (outport (open-output-string)) )
     (perform:with: obj 'printOn: outport)
+    (flush-output-port outport)
     (get-output-string outport)))
 
 ;;;======================================================
@@ -747,7 +748,8 @@
    (primSelectors (behavior obj))))
 
 (define (display-selectors obj)
-  (display (selectors obj)))
+  (display (selectors obj))
+  (newline))
 
 (define (inst-method-names class)
   (list-sort
@@ -755,28 +757,23 @@
    (perform: class 'myMethodNames)))
     
 (define (safer-printString obj)
-;;;  (if (not (st-object? obj))
-;;;      (format #f "~a" obj)
-      (cond ;; smalltalk object
-       ;; ((respondsTo: obj 'name)
-       ;;  (format #f "'~a'" (perform: obj 'name))
-       ;;  )
-       ((respondsTo: obj 'printString)
-        (perform: obj 'printString)
+  (cond 
+   ((respondsTo: obj 'printOn:)
+    (perform: obj 'printString)
+    )
+   ((respondsTo: obj 'class)
+    (let ( (class (perform: obj 'class)) )
+      (cond
+       ((or (symbol? class) (string? class))
+        (format #f "<instance of #~a>" class)
         )
-       ((respondsTo: obj 'class)
-        (let ( (class (perform: obj 'class)) )
-          (cond
-           ((or (symbol? class) (string? class))
-            (format #f "<instance of #~a>" class)
-            )
-           ((respondsTo: class 'name)
-            (format #f "<instance of #~a>" (perform: class 'name)))
-           (else (format #f "~a" obj)))
-          ))
-       (else "#<object>")
-       )
-) ;; )
+       ((respondsTo: class 'name)
+        (format #f "<instance of #~a>" (perform: class 'name)))
+       (else (format #f "~a" obj)))
+      ))
+   (else "#<object>")
+   )
+)
 
 (define (display-obj obj) (display (safer-printString obj)))
   
@@ -795,17 +792,18 @@
           (display "entity has no class!!")
           )
          (else
-          (newline)
           (describe st-obj)
           (for-each
            (lambda (ivarName)
-             (format #t
-                     "  ~s -> ~a~%"
-                     ivarName
+             (let ( (printVal
                      (safer-printString ($ st-obj ivarName)))
-           )
-           ivarNames))
-         ))
+                  )
+             (format #t "  ~s -> ~a ~%" ivarName printVal)
+             (flush-output-port (current-output-port))
+             ) )
+           ivarNames)
+          (newline)
+        ) ) )
       )
   (newline)
 )
@@ -858,7 +856,7 @@
         (display "output Stream"))
     )  
    ;; @@FIXME: ...
-   (else (write obj)) ;; procedures..
+   (else (format #t "~a" obj)) ;; procedures..
    )
   (newline)
  )
@@ -1056,7 +1054,8 @@
  	st-nil-behavior
         'printOn:
         (lambda (self port)
-          (display "nil" port)))
+          (display "nil" port)
+          "nil"))
 
 (primAddSelector:withMethod: 
  	st-nil-behavior
@@ -1082,7 +1081,8 @@
  	st-true-behavior
         'printOn:
         (lambda (self port)
-          (display "true" port)))
+          (display "true" port)
+          "true"))
 
 (primAddSelector:withMethod: 
  	st-false-behavior
@@ -1093,7 +1093,9 @@
  	st-false-behavior
         'printOn:
         (lambda (self port)
-          (display "false" port)))
+          (display "false" port)
+          "false")
+        )
 
 (primAddSelector:withMethod: 
  	st-string-behavior
@@ -1109,7 +1111,8 @@
  	st-string-behavior
         'printOn:
         (lambda (self port)
-          (format port "'~a'" self))
+          (format port "'~a'" self)
+          self)
 )
 
 (primAddSelector:withMethod: 
@@ -1121,7 +1124,8 @@
  	st-character-behavior
         'printOn:
         (lambda (self port)
-          (format port "$~c" self)))
+          (format port "$~c" self)
+          (format #f "$~c" self)))
 
 (primAddSelector:withMethod: 
  	st-symbol-behavior
@@ -1137,7 +1141,8 @@
  	st-symbol-behavior
         'printOn:
         (lambda (self port) ;;@@FIXME: elide #\'..' when all lower case..
-          (format port "#'~a'" self))
+          (format port "#'~a'" self)
+          (format #f "#'~a'" self))
 )
 
 (primAddSelector:withMethod: 
@@ -1149,7 +1154,10 @@
  	st-integer-behavior
         'printOn:
         (lambda (self port)
-          (display (number->string self) port))
+          (let ( (str (number->string self)) )
+            (display str port)
+            str
+          ) )
         )
 
 (primAddSelector:withMethod: 
@@ -1161,7 +1169,10 @@
  	st-float-behavior
         'printOn:
         (lambda (self port)
-          (display (number->string self) port))
+          (let ( (str (number->string self)) )
+            (display str port)
+            str
+          ) )
         )
 
 (primAddSelector:withMethod: 
@@ -1173,7 +1184,10 @@
  	st-complex-behavior
         'printOn:
         (lambda (self port)
-          (display (number->string self) port))
+          (let ( (str (number->string self)) )
+            (display str port)
+            str
+          ) )
         )
 
 (primAddSelector:withMethod: 
@@ -1185,7 +1199,10 @@
  	st-fraction-behavior
         'printOn:
         (lambda (self port)
-          (display (number->string self) port))
+          (let ( (str (number->string self)) )
+            (display str port)
+            str
+          ) )
         )
 
 ;;; Method Info

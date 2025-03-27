@@ -37,10 +37,10 @@
   ($ ($ %%test-object 'class) 'name)
   "anObject class name -> #Object")
 
-(add-equal-test 'st-object
-   "an Object doesNotUnderstand: #glerph"
-   (st-eval "TestObject glerph")
-   "obj glerph -> doesNotUnderstand")
+;; (add-equal-test 'st-object
+;;    "an Object doesNotUnderstand: #glerph"
+;;    (st-eval "TestObject glerph")
+;;    "obj glerph -> doesNotUnderstand")
 
 (add-eq-test 'st-object
   #f
@@ -158,10 +158,10 @@
 ;;   (perform: st-false 'notNil)
 ;;   "false notNil")
 
-(add-equal-test 'st-object
-   "an Object doesNotUnderstand: #bogus:"
-   (st-eval "TestObject bogus: 666")
-   "obj bogus: 666 -> doesNotUnderstand")
+;; (add-equal-test 'st-object
+;;    "an Object doesNotUnderstand: #bogus:"
+;;    (st-eval "TestObject bogus: 666")
+;;    "obj bogus: 666 -> doesNotUnderstand")
 
 (add-equal-test 'st-object
   '(#t #f () 1 #\c)

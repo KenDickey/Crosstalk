@@ -222,7 +222,7 @@
 
 (define st-class-behavior     (clone-behavior st-object-behavior))
 
-(define st-metaClass-behavior (clone-behavior st-class-behavior))
+(define st-metaClass-behavior (clone-behavior st-object-behavior))
 
 ;;; More mechanics: (addSubclass: classSelf subclass)
 (define (addSubclass: classSelf subclass)

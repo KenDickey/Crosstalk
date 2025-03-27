@@ -69,5 +69,48 @@
 ;; (for-each test-from test-names)
 ;; (run-all-tests)
 
+;; (describe obj)
+;; (display-obj obj)
+;; (display-selectors obj)
+;; (display-ivars class)
+;; (inst-method-names class)
+;; (display-subclasses class)
+;; (hashtable-keys mdict)
+
+(define source-names
+  (list
+   "st-base.sls"
+   "st-class-structure.sls"
+   "st-metaclass.sls"
+   "st-behavior.sls"
+   "st-collection.sls"	
+   "st-sequence-coll.sls"
+   "st-array-coll.sls"
+   "st-array.sls"
+   "st-boolean.sls"
+   "st-character.sls"
+   "st-string.sls"
+   "st-symbol.sls"
+   "st-list.sls"
+   "st-magnitude.sls"
+   "st-number.sls"
+   "st-complex.sls"
+   "st-float.sls"
+   "st-fraction.sls"
+   "st-integer.sls"
+   "st-blockClosure.sls"
+   "st-dictionary.sls"
+   "st-exception.sls"
+   "st-error.sls"
+   "st-error-subs.sls"
+   "st-arith-err-subs.sls"
+   "st-stream.sls"
+   "st-tokenizer.sls"
+   "st-parser.sls"
+   "st-xlate.sls"
+) )
+
+;; (for-each load source-names)
+
 
 ;;;			--- E O F ---			;;;

@@ -60,11 +60,6 @@
 ;;; R6RS Libraries: Definitions before Expressions
 ;;;======================================================
 
-(rebase-mdict! Boolean	 st-boolean-behavior)
-(rebase-mdict! True	 st-true-behavior)
-(rebase-mdict! False	 st-false-behavior)
-(rebase-mdict! UndefinedObject st-nil-behavior)
-
 ; early bound methods
 (primAppendLocalSelectors: True
                '(printOn: notNil asSymbol isNil))
@@ -74,6 +69,17 @@
 
 (primAppendLocalSelectors: UndefinedObject
                '(printOn: notNil asSymbol isNil))
+
+(rebase-mdict! Boolean	 st-boolean-behavior)
+(behavior-add-from-other ($ True 'methodDict)
+                         st-object-behavior)
+(rebase-mdict! True	 st-true-behavior)
+(behavior-add-from-other ($ False 'methodDict)
+                         st-object-behavior)
+(rebase-mdict! False	 st-false-behavior)
+(behavior-add-from-other ($ UndefinedObject 'methodDict)
+                         st-object-behavior)
+(rebase-mdict! UndefinedObject st-nil-behavior)
 
 (addSubclass: Boolean True)
 (addSubclass: Boolean False)
