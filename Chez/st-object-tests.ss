@@ -9,6 +9,7 @@
  (st-class-structure)
  (st-metaclass)
  (st-behavior)
+ (st-xlate) ;; st-eval
 )
 
 (define %%test-object #f)
@@ -16,13 +17,13 @@
 (define (setup-st-object)
   (primAddSelector:withMethod:
  	st-object-behavior
-        'with:with:with:with:with
+        'with:with:with:with:with:
         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
 
-  (set! %%test-object (st-eval "Object new"))
-;;        (make-st-object st-object-behavior 0))
+  (set! %%test-object ;; (st-eval "Object new"))
+        (make-st-object st-object-behavior 0))
 
-  (smalltalkAt:Put: 'TestObject %%test-object)
+  (smalltalkAt:put: 'TestObject %%test-object)
 )
 
 (define (cleanup-st-object)
@@ -165,8 +166,8 @@
 
 (add-equal-test 'st-object
   '(#t #f () 1 #\c)
-  (perform:withArguments: %%test-object 'with:with:with:with:with (vector #t #f '() 1 #\c))
-  "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with $c")
+  (perform:withArguments: %%test-object 'with:with:with:with:with: (vector #t #f '() 1 #\c))
+  "anObject with: #(object) with: nil with: true with: false with: nil with: 1 with: $c")
   
 
 ;;;			--- E O F ---			;;;
