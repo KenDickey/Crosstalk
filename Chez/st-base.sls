@@ -734,7 +734,6 @@
 ;; String streamContents: [:s | self printOn: s]
   (let ( (outport (open-output-string)) )
     (perform:with: obj 'printOn: outport)
-    (flush-output-port outport)
     (get-output-string outport)))
 
 ;;;======================================================
@@ -799,7 +798,6 @@
                      (safer-printString ($ st-obj ivarName)))
                   )
              (format #t "  ~s -> ~a ~%" ivarName printVal)
-             (flush-output-port (current-output-port))
              ) )
            ivarNames)
           (newline)
@@ -1411,11 +1409,14 @@
  	st-object-behavior
         'printOn:  ;; ANSI
         (lambda (self outport)
-          (display
-           (string-append
-            "<instance of "
-            ($ (className: self) 'asString)
-            ">")))
+          (let ( (str
+                  (string-append
+                   "<instance of "
+                   ($ (className: self) 'asString)
+                   ">"))
+               )
+          (display str outport)
+          str))
         )
         ;; (lambda (self outport)
         ;;   (let ( (vowels (string->list "aeiouAEIOU"))

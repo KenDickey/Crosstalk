@@ -18,9 +18,6 @@
    (rnrs hashtables (6))
    (rnrs control (6))
    (rnrs io simple (6))
-   (only (chezscheme)
-         format
-         flush-output-port)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -147,8 +144,7 @@
                       (lambda (elt)
                         (perform:with:
                            elt 'printOn: port)
-                        (display " " port)
-                        (flush-output-port port)))
+                        (display " " port)))
        (display ")" port)))
 
 
