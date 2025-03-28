@@ -157,10 +157,8 @@
      (lambda (self port)
        (display "List" port)
        (display "( " port)
-       (flush-output-port port)
        (perform:with:
            self 'printElementsOn: port)
-       (flush-output-port port)
        (display ")" port)))
 
 (addSelector:withMethod:
