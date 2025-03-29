@@ -11,6 +11,8 @@
 (library (st-error-subs)
 
   (export
+   init-st-error-subs
+
    Warning
    MessageNotUnderstood
    ArithmeticError
@@ -21,6 +23,8 @@
    (rnrs base)
    (rnrs lists (6))
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs unicode (6))
    (rnrs io simple (6))
    (rnrs hashtables (6))
@@ -65,9 +69,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-error-subs)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-error)
+  
 (perform:with: Warning
                'methodDict:
                (behavior-add-from-other
@@ -218,6 +228,6 @@
      (lambda (self)
        ($: self 'assert: self)))
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

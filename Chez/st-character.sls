@@ -8,15 +8,19 @@
 (library (st-character)
 
   (export
+   init-st-character
+   
    Character
    )
 
   (import
    (rnrs base)
    (rnrs lists (6))
-   (rnrs control (6))
    (rnrs unicode (6))
    (rnrs io simple (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -89,9 +93,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-character)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-behavior)
+  
 (perform:with: Character 'methodDict: st-character-behavior)
 (primAppendLocalSelectors: Character '(printOn:)) ;; early bound
 
@@ -322,6 +332,6 @@
               (error 'value: "Character value: anInteger" value))
             (integer->char value)))
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

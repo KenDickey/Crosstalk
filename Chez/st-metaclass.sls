@@ -7,6 +7,8 @@
 (library (st-metaclass)
 
   (export
+   init-st-metaclass
+
    ClassClass
    Class
    MetaClassClass
@@ -25,6 +27,8 @@
    (rnrs control (6))
    (rnrs unicode (6))
    (rnrs lists (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    )
@@ -35,23 +39,21 @@
 
 (define (make-protoClass
          name
-         behav  ; method-dict of this class
-         slot-names
-         mDict  ; shared method-dict for all instances
+         myBehavior  ; method-dict of this class
+         mySlotNames
+         instMethodDict  ; shared method-dict for all instances
          child-ivar-names
          class
          super )
-  (let* ( (behavior   behav) 
-          (methodDict mDict) 
-          (class-instance
-             (make-st-object behavior (length slot-names)))
-        )
+  (let ( (class-instance
+             (make-st-object myBehavior (length mySlotNames)))
+       )
     (setClass: class-instance class) ;; NB: may be nil
     (perform:with: class-instance 'name: name)
     (perform:with: class-instance 'superclass: super) ;; may be nil
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
-    (perform:with: class-instance 'methodDict: methodDict)
-    (unless (eq? class st-nil)
+    (perform:with: class-instance 'methodDict: instMethodDict)
+    (unless (st-nil? class)
       (perform:with: class
                      'subclasses:
                      (cons class-instance ($ class 'subclasses))))
@@ -293,8 +295,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
+
+(define initialized? (make-parameter #f))
+
+(define (init-st-metaclass)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-class-structure)
 
 ;;; Make proper linkages
 
@@ -316,8 +324,6 @@
      (behavior MetaClassClass)
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
-)
-
-
+) ) )
 
 ;;;			--- E O F ---			;;;

@@ -6,6 +6,8 @@
 (library (st-integer)
 
   (export
+   init-st-integer
+
    Integer
    )
 
@@ -21,6 +23,7 @@
    (rnrs arithmetic fixnums (6))
    (rnrs r5rs (6)) ; modulo
    (only (chezscheme)
+         make-parameter
          random ;; (random N) -> number from 0 to N-1
          )
    (st-base)
@@ -42,11 +45,17 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
 
+(define (init-st-integer)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-fraction)
+  
 (rebase-mdict! Integer st-integer-behavior)
+
 (primAppendLocalSelectors: Integer '(printOn:)) ;; early bound
 
 
@@ -213,6 +222,6 @@
               (loop (+ count 1)))))
         )
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

@@ -7,6 +7,8 @@
 (library (st-xlate)
 
   (export
+   init-st-xlate
+
    st-eval
    st->scm  ;; (st->scm aString)
    xlate-st-file->scm ;; (xlate-st-file->scm infile-name)
@@ -600,9 +602,15 @@
 ) ) ) )
 
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-xlate)
+  (unless (initialized?)
+    (initialized? #t)
 ;;; DEBUG -- fake a Transcript
+    (smalltalkAt:put: 'Transcript (current-output-port))
+  ) )
 
-(smalltalkAt:put: 'Transcript (current-output-port)))
-
+)
 
 ;;;			--- E O F ---			;;;

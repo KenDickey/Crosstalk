@@ -6,6 +6,8 @@
 (library (st-symbol)
 
   (export
+   init-st-symbol
+
    Symbol
    )
 
@@ -13,6 +15,8 @@
    (rnrs base)
    (rnrs lists (6))
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs unicode (6))
    (rnrs bytevectors (6))
    (rnrs hashtables (6)) ; string-hash
@@ -37,9 +41,15 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-symbol)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-string)
+  
 (rebase-mdict! Symbol st-symbol-behavior)
 (primAppendLocalSelectors: Symbol '(printOn: )) ; early bound
 
@@ -146,6 +156,6 @@
 
 ;;; symbol@FillMeIn
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

@@ -7,6 +7,8 @@
 (library (st-behavior)
 
   (export
+   init-st-behavior
+   
    Object
    Behavior
    ClassDescription   
@@ -16,6 +18,8 @@
    (rnrs base)
    (rnrs control (6))
    (rnrs hashtables (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -40,8 +44,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
+
+(define initialized? (make-parameter #f))
+
+(define (init-st-behavior)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-metaclass)
 
 ;;; OK. Scaffolding in place.
 ;;; Can now use #newSubclassName:iVars:cVars:
@@ -342,6 +352,6 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
           'asIdentitySet))) ;; vector->identSet
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

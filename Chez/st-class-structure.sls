@@ -7,6 +7,8 @@
 (library (st-class-structure)
 
   (export
+   init-st-class-structure
+   
 ;;   "Send to Super"
    %     superPerform:
    %:    superPerform:with:
@@ -52,6 +54,7 @@
    (only (chezscheme)
          format
          vector-copy
+         make-parameter
        )
    (st-base)
    )
@@ -280,8 +283,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
+
+(define initialized? (make-parameter #f))
+
+(define (init-st-class-structure)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-base)
 
 (add-getters&setters st-class-behavior
                      num-header-slots
@@ -317,6 +326,6 @@
      'addSubclass: addSubclass:)
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

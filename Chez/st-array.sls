@@ -7,6 +7,8 @@
 (library (st-array)
 
   (export
+   init-st-array
+   
    Array
    ByteArray
    )
@@ -21,6 +23,9 @@
     (bytevector-u8-ref  bytevector-ref)
     (bytevector-u8-set! bytevector-set!)
     )
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -56,9 +61,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-array)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-array-coll)
 
 (rebase-mdict! Array	 st-array-behavior)
 (rebase-mdict! ByteArray st-bytearray-behavior)
@@ -442,6 +452,6 @@
          result))
      )
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

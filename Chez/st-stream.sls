@@ -12,6 +12,8 @@
 (library (st-stream)
 
   (export
+   init-st-stream
+
    Stream
    CharStream
    ByteStream
@@ -21,6 +23,9 @@
    (rnrs base)
    (rnrs io simple (6))
    (rnrs io ports (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -56,9 +61,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-stream)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-symbol)
+  
 (perform:with: Stream
                'methodDict:
                (behavior-add-from-other
@@ -214,6 +225,6 @@
         (lambda (self) (not (output-port? self))))
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

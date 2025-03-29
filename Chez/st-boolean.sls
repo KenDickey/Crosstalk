@@ -8,6 +8,8 @@
 (library (st-boolean)
 
   (export
+   init-st-boolean
+   
 ;; Boolean def'ed in st-collection
    False
    True
@@ -21,9 +23,11 @@
   
   (import
    (rnrs base)
-   (rnrs control (6))
    (rnrs hashtables (6))
    (rnrs io simple (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -57,9 +61,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-boolean)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-collection)
+  
 ; early bound methods
 (primAppendLocalSelectors: True
                '(printOn: notNil asSymbol isNil))
@@ -163,11 +173,7 @@ Notice how the truth-value checks become direct message sends, without the
 
 Notice how the truth-value checks become direct message sends, without the
  need for explicit testing.
-
-Be aware however that most of these methods are not sent as real messages
- in normal use. Most are inline coded by the compiler/translator - avoiding
- the overhead of the full message sends. So simply redefining these methods
- here will have no effect."
+"
 )
 
 
@@ -537,6 +543,6 @@ Be aware however that most of these methods are not sent as real messages
         'value
         (lambda (self) st-nil))
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

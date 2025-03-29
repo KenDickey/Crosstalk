@@ -25,6 +25,8 @@
 (library (st-base)
 
   (export
+
+   init-st-base
    
 ;;; Namespace
    
@@ -1029,10 +1031,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
-(add-array-accessors st-array-behavior 0)
+(define initialized? (make-parameter #f))
+
+(define (init-st-base)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (add-array-accessors st-array-behavior 0)
 
 ;;; Enable reflective introspection
 (smalltalkAt:put: 'Smalltalk Smalltalk)
@@ -1548,7 +1554,8 @@
 ; #become: #pointsTo: 
 ; #tryPrimitive:withArgs:
 
+) ) ;; init
 
-)
+) ;; library
 
 ;;;			--- E O F ---			;;;

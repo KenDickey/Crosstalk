@@ -6,13 +6,17 @@
 (library (st-magnitude)
 
   (export
+   init-st-magnitude
+
    Magnitude
    )
 
   (import
    (rnrs base)
-   (rnrs control (6))
    (rnrs hashtables (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -28,9 +32,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-magnitude)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-behavior)
+  
 (perform:with: Magnitude 'methodDict: st-magnitude-behavior)
 
 (perform:with: Magnitude
@@ -74,6 +84,6 @@ Here are some example of my protocol:
 
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

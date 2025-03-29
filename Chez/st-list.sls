@@ -6,6 +6,8 @@
 (library (st-list)
 
   (export
+   init-st-list
+
    List
    )
 
@@ -13,6 +15,8 @@
    (rnrs base)
    (rnrs lists (6))
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs unicode (6))
    (rnrs bytevectors (6))
    (rnrs hashtables (6)) ; string-hash
@@ -38,9 +42,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-list)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-string)
 
 (perform:with: List 'methodDict: st-list-behavior)
 
@@ -259,6 +268,6 @@
            (loop (cdr elts)))))))
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

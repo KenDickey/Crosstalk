@@ -6,12 +6,16 @@
 (library (st-float)
 
   (export
+   init-st-float
+
    Float
    )
 
   (import
    (rnrs base)
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs io simple (6))
    (rnrs io ports (6))
    (rnrs mutable-strings (6))
@@ -38,9 +42,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-float)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-complex)
 
 (rebase-mdict! Float st-float-behavior)
 
@@ -69,6 +78,6 @@
           (printStringRadix: self radix))
         )
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

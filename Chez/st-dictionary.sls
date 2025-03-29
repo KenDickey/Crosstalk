@@ -7,6 +7,8 @@
 (library (st-dictionary)
 
   (export
+   init-st-dictionary
+   
    Dictionary
    IdentityDictionary
    )
@@ -15,6 +17,8 @@
    (rnrs base)
    (rnrs hashtables (6))
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs exceptions (6))
    (rnrs io simple (6))
    (st-base)
@@ -52,9 +56,17 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
+
 ;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-dictionary)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-collection)
+   
 (rebase-mdict! Dictionary        st-dictionary-behavior)
 
 (rebase-mdict! IdentityDictionary st-identity-dictionary-behavior)
@@ -343,6 +355,6 @@
 
 ;;; fillIn@@dictionary
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

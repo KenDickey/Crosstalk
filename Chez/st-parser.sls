@@ -9,6 +9,8 @@
 (library (st-parser)
 
   (export
+   init-st-parser
+
    set-parse-tokenizer ;; (set-parse-tokenizer tokenizer)
    parse-st-code
    skip-whitespace
@@ -1316,7 +1318,13 @@
 ;; reservedIdentifier := 
 ;;   ( 'nil' | 'true' | 'false' | 'self' | 'super' )
 
-)
+(define initialized? (make-parameter #f))
 
+(define (init-st-parser) 
+  (unless (initialized?)
+    (initialized? #t)
+    (init-st-tokenizer)))
+
+)
 
 ;;;    		     --- E O F ---			;;;

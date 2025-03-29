@@ -7,6 +7,8 @@
 (library (st-collection)
 
   (export
+   init-st-collection
+   
    Collection
    Set
    IdentitySet
@@ -18,6 +20,9 @@
    (rnrs hashtables (6))
    (rnrs control (6))
    (rnrs io simple (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -51,13 +56,14 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
-;; (perform:with: Collection
-;;                'methodDict:
-;;                (clone-method-dictionary
-;;                 ($ Object 'methodDict)))
+(define initialized? (make-parameter #f))
+
+(define (init-st-collection)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-behavior)
 
 (addSelector:withMethod:
      Behavior
@@ -540,6 +546,6 @@
               (else (right-loop (+ 1 index)))))))))
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

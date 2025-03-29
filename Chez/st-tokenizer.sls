@@ -6,6 +6,8 @@
 (library (st-tokenizer)
 
   (export
+   init-st-tokenizer
+
    ;; token ; a structure
    make-token	  ;; constructor
    token-kind	  ;; accessor
@@ -670,6 +672,14 @@
      (error 'token->native: "unhandled token kind" token))
      )
   ) )
+
+(define initialized? (make-parameter #f))
+  
+(define (init-st-tokenizer)
+  (unless (initialized?)
+    (initialized? #t)
+    (void) ; nothing to do here..
+    ))
 
 )
 

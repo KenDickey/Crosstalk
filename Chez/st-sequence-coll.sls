@@ -7,12 +7,16 @@
 (library (st-sequence-coll)
 
   (export
+   init-st-sequence-coll
+
    SequenceableCollection
    )
   
   (import
    (rnrs base)
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -29,9 +33,15 @@
 
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-sequence-coll)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-collection)
+  
 (perform:with: SequenceableCollection
                'methodDict:
                (clone-method-dictionary
@@ -136,6 +146,6 @@
              (loop (+ index 1)))))))
 
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

@@ -6,12 +6,16 @@
 (library (st-complex)
 
   (export
+   init-st-complex
+   
    Complex
    )
 
   (import
    (rnrs base)
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs io simple (6))
    (rnrs io ports (6))
    (rnrs mutable-strings (6))
@@ -34,9 +38,15 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-complex)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-number)
+  
 (rebase-mdict! Complex st-complex-behavior)
 
 (addSelector:withMethod:
@@ -114,5 +124,6 @@
            " i)"))
         )
 
-)
+) ) )
+
 ;;;			--- E O F ---			;;;

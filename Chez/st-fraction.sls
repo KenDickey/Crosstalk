@@ -6,12 +6,16 @@
 (library (st-fraction)
 
   (export
+   init-st-fraction
+
    Fraction
    )
 
   (import
    (rnrs base)
    (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (rnrs io simple (6))
    (rnrs io ports (6))
    (rnrs mutable-strings (6))
@@ -37,9 +41,14 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-fraction)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-float)
 
 (rebase-mdict! Fraction st-fraction-behavior)
 
@@ -60,5 +69,6 @@
                   (printStringRadix: (denominator self) radix)))
         )
 
-)
+) ) )
+
 ;;;			--- E O F ---			;;;

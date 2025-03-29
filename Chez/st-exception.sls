@@ -10,6 +10,8 @@
 (library (st-exception)
 
   (export
+   init-st-exception
+
    Exception
    ExceptionSet
    MessageSend
@@ -99,21 +101,30 @@
    (else (saferIsKindOf: thing Class))))
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
 
+(define initialized? (make-parameter #f))
+
+(define (init-st-exception)
+  (unless (initialized?)
+    (initialized? #t)
+    
+    (init-st-blockClosure)  
 
 (rebase-mdict! MessageSend st-messageSend-behavior)
+
 (primAppendLocalSelectors: MessageSend   ;; early bound
                '(value valueWithArguments:))
+
 (perform:with: Message      'methodDict:
                (behavior-add-from-other
                 ($ Message 'methodDict)
                 st-object-behavior))
+
 (perform:with: ExceptionSet 'methodDict:
                (behavior-add-from-other
                 ($ ExceptionSet 'methodDict)
                 st-object-behavior))
+
 (perform:with: Exception    'methodDict:
                (behavior-add-from-other
                 ($ Exception 'methodDict)
@@ -758,5 +769,6 @@ Structure:
 ) ) )
 
 
-)
+) ) )
+
 ;;;			--- E O F ---			;;;

@@ -6,6 +6,8 @@
 (library (st-blockClosure)
 
   (export
+   init-st-blockClosure
+   
    BlockClosure
    )
 
@@ -17,6 +19,7 @@
    (rnrs io simple (6))
    (rnrs exceptions (6))
    (only (chezscheme)
+         make-parameter
          vector-append)
    (st-base)
    (st-class-structure)
@@ -33,10 +36,17 @@
 )
 
 ;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
+
+(define initialized? (make-parameter #f))
+
+(define (init-st-blockClosure)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-boolean)
 
 (rebase-mdict! BlockClosure st-blockClosure-behavior)
+
 ; early defined methods
 (primAppendLocalSelectors: BlockClosure
                            '(selector argumentCount numArgs))
@@ -337,6 +347,6 @@
 ;; 	[1 whatsUpDoc] ifError: [:err :rcvr | 'huh?'].
 ;; 	[1 / 0] ifError: [:err :rcvr | { rcvr. err. } ]
 
-)
+) ) )
 
 ;;;			--- E O F ---			;;;

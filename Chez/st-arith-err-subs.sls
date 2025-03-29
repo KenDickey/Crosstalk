@@ -10,19 +10,23 @@
 (library (st-arith-err-subs)
 
   (export
+   init-st-arith-err-subs
+
    ZeroDivide
    )
 
   (import
    (rnrs base)
    (rnrs lists (6))
-   (rnrs control (6))
    (rnrs unicode (6))
    (rnrs io simple (6))
    (rnrs hashtables (6))
    (rnrs exceptions (6))
    (rnrs conditions (6))
    (rnrs arithmetic bitwise (6))
+   (rnrs control (6))
+   (only (chezscheme)
+         make-parameter)
    (st-base)
    (st-class-structure)
    (st-metaclass)
@@ -41,10 +45,14 @@
    'ZeroDivide '(dividend) '())
 )
 
-;;;======================================================
-;;; R6RS Libraries: Definitions before Expressions
-;;;======================================================
+(define initialized? (make-parameter #f))
 
+(define (init-st-arith-err-subs)
+  (unless (initialized?)
+    (initialized? #t)
+
+    (init-st-error-subs)
+  
 (perform:with: ZeroDivide
                'methodDict:
                (clone-method-dictionary
@@ -74,6 +82,8 @@
               ($: ZeroDivide 'signalWithDividend: self))
           (/ self aNumber))
         2)
+
+) )
 
 )
 
