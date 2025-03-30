@@ -678,7 +678,8 @@
 (define (init-st-tokenizer)
   (unless (initialized?)
     (initialized? #t)
-    (void) ; nothing to do here..
+    ; nothing to do here..
+    'st-tokenizer
     ))
 
 )

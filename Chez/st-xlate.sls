@@ -609,6 +609,7 @@
     (initialized? #t)
 ;;; DEBUG -- fake a Transcript
     (smalltalkAt:put: 'Transcript (current-output-port))
+    'st-xlate
   ) )
 
 )

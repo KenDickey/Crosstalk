@@ -332,6 +332,9 @@
               (error 'value: "Character value: anInteger" value))
             (integer->char value)))
 
-) ) )
+'st-character
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

@@ -293,7 +293,9 @@
       'isResumable
       (lambda (self) st-false))
 
+'st-error
+) )
 
-) ) )
+)
 
 ;;;			--- E O F ---			;;;

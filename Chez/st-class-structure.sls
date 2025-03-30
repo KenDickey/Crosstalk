@@ -325,7 +325,9 @@
      st-metaClass-behavior
      'addSubclass: addSubclass:)
 
+'st-class-structure
+) )
 
-) ) )
+)
 
 ;;;			--- E O F ---			;;;

@@ -146,6 +146,9 @@
              (loop (+ index 1)))))))
 
 
-) ) )
+'st-sequence-coll
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

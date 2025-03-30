@@ -225,6 +225,9 @@
         (lambda (self) (not (output-port? self))))
 
 
-) ) )
+'st-stream
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

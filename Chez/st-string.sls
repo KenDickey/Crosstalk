@@ -459,6 +459,9 @@
      (lambda (self) (string #\newline))
      )
 
-) ) )
+'st-string
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

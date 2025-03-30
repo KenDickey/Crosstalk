@@ -78,6 +78,9 @@
           (printStringRadix: self radix))
         )
 
-) ) )
+'st-float
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

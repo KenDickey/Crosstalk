@@ -351,7 +351,9 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
        ($ (hashtable-keys ($ self 'methodDict))
           'asIdentitySet))) ;; vector->identSet
 
+'st-behavior
+) )
 
-) ) )
+)
 
 ;;;			--- E O F ---			;;;

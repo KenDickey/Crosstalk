@@ -69,6 +69,9 @@
                   (printStringRadix: (denominator self) radix)))
         )
 
-) ) )
+'st-fraction
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

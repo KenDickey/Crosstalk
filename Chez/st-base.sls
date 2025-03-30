@@ -334,12 +334,12 @@
 (define (superclass obj) (perform: obj 'superclass))
 
 (define (isKindOf: self someClass)
-  (let loop ( (super-class (perform: self 'class)) )
+  (let loop ( (ancestor-class (perform: self 'class)) )
     (cond
-     ((null? super-class) #f)
-     ((eq? super-class someClass) #t)
-     ((not (st-object? super-class)) #f)
-     (else (loop (perform: super-class 'superclass))))
+     ((null? ancestor-class) #f)
+     ((eq? ancestor-class someClass) #t)
+     ((not (st-object? ancestor-class)) #f)
+     (else (loop (perform: ancestor-class 'superclass))))
 ) )
 
 (define (respondsTo: self selector)
@@ -1369,8 +1369,7 @@
 (primAddSelector:withMethod: ;; ANSI
  	st-object-behavior
         'isKindOf:
-        isKindOf:
-)
+        isKindOf:)
 
 (primAddSelector:withMethod:arity:
  	st-object-behavior
@@ -1554,6 +1553,7 @@
 ; #become: #pointsTo: 
 ; #tryPrimitive:withArgs:
 
+'st-base
 ) ) ;; init
 
 ) ;; library

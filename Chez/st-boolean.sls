@@ -546,6 +546,9 @@ Notice how the truth-value checks become direct message sends, without the
         'value
         (lambda (self) st-nil))
 
-) ) )
+'st-boolean
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

@@ -1323,7 +1323,8 @@
 (define (init-st-parser) 
   (unless (initialized?)
     (initialized? #t)
-    (init-st-tokenizer)))
+    (init-st-tokenizer)
+    'st-parser))
 
 )
 

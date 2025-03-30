@@ -27,6 +27,7 @@
    (rnrs control (6))
    (rnrs unicode (6))
    (rnrs lists (6))
+   (rnrs io simple (6))
    (only (chezscheme)
          make-parameter)
    (st-base)
@@ -147,10 +148,10 @@
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots num-inherited-vars)) )
 ;;@@DEBUG{
-;; (display (perform: selfClass 'name))
-;; (display ":  start-index for added vars: ")
-;; (display (number->string start-index))
-;; (newline)
+ ;; (display (perform: selfClass 'name))
+ ;; (display ":  start-index for added vars: ")
+ ;; (display (number->string start-index))
+ ;; (newline)
 ;;}DEBUG@@
          (add-getters&setters newMethodDict start-index addedInstanceVars))
     )
@@ -324,6 +325,9 @@
      (behavior MetaClassClass)
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
-) ) )
+'st-metaclass
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

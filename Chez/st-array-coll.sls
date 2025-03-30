@@ -54,6 +54,9 @@
        (or (eq? symbol 'ArrayedCollection)
            (superPerform:with: self 'is: symbol))))
 
-) ) )
+  'st-array-coll
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

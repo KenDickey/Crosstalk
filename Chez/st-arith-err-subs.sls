@@ -83,6 +83,7 @@
           (/ self aNumber))
         2)
 
+'st-arith-err-subs
 ) )
 
 )

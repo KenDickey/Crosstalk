@@ -228,6 +228,9 @@
      (lambda (self)
        ($: self 'assert: self)))
 
-) ) )
+'st-error-subs
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

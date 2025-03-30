@@ -347,6 +347,9 @@
 ;; 	[1 whatsUpDoc] ifError: [:err :rcvr | 'huh?'].
 ;; 	[1 / 0] ifError: [:err :rcvr | { rcvr. err. } ]
 
-) ) )
+'st-blockClosure
+) )
+
+)
 
 ;;;			--- E O F ---			;;;

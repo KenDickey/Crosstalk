@@ -40,8 +40,10 @@
     (initialized? #t)
 
     (init-st-behavior)
-  
-(perform:with: Magnitude 'methodDict: st-magnitude-behavior)
+
+    ;; (perform:with: Magnitude 'methodDict:
+    ;;                (clone-behavior st-object-behavior))
+    (rebase-mdict! Magnitude st-magnitude-behavior)
 
 (perform:with: Magnitude
                'comment:
@@ -83,7 +85,9 @@ Here are some example of my protocol:
 )
 
 
+'st-magnitude
+) )
 
-) ) )
+)
 
 ;;;			--- E O F ---			;;;
