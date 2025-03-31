@@ -97,6 +97,10 @@
 (addSubclass: Boolean True)
 (addSubclass: Boolean False)
 
+(setClass: st-true True)
+(setClass: st-false False)
+(setClass: st-nil UndefinedObject)
+
 ;;; Boolean def'ed in "st-collection.sls"
 
 (addSelector:withMethod:
