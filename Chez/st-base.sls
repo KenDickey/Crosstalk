@@ -182,6 +182,7 @@
          format
          make-parameter
          parameterize
+         print-level
          procedure-arity-mask
          make-arity-wrapper-procedure
          wrapper-procedure-data
@@ -1038,6 +1039,8 @@
   (unless (initialized?)
     (initialized? #t)
 
+    (print-level 3) ;; @@DEBUG
+  
     (add-array-accessors st-array-behavior 0)
 
 ;;; Enable reflective introspection

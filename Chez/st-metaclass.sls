@@ -29,6 +29,8 @@
    (rnrs lists (6))
    (rnrs io simple (6))
    (only (chezscheme)
+         trace-define
+         print-level
          make-parameter)
    (st-base)
    (st-class-structure)
@@ -38,7 +40,7 @@
 ;; Just enough behavior to allow instantiation bootstrap
 ;; to call: newSubclassName:iVars:cVars:
 
-(define (make-protoClass
+(trace-define (make-protoClass
          name
          myBehavior  ; method-dict of this class
          mySlotNames
@@ -55,9 +57,7 @@
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
     (perform:with: class-instance 'methodDict: instMethodDict)
     (unless (st-nil? class)
-      (perform:with: class
-                     'subclasses:
-                     (cons class-instance ($ class 'subclasses))))
+      (addSubclass: class class-instance))
    ;; return the new Class instance
     (smalltalkAt:put: name class-instance)
     class-instance
@@ -128,7 +128,7 @@
 ;;;   Then ask the metaClass to make its instance
 
 ;; Helper. Create an INSTANCE of a Class or MetaClass
-(define (instantiateName:superclass:ivars:
+(trace-define (instantiateName:superclass:ivars:
          selfClass
          nameSymbol
          superClass
@@ -175,7 +175,7 @@
     " class")))
 
 ;;; Ask a class to create a new subclass
-(define (newSubclassName:iVars:cVars:
+(trace-define (newSubclassName:iVars:cVars:
          selfClass nameSym instanceVars classVars)
    ;; (when (hashtable-ref Smalltalk nameSym #f)
    ;;  (error "Class already exists" nameSym))
@@ -248,6 +248,7 @@
         ) )
         classVarsList)
       (perform:with: newMetaClass 'thisClass: newSubclass)
+      (addSubclass:  newMetaClass newSubclass)
       (smalltalkAt:put: nameSym newSubclass)
       newSubclass		;; @@??@@ move initialize to here?
 ) ) )

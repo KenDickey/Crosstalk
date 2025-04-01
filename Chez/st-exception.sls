@@ -84,7 +84,7 @@
 (define %%escape%%
   (make-thread-parameter (lambda whatever '%%escape%%)))
 
-(define debug-st-runtime (make-parameter #t))
+(define debug-st-runtime (make-parameter #t)) ;; @@DEBUG
 
 (define (saferIsKindOf: self someClass)
   (let loop ( (super-class (perform: self 'class)) )
@@ -736,10 +736,10 @@ Structure:
                 (arguments ($ self 'arguments))
               )
 ;;@@DEBUG{
-(when (debug-st-runtime)
-  (format #t
-          "~%send failed: ~a >> ~a ~a~%"
-          receiver selector arguments))
+           (when (debug-st-runtime)
+             (format #t
+                     "~%send failed: ~a >> ~a ~a~%"
+                     receiver selector arguments))
 ;;@@DEBUG}
     (cond
      ((in-send-failed?)
