@@ -82,8 +82,8 @@
      (string->symbol "Class class") ; name
      (clone-behavior st-metaClass-behavior) ; I am a MetaClass
      combined-metaClass-ivar-names  ;; my slot-names
-     (clone-behavior st-class-behavior) ; instances are Classes
-     combined-class-ivar-names      ;; instance ivar-names
+     st-class-behavior		; instances are Classes
+     combined-class-ivar-names	; instance ivar-names
      '() ; class
      '() ; super
 ) )
@@ -92,7 +92,7 @@
 (define Class
   (make-protoClass
      'Class ; name
-     (clone-behavior st-class-behavior)
+     st-class-behavior
      combined-class-ivar-names  ;; my ivar-names
      (clone-behavior st-class-behavior)
      combined-class-ivar-names ;; instance ivar-names
@@ -116,7 +116,7 @@
      'MetaClass
      (clone-behavior st-class-behavior)   ;; MetaClass is a class
      combined-class-ivar-names   ;; slot-names
-     (clone-behavior st-metaClass-behavior) ;; Who's instances are meta-classes
+     st-metaClass-behavior ;; Who's instances are meta-classes
      combined-metaClass-ivar-names  ;; child-ivar-names
      Class ;; class
      Class ;; super is really ClassDescription
@@ -157,7 +157,7 @@
     )
     (setClass:     newInst    selfClass)
     (perform:with: newInst    'superclass: superClass)
-;;    (addSubclass:  superClass newInst)
+    (addSubclass:  superClass newInst)
     (perform:with: newInst    'name:       nameSymbol)
     (perform:with:
        newInst ;; ANSI requires a fresh (unshared) list
@@ -308,26 +308,26 @@
 
 ;;; Make proper linkages
 
-(perform:with: ClassClass     'thisClass:  Class)
+    (perform:with: ClassClass     'thisClass:  Class)
 
-(setClass:     ClassClass     MetaClass)
-(perform:with: MetaClassClass 'thisClass:  MetaClass)
-(perform:with: MetaClassClass 'superclass: ClassClass) ;; ClassDescription class
+    (setClass:     ClassClass     MetaClass)
+    (perform:with: MetaClassClass 'thisClass:  MetaClass)
+    (perform:with: MetaClassClass 'superclass: ClassClass) ;; ClassDescription class
 
-(setClass:     MetaClassClass  MetaClass) ;; Nota Bene!
-(perform:with: MetaClass      'superclass: Class) ;; ClassDescription
+    (setClass:     MetaClassClass  MetaClass) ;; Nota Bene!
+    (perform:with: MetaClass      'superclass: Class) ;; ClassDescription
 
 ;; Fake it until we fixup relations, below
-(primAddSelector:withMethod:
+    (primAddSelector:withMethod:
      (behavior MetaClass)
      'allInstVarNames (lambda (self) combined-metaClass-ivar-names))
 
-(primAddSelector:withMethod:
+    (primAddSelector:withMethod:
      (behavior MetaClassClass)
      'allInstVarNames (lambda (self) combined-class-ivar-names))
 
-'st-metaclass
-) )
+    'st-metaclass
+    ) )
 
 )
 
