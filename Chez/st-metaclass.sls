@@ -56,6 +56,10 @@
     (perform:with: class-instance 'superclass: super) ;; may be nil
     (perform:with: class-instance 'instanceVariables: child-ivar-names)
     (perform:with: class-instance 'methodDict: instMethodDict)
+    (addSelector:withMethod:
+     class-instance
+     'initialize
+     (lambda (self) self))
     (unless (st-nil? class)
       (addSubclass: class class-instance))
    ;; return the new Class instance
