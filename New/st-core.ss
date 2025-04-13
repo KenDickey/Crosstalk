@@ -54,8 +54,12 @@
 ;;; Enable reflective introspection
 (smalltalkAt:put: 'Smalltalk Smalltalk)
 
+;;; Bootstrap:
+;;;  [1] Make "raw" Class objects with accessors
+;;;  [2] Setup basic book-keeping: superclass, metaClass, ivar-names, ..
+;;;  [3] Fill-in core methods with "copy-down" semantics.
 
-;;;; Each class knows its instance variable names (if any).
+;;; Each class knows its instance variable names (if any).
 
 (define combined-classDescription-var-names
   '(superclass
@@ -88,7 +92,24 @@
 
 ;;; Setup core class/superclass relations
 
+(define MetaClass
+  (make-st-object st-metaclass-behavior
+                  (length combined-metaClass-ivar-names)))
+(define Class
+  (make-st-object st-class-behavior
+                  (length combined-class-ivar-names)))
 
+(define ClassDescription
+  (make-st-object @@st-metaclass-behavior
+                  (length combined-classDescription-var-names)))
+
+(define Behavior
+  (make-st-object st-behavior-behavior
+                  (length combined-class-ivar-names))))
+
+(define Object
+    (make-st-object st-object-behavior
+                    (length combined-class-ivar-names)))
 
 
 
