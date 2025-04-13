@@ -758,7 +758,8 @@
 (define st-identity-dictionary-behavior
 				(make-mDict-placeholder 'IdentityDictionary))
 (define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
-
+(define st-class-behavior	(make-mDict-placeholder 'Class))
+(define st-metaClass-behavior	(make-mDict-placeholder 'MetaClass))
 
 ;;; Some basics
 
