@@ -38,10 +38,11 @@
    send-failed		; (send-failed receiver selector rest-args)
    basicNew:		; (basicNew: classSelf num-added-vars)
    setClass:
+   className:
+   addSubclass:
+   printString
    class
    superclass
-   className:
-   printString
    isKindOf:
    respondsTo:
    doesNotUnderstand:	; (doesNotUnderstand: self selector)
@@ -1173,12 +1174,13 @@
 
 
 (define (addSubclass: classSelf subclass)
-  (let ( (my-subclasses (perform: classSelf 'subclasses)) )
-    (perform:with: classSelf
-                   'subclasses:
-                   (cons subclass
-                         my-subclasses))
-) )
+  (unless (st-nil? classSelf)
+    (let ( (my-subclasses (perform: classSelf 'subclasses)) )
+      (perform:with: classSelf
+                     'subclasses:
+                     (cons subclass
+                           my-subclasses))
+) ) )
 
 (define (rebase-mdict! aClass public-behavior)
   (behavior-add-from-other public-behavior

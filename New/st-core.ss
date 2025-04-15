@@ -77,7 +77,8 @@
 ;;; 
 
 (define behavior-ivar-names
-  '(superclass
+  '(class
+    superclass
     methodDict	;; shared by all instances
     format))	;; layout/structure
 
@@ -105,42 +106,46 @@
 
 ;;; Setup core class/superclass relations
 
+(define (make-protoClass name mDict super ivar-names)
+  (let ( (aClass (make-st-object mDict (length class-ivar-names))) )
+    (add-getters&setters mDict
+			 num-header-slots
+			 class-ivar-names)
+    ($: aClass 'instanceVariables: ivar-names)
+    ($: aClass 'superclass: super)
+    (addSubclass: super aClass)
+    ($: aClass 'methodDict: mDict)
+    aClass)
+  )
+
 (define Object ;; an object'a Class
-  (make-st-object st-object-behavior 0))
+  (make-protoClass 'Object
+		   st-object-behavior
+		   st-nil
+		   st-nil))
 
 (define Behavior
-  (make-st-object st-behavior-behavior
-                  (length behavior-ivar-names)))
-(add-getters&setters st-behavior-behavior
-                     num-header-slots
-                     behavior-ivar-names)
+  (make-protoClass 'Behavior
+		   st-behavior-behavior
+		   Object
+		   behavior-ivar-names))
 
 (define ClassDescription
-  (make-st-object st-classDescription-behavior
-                  (length classDescription-ivar-names)))
-(add-getters&setters st-classDescription-behavior
-                     num-header-slots
-                     classDescription-ivar-names)
-(perform:with: ClassDescription
-               'instanceVariables: classDescription-ivar-names)
-
+  (make-protoClass 'ClassDescription
+		   st-classDescription-behavior
+		   Behavior
+		   classDescription-ivar-names))
 (define Class
-  (make-st-object st-class-behavior
-                  (length class-ivar-names)))
-(add-getters&setters st-class-behavior
-                     num-header-slots
-                     class-ivar-names)
-(perform:with: Class
-               'instanceVariables: class-ivar-names)
+  (make-protoClass 'Class
+		   st-class-behavior
+		   ClassDescription
+		   class-ivar-names))
 
 (define MetaClass
-  (make-st-object st-metaClass-behavior
-                  (length metaClass-ivar-names)))
-(add-getters&setters st-metaClass-behavior
-                     num-header-slots
-                     metaClass-ivar-names)
-(perform:with: MetaClass
-               'instanceVariables: metaClass-ivar-names)
+  (make-protoClass 'MetaClass
+		   st-metaClass-behavior
+		   ClassDescription
+		   metaClass-ivar-names))
 
 ;;; MetaClasses for the above
 ;;; Class Class, MetaClass Class, ..
@@ -150,13 +155,13 @@
                      num-header-slots
                      metaClass-ivar-names)
     ($: aMetaClass 'name: name)
-    ($: aMetaClass 'class: MetaClass)
     ($: aMetaClass 'thisClass: for-class)
     (unless (st-nil? superclass)
       ($: aMetaClass 'superclass: superclass)
-      (addSubClass: superclass aMetaClass))
+      (addSubclass: superclass aMetaClass))
     ($: aMetaClass 'instanceVariables: ivar-names)
     ($: aMetaClass 'methodDict: mDict)
+    ($: for-class 'class: aMetaClass)
     aMetaClass)
   )
 
@@ -177,9 +182,9 @@
              (make-method-dictionary))
   )
 
-(define ClassDescrptionClass
-  (make-meta (string->symbol "ClassDescrption class")
-             ClassDescrption
+(define ClassDescription
+  (make-meta (string->symbol "ClassDescription class")
+             ClassDescription
              BehaviorClass
              classDescription-ivar-names
              (make-method-dictionary))
@@ -202,12 +207,30 @@
              (make-method-dictionary))
   )
 
+;; and of course UndefinedObject
+
+(define UndefinedObject
+  (make-protoClass 'UndefinedObject
+		   st-nil-behavior
+		   Object
+		   st-nil))
+
+(define UndefinedObjectClass
+  (make-meta (string->symbol "UndefinedObject class")
+             Object
+             UndefinedObject
+             st-nil
+             (make-method-dictionary))
+  )
+
+
 ;; make accessable to Smalltalk
-(smalltalkAt:Put: 'Object Object)
-(smalltalkAt:Put: 'Behavior Behavior)
-(smalltalkAt:Put: 'ClassDescription ClassDescription)
-(smalltalkAt:Put: 'Class Class)
-(smalltalkAt:Put: 'MetaClass MetaClass)
+(smalltalkAt:put: 'Object Object)
+(smalltalkAt:put: 'Behavior Behavior)
+(smalltalkAt:put: 'ClassDescription ClassDescription)
+(smalltalkAt:put: 'Class Class)
+(smalltalkAt:put: 'MetaClass MetaClass)
+(smalltalkAt:put: 'UndefinedObject UndefinedObject)
 
 
 ;;;			--- E O F ---			;;;
