@@ -159,6 +159,11 @@
    st-identity-dictionary-behavior
 ;;; for DNU
    st-messageSend-behavior
+;;; Other bootstrap
+   st-behavior-behavior
+   st-classDescription-behavior
+   st-class-behavior
+   st-metaClass-behavior
 
 ;;; Debug helpers (interactive)
 
@@ -747,6 +752,12 @@
 (define st-bytearray-behavior    (make-mDict-placeholder 'ByteArray))
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
 (define st-object-behavior       (make-mDict-placeholder 'Object))
+(define st-behavior-behavior     (make-mDict-placeholder 'Behavior))
+(define st-classDescription-behavior
+  (make-mDict-placeholder 'ClassDescription))
+(define st-class-behavior        (make-mDict-placeholder 'Class))
+(define st-metaClass-behavior    (make-mDict-placeholder 'MetaClass))
+(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
 (define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))
@@ -757,9 +768,6 @@
 (define st-dictionary-behavior   (make-mDict-placeholder 'Dictionary))
 (define st-identity-dictionary-behavior
 				(make-mDict-placeholder 'IdentityDictionary))
-(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
-(define st-class-behavior	(make-mDict-placeholder 'Class))
-(define st-metaClass-behavior	(make-mDict-placeholder 'MetaClass))
 
 ;;; Some basics
 
