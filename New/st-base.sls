@@ -104,7 +104,7 @@
    st-object-length	; (st-object-length obj)
    ;;			;  -> # vector slots less header
    addSelector:withMethod:
-   
+   addSelector:withMethod:arity:   
 
 ;;; Basic Objects
 
@@ -550,7 +550,7 @@
 (define (annotate-procedure-with-arity proc name-symbol arity)
   ;; Some selectors (e.g. < , <=) do NOT have colons
   ;; which can be counted to know their arity.
-  ;; RAW Arity: self arg counted
+  ;; RAW Arity: self arg counted, so min arity is 1
   (make-arity-wrapper-procedure
    proc
    (arity->mask arity)
@@ -798,6 +798,14 @@
        subs))
   classSelf
 )
+
+(define (addSelector:withMethod:arity: classSelf selector method arity)
+  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
+  (subclassAddSelector:withMethod:
+   classSelf
+   selector
+   (annotate-procedure-with-arity method selector arity)))
+
 
 ;;; ============================================
 ;;; Behavior adds intelligence to structure

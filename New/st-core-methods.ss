@@ -99,26 +99,26 @@
         'respondsTo:    ;; ANSI
         respondsTo:)
 
-(primAddSelector:withMethod:arity:
-        st-object-behavior
+(addSelector:withMethod:arity:
+        Object
         '==    ;; ANSI
         (lambda (self other) (eq? self other))
 	2)
 
-(primAddSelector:withMethod:arity:
-        st-object-behavior
+(addSelector:withMethod:arity:
+        Object
         '~~    ;; ANSI
         (lambda (self other) (not (eq? self other)))
 	2)
 
-(primAddSelector:withMethod:arity:
-        st-object-behavior
+(addSelector:withMethod:arity:
+        Object
         '=   ;; ANSI
         (lambda (self other) (eqv? self other))
 	2)
 
-(primAddSelector:withMethod:arity:
-        st-object-behavior
+(addSelector:withMethod:arity:
+        Object
         '~=   ;; ANSI
         (lambda (self other) (not (eqv? self other)))
 	2)
@@ -250,8 +250,8 @@
         'value
         (lambda (self) self)) ;; St ideom
 
-(primAddSelector:withMethod:arity:
-     st-object-behavior
+(addSelector:withMethod:arity:
+     Object
      '>>
 ;; "Answer the compiled method associated with the argument, selector (a 
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
