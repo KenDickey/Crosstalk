@@ -182,7 +182,7 @@
              (make-method-dictionary))
   )
 
-(define ClassDescription
+(define ClassDescriptionClass
   (make-meta (string->symbol "ClassDescription class")
              ClassDescription
              BehaviorClass
@@ -194,7 +194,7 @@
 (define ClassClass
   (make-meta (string->symbol "Class class")
              Class
-             ClassDescription
+             ClassDescriptionClass
              class-ivar-names
              (make-method-dictionary))
   )
@@ -202,7 +202,7 @@
 (define MetaClassClass
   (make-meta (string->symbol "MetaClass class")
              MetaClass
-             ClassDescription
+             ClassDescriptionClass
              metaClass-ivar-names
              (make-method-dictionary))
   )
