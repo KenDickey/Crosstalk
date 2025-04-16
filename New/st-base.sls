@@ -76,6 +76,7 @@
    $:::: perform:with:with:with:with:
    $&    perform:withArguments: ;; args array
    $*    perform:withArgsList:  ;; args list
+   perform:withArguments:inSuperclass:
 
 ;;;   "Send to Super"
 
@@ -102,6 +103,8 @@
    st-obj-behavior-set!	; (st-obj-behavior-set! obj new-behavior)
    st-object-length	; (st-object-length obj)
    ;;			;  -> # vector slots less header
+   addSelector:withMethod:
+   
 
 ;;; Basic Objects
 
@@ -364,6 +367,123 @@
 (define $:::: perform:with:with:with:with:)
 (define $&    perform:withArguments:) ;; args array
 (define $*    perform:withArgsList:)  ;; args list
+
+
+;;; "send to super"
+;
+; Message sent to a superclass method may invoke a message to
+; its superclass method, so one has to track the meaning of
+; "super" to allow multi-level super dispatch.
+;
+; Given multithreading, multiple comtexts may be active, so
+; one cannot use, e.g. a hidden ivar, as the same object may
+; me active in multiple threads.
+;
+; Two strategies are
+;  [1] Use an object wrapper, which would be per-thread to
+; keep track of super.
+;  [2] Use a dynamic thread-local variable to keep track of super.
+;
+; The strategy here is [2], using Scheme's parameter objects with
+; an association-list of (.. (obj super) ..) as per-thread stacks.
+; Per-thread stacks are required as multiple send-to-super's may be
+; used within a given thread.
+;
+; [2] has less mechanical involvement with dispatch where it is
+; not used.  So send-to-super pays no cost where it is not used.
+
+(define super-chain-alist (make-parameter '()))
+
+(define (next-super-for obj)
+  ;; Answer next superclass for obj
+  (superclass
+   (cond
+    ((assq obj (super-chain-alist)) => cdr)
+    (else (class obj))))
+)
+
+(define (superPerform: self selectorSym)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      ((primLookup: ($ the-super 'methodDict) selectorSym) self))))
+
+(define (superPerform:with: self selectorSym arg)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg))))
+
+(define (superPerform:with:with: self selectorSym arg1 arg2)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2))))
+
+(define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3))))
+
+(define (superPerform:with:with:with:with:
+         self selectorSym arg1 arg2 arg3 arg4)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3 arg4))))
+
+(define (superPerform:withArguments: self selectorSym argsArray)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+             (cons self (vector->list argsArray))))))
+
+(define (superPerform:withArgsList: self selectorSym argsList)
+  (let ( (the-super   (next-super-for self))
+         (super-alist (super-chain-alist))
+       )
+    (parameterize ( (super-chain-alist
+                     (cons (cons self the-super)
+                           super-alist))
+                  )
+      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+             (cons self argsList)))))
+
+;;; Shorter Syntax
+(define %     superPerform:)
+(define %:    superPerform:with:)
+(define %::   superPerform:with:with:)
+(define %:::  superPerform:with:with:with:)
+(define %:::: superPerform:with:with:with:with:)
+(define %&    superPerform:withArguments:) ;; args array
+(define %*    superPerform:withArgsList:)  ;; args list
+
 
 ;; shortcuts
 (define (class      obj) (perform: obj 'class))
@@ -644,6 +764,40 @@
 (define (setClass: obj class)
   (primSetClass: (behavior obj) class))
 
+
+;;; Track which methods are added to a particular class
+;;;  so they are not copied over from above.
+;;  See #subclassAddSelector:withMethod: below
+(define (add-method-name-to-myMethods self selector)
+  (let ( (old-names (perform: self 'myMethodNames)) )
+    (perform:with: self 'myMethodNames: (cons selector old-names))
+    self
+) )
+
+;;; Subclasses inherit mDict methods from their superclass
+;;;  so adding a selector_method to a class affects
+;;;  its instances, NOT the class instance itself.
+(define (addSelector:withMethod: classSelf selector method)
+  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
+  (subclassAddSelector:withMethod: classSelf selector method))
+
+;;; NB: method added to methodDict of class
+;;; => behavior of instances, not class itself !!
+(define (subclassAddSelector:withMethod:
+         classSelf selector method)
+  (let* ( (mDict  ($ classSelf 'methodDict))
+          (subs   ($ classSelf 'subclasses))
+        )
+    (primAddSelector:withMethod: mDict selector method)
+    (for-each
+       (lambda (subClass)
+       ;; if not overriden, copy down
+       ;; Non-standard: avoids dynamic super-chain lookup
+         (unless (memq selector (perform: subClass 'myMethodNames))
+           (subclassAddSelector:withMethod: subClass selector method)))
+       subs))
+  classSelf
+)
 
 ;;; ============================================
 ;;; Behavior adds intelligence to structure
@@ -1186,46 +1340,6 @@
   (behavior-add-from-other public-behavior
                            ($ aClass 'methodDict))
   ($: aClass 'methodDict: public-behavior))
-
-;;; Send to super
-(define (superPerform: self selectorSym)
-  ((lookupSelector: (superclass (class self)) selectorSym) self))
-
-(define (superPerform:with: self selectorSym arg)
-  ((lookupSelector: (superclass (class self)) selectorSym) self arg))
-
-(define (superPerform:with:with: self selectorSym arg1 arg2)
-  ((lookupSelector: (superclass (class self)) selectorSym)
-   self arg1 arg2))
-
-(define (superPerform:with:with:with:
-         self selectorSym arg1 arg2 arg3)
-  ((lookupSelector: (superclass (class self)) selectorSym)
-   self arg1 arg2 arg3))
-
-(define (superPerform:with:with:with:with:
-         self selectorSym arg1 arg2 arg3 arg4)
-  ((lookupSelector: (superclass (class self)) selectorSym)
-   self arg1 arg2 arg3 arg4))
-
-(define (superPerform:withArguments: self selectorSym argsArray)
-  (superPerform:withArgsList:
-   self
-   selectorSym
-   (vector->list argsArray)))
-
-(define (superPerform:withArgsList: self selectorSym argsList)
-  (apply (lookupSelector: (superclass (class self)) selectorSym)
-         (cons self argsList)))
-
-;;; Shorter Syntax
-(define %     superPerform:)
-(define %:    superPerform:with:)
-(define %::   superPerform:with:with:)
-(define %:::  superPerform:with:with:with:)
-(define %:::: superPerform:with:with:with:with:)
-(define %&    superPerform:withArguments:) ;; args array
-(define %*    superPerform:withArgsList:)  ;; args list
 
 
 ) ;; library

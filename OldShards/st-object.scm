@@ -262,7 +262,7 @@
 (primAddSelector:withMethod:
  	st-object-behavior
         'hash   ;; ANSI
-        object-hash) ;; @@CHECK-ME@@ equal-hash
+        equal-hash)
 
 (primAddSelector:withMethod:
  	st-object-behavior
