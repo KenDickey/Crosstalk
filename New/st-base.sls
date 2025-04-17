@@ -38,7 +38,6 @@
    send-failed		; (send-failed receiver selector rest-args)
    basicNew:		; (basicNew: classSelf num-added-vars)
    setClass:
-   className:
    addSubclass:
    printString
    class
@@ -173,8 +172,10 @@
 
    smalltalk-keys	; (selectors Smalltalk)
    selectors		; (selectors obj) -> method names
-   display-selectors
-   inst-method-names
+   name			; (name 3) -> 'Integer
+   className		; (className thing) ~> (name (class thing))
+   display-selectors	; (display-selectors obj) -> selectors of (behavior obj)
+   inst-method-names    ; (inst-method-names aClass) -> ($ aClass 'myMethodNames)
    display-ivars	; (display-ivars st-obj)
    display-obj		; obj printString
    describe		; (describe object)
@@ -282,6 +283,26 @@
                    (send-failed self symbol rest-args)))
                    ;; (make-messageSend self symbol rest-args)))
 )
+
+(define (safer-printString obj)
+  (cond 
+   ((respondsTo: obj 'printOn:)
+    (perform: obj 'printString)
+    )
+   ((respondsTo: obj 'class)
+    (let ( (class (perform: obj 'class)) )
+      (cond
+       ((or (symbol? class) (string? class))
+        (format #f "<instance of #~a>" class)
+        )
+       ((respondsTo: class 'name)
+        (format #f "<instance of #~a>" (perform: class 'name)))
+       (else (format #f "~a" obj)))
+      ))
+   (else "#<object>")
+   )
+)
+
 
 (define (send-failed receiver selector rest-args)
   (let ( (messageSend (make-messageSend receiver selector rest-args)) )
@@ -501,10 +522,69 @@
 (define (respondsTo: self selector)
   (primIncludesSelector: (behavior self) selector))
 
-(define (className: thing)
+(define (describe obj)
+  (cond
+   ((null? obj) (display "nil")
+    )
+   ((list? obj)
+    (display "a list of length ")
+    (display (length obj))
+    )
+   ((st-object? obj)
+    (display (safer-printString obj))
+    )
+   ((vector? obj)
+    (display "an array of length ")
+    (display (vector-length obj))
+    )
+   ((bytevector? obj)
+    (display "a bytevector of length ")
+    (display (bytevector-length obj))
+    )
+   ((number? obj)
+    (display "a number with value: ")
+    (display obj)
+    )
+   ((eq? obj #t)  (display "true")
+    )
+   ((eq? obj #f) (display "false")
+    )
+   ((string? obj)
+    (display "a string of length ")
+    (display (string-length obj))
+    )
+   ((symbol? obj)
+    (display "a symbol of length ")
+    (display (string-length (symbol->string obj)))
+    )
+   ((char? obj)
+    (display "$") (display obj)
+    (display " is a character")
+    )
+   ((port? obj)
+    (if (binary-port? obj)
+        (display "binary ")
+        (display "text "))
+    (if (input-port? obj)
+        (display "input Stream")
+        (display "output Stream"))
+    )  
+   ;; @@FIXME: ...
+   (else (format #t "~a" obj)) ;; procedures..
+   )
+  (newline)
+ )
+
+
+(define (name thing)
+  (if (respondsTo: thing 'name)
+      ($ thing 'name)
+      (describe thing)))
+
+(define (className thing)
   (cond
    ((respondsTo: thing 'class)
-    (let ( (thing-class (class thing)) )
+    (let ( (thing-class ($ thing 'class)) )
       (if (respondsTo: thing-class 'name)
         ($ thing-class 'name)
         (format #f "~a" thing-class)))
@@ -770,7 +850,8 @@
 ;;  See #subclassAddSelector:withMethod: below
 (define (add-method-name-to-myMethods self selector)
   (let ( (old-names (perform: self 'myMethodNames)) )
-    (perform:with: self 'myMethodNames: (cons selector old-names))
+    (unless (memq selector old-names)
+      (perform:with: self 'myMethodNames: (cons selector old-names)))
     self
 ) )
 
@@ -778,6 +859,9 @@
 ;;;  so adding a selector_method to a class affects
 ;;;  its instances, NOT the class instance itself.
 (define (addSelector:withMethod: classSelf selector method)
+  (primAddSelector:withMethod: ($ classSelf 'methodDict)
+			       selector
+			       method)
   (add-method-name-to-myMethods classSelf selector) ;; def'ed here
   (subclassAddSelector:withMethod: classSelf selector method))
 
@@ -785,17 +869,16 @@
 ;;; => behavior of instances, not class itself !!
 (define (subclassAddSelector:withMethod:
          classSelf selector method)
-  (let* ( (mDict  ($ classSelf 'methodDict))
-          (subs   ($ classSelf 'subclasses))
-        )
-    (primAddSelector:withMethod: mDict selector method)
-    (for-each
-       (lambda (subClass)
-       ;; if not overriden, copy down
-       ;; Non-standard: avoids dynamic super-chain lookup
-         (unless (memq selector (perform: subClass 'myMethodNames))
-           (subclassAddSelector:withMethod: subClass selector method)))
-       subs))
+  (for-each
+   (lambda (subClass)
+     ;; if not overriden, copy down
+     ;; Non-standard: avoids dynamic super-chain lookup
+     (unless (memq selector (perform: subClass 'myMethodNames))
+       (primAddSelector:withMethod: ($ subClass 'methodDict)
+				    selector
+				    method)
+       (subclassAddSelector:withMethod: subClass selector method)))
+   ($ classSelf 'subclasses))
   classSelf
 )
 
@@ -959,25 +1042,6 @@
    symbol<?
    (perform: class 'myMethodNames)))
     
-(define (safer-printString obj)
-  (cond 
-   ((respondsTo: obj 'printOn:)
-    (perform: obj 'printString)
-    )
-   ((respondsTo: obj 'class)
-    (let ( (class (perform: obj 'class)) )
-      (cond
-       ((or (symbol? class) (string? class))
-        (format #f "<instance of #~a>" class)
-        )
-       ((respondsTo: class 'name)
-        (format #f "<instance of #~a>" (perform: class 'name)))
-       (else (format #f "~a" obj)))
-      ))
-   (else "#<object>")
-   )
-)
-
 (define (display-obj obj) (display (safer-printString obj)))
   
 ;; Most useful..
@@ -1010,58 +1074,6 @@
   (newline)
 )
 
-(define (describe obj)
-  (cond
-   ((null? obj) (display "nil")
-    )
-   ((list? obj)
-    (display "a list of length ")
-    (display (length obj))
-    )
-   ((st-object? obj)
-    (display (safer-printString obj))
-    )
-   ((vector? obj)
-    (display "an array of length ")
-    (display (vector-length obj))
-    )
-   ((bytevector? obj)
-    (display "a bytevector of length ")
-    (display (bytevector-length obj))
-    )
-   ((number? obj)
-    (display "a number with value: ")
-    (display obj)
-    )
-   ((eq? obj #t)  (display "true")
-    )
-   ((eq? obj #f) (display "false")
-    )
-   ((string? obj)
-    (display "a string of length ")
-    (display (string-length obj))
-    )
-   ((symbol? obj)
-    (display "a symbol of length ")
-    (display (string-length (symbol->string obj)))
-    )
-   ((char? obj)
-    (display "$") (display obj)
-    (display " is a character")
-    )
-   ((port? obj)
-    (if (binary-port? obj)
-        (display "binary ")
-        (display "text "))
-    (if (input-port? obj)
-        (display "input Stream")
-        (display "output Stream"))
-    )  
-   ;; @@FIXME: ...
-   (else (format #t "~a" obj)) ;; procedures..
-   )
-  (newline)
- )
 
 (define (stringify thunk)
   (parameterize ( (current-output-port
@@ -1242,17 +1254,17 @@
 ;;         Class        Class class              "
 ;;         MetaClass    MetaClass class          "
 
-(define (allInstVarNames self)
-  (let ( (ivarNames (perform: self 'instanceVariables))
-         (super     (perform: self 'superclass))
+(define (allInstVarNames aClass)
+  (let ( (ivarNames (perform: aClass 'instanceVariables))
+         (super     (perform: aClass 'superclass))
        )
-    (if (null? super)
+    (if (st-nil? super)
         (list-copy ivarNames)
         (append (perform: super 'allInstVarNames) ivarNames))
 ) )
 
-(define (allSuperclasses self)
-  (let ( (mySuper (perform: self 'superclass)) )
+(define (allSuperclasses aClass)
+  (let ( (mySuper (perform: aClass 'superclass)) )
     (if (null? mySuper)
         st-nil
         (append (allSuperclasses mySuper) (list mySuper)))

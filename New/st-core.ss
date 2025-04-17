@@ -125,6 +125,7 @@
     ;;; copydown
     ;; (unless (st-nil? super)
     ;;   (behavior-add-from-other mDict ($ super 'methodDict)))
+    ($: aClass 'name: name)
     aClass)
   )
 
@@ -161,8 +162,12 @@
 
 ;;; MetaClasses for the above
 ;;; Class Class, MetaClass Class, ..
-(define (make-meta name for-class superclass ivar-names mDict)
-  (let ( (aMetaClass (make-st-object mDict (length all-metaClass-ivar-names))) )
+(define (make-meta name for-class superclass ivar-names)
+  (let* ( (mDict (make-method-dictionary))
+	  (aMetaClass
+	   (make-st-object mDict
+			  (length all-metaClass-ivar-names)))
+        )
     (add-getters&setters mDict
                      num-header-slots
                      all-metaClass-ivar-names)
@@ -182,42 +187,32 @@
   (make-meta (string->symbol "Object class")
              Object
              Class
-             st-nil
-             (make-method-dictionary))
-  )
+             st-nil))
 
 (define BehaviorClass
   (make-meta (string->symbol "Behavior class")
              Behavior
              ObjectClass
-             behavior-ivar-names
-             (make-method-dictionary))
-  )
+             behavior-ivar-names))
 
 (define ClassDescriptionClass
   (make-meta (string->symbol "ClassDescription class")
              ClassDescription
              BehaviorClass
-             classDescription-ivar-names
-             (make-method-dictionary))
-)
+             classDescription-ivar-names))
   
 
 (define ClassClass
   (make-meta (string->symbol "Class class")
              Class
              ClassDescriptionClass
-             class-ivar-names
-             (make-method-dictionary))
-  )
+             class-ivar-names))
 
 (define MetaClassClass
   (make-meta (string->symbol "MetaClass class")
              MetaClass
              ClassDescriptionClass
-             metaClass-ivar-names
-             (make-method-dictionary))
-  )
+             metaClass-ivar-names))
 
 ;; and of course UndefinedObject
 
@@ -229,11 +224,9 @@
 
 (define UndefinedObjectClass
   (make-meta (string->symbol "UndefinedObject class")
-             Object
              UndefinedObject
-             st-nil
-             (make-method-dictionary))
-  )
+             ObjectClass
+             st-nil))
 
 
 ;; make accessable to Smalltalk
@@ -243,6 +236,12 @@
 (smalltalkAt:put: 'Class Class)
 (smalltalkAt:put: 'MetaClass MetaClass)
 (smalltalkAt:put: 'UndefinedObject UndefinedObject)
+
+;; For DEBUG printing
+(primAddSelector:withMethod:
+ st-symbol-behavior
+ 'asString
+ (lambda (self) (symbol->string self)))
 
 
 ;;;			--- E O F ---			;;;

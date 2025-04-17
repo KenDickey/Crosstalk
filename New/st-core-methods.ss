@@ -50,6 +50,7 @@
         'isNil
         (lambda (self) st-true))
 
+
 ;;; Object
 
 ($: Object 'myMethodNames: (selectors Object))
@@ -143,7 +144,7 @@
         'printOn:  ;; ANSI
         (lambda (self outport)
           (let ( (vowels (string->list "aeiouAEIOU"))
-                 (className ($ (className: self) 'asString))
+                 (className ($ (className self) 'asString))
                )
             (display
              (string-append
@@ -260,6 +261,14 @@
        (primLookup: (perform: self 'methodDict) selectorSymbol))
      2)
 
+(addSelector:withMethod:
+     Object
+     'allSuperclasses
+     allSuperclasses)
+
+(addSelector:withMethod: Object
+                         'allInstVarNames
+                         allInstVarNames)
 
 (addSelector:withMethod:
      Object
@@ -299,8 +308,8 @@
                          addSelector:withMethod:)
 
 (addSelector:withMethod: (class Object)
-                         'allInstVarNames
-                         allInstVarNames)
+                          'allInstVarNames
+                          allInstVarNames)
 
 ;; ObjectClass
 
@@ -364,6 +373,11 @@ Because Object is the root of the inheritance tree, methods are often defined in
        (or (eq? symbol 'Behavior)
            (superPerform:with: self 'is: symbol))))
 
+(addSelector:withMethod:
+     Behavior
+     'allSuperclasses
+     allSuperclasses)
+
 (perform:with:
      Behavior
      'category: 'Kernel-Classes)
@@ -384,6 +398,11 @@ Because Object is the root of the inheritance tree, methods are often defined in
        (or (eq? symbol 'ClassDescription)
            (superPerform:with: self 'is: symbol))))
 
+(addSelector:withMethod:
+     ClassDescription
+     'allInstVarNames
+     allInstVarNames)
+
 (perform:with:
      ClassDescription
      'category: 'Kernel-Classes)
@@ -403,6 +422,11 @@ I am an abstract class, in particular, my facilities are intended for inheritanc
 )
 
 ;;; Class
+
+(addSelector:withMethod:
+     Class
+     'allSubclasses
+     allSubclasses)
 
 (addSelector:withMethod:
      Class
@@ -436,6 +460,11 @@ My instances describe the representation and behavior of objects. I add more com
      (lambda (self symbol)
        (or (eq? symbol 'MetaClass)
            (superPerform:with: self 'is: symbol))))
+
+(addSelector:withMethod:
+     Class
+     'allSubclasses
+     allSubclasses)
 
 (perform:with:
      MetaClass
