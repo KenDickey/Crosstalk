@@ -83,46 +83,56 @@
     format))	;; layout/structure
 
 (define classDescription-ivar-names
-  (append behavior-ivar-names
-          '(instanceVariables
-            organization)))
+  '(instanceVariables
+    organization))
 
 (define metaClass-ivar-names
-  (append classDescription-ivar-names
-          '(subclasses
-            name
-            myMethodNames ;; used to avoid overwrite
-            ;; NB: pools are depricated !!
-            thisClass)))
+  '(subclasses
+    name
+    myMethodNames ;; used to avoid overwrite
+    ;; NB: pools are depricated !!
+    thisClass))
+
+(define all-metaClass-ivar-names
+  (append  behavior-ivar-names
+	   classDescription-ivar-names
+	   metaClass-ivar-names))
 
 (define class-ivar-names
-  (append classDescription-ivar-names
-          '(subclasses
-            name
-            myMethodNames ;; used to avoid overwrite
-            ;; NB: pools are depricated !!
-            category
-            comment)))
+  '(subclasses
+    name
+    myMethodNames ;; used to avoid overwrite
+    ;; NB: pools are depricated !!
+    category
+    comment))
+
+(define all-class-ivar-names
+  (append  behavior-ivar-names
+	   classDescription-ivar-names
+	   class-ivar-names))
 
 ;;; Setup core class/superclass relations
 
-(define (make-protoClass name mDict super ivar-names)
-  (let ( (aClass (make-st-object mDict (length class-ivar-names))) )
+(define (make-protoClass name mDict super local-ivars)
+  (let ( (aClass (make-st-object mDict (length all-class-ivar-names))) )
     (add-getters&setters mDict
 			 num-header-slots
-			 class-ivar-names)
-    ($: aClass 'instanceVariables: ivar-names)
+			 all-class-ivar-names)
+    ($: aClass 'instanceVariables: local-ivars)
     ($: aClass 'superclass: super)
     (addSubclass: super aClass)
     ($: aClass 'methodDict: mDict)
+    ;;; copydown
+    ;; (unless (st-nil? super)
+    ;;   (behavior-add-from-other mDict ($ super 'methodDict)))
     aClass)
   )
 
 (define Object ;; an object'a Class
   (make-protoClass 'Object
 		   st-object-behavior
-		   st-nil
-		   st-nil))
+		   st-nil   ; nil superclass
+		   st-nil)) ; no local ivars
 
 (define Behavior
   (make-protoClass 'Behavior
@@ -135,6 +145,7 @@
 		   st-classDescription-behavior
 		   Behavior
 		   classDescription-ivar-names))
+
 (define Class
   (make-protoClass 'Class
 		   st-class-behavior
@@ -147,13 +158,14 @@
 		   ClassDescription
 		   metaClass-ivar-names))
 
+
 ;;; MetaClasses for the above
 ;;; Class Class, MetaClass Class, ..
 (define (make-meta name for-class superclass ivar-names mDict)
-  (let ( (aMetaClass (make-st-object mDict (length metaClass-ivar-names))) )
+  (let ( (aMetaClass (make-st-object mDict (length all-metaClass-ivar-names))) )
     (add-getters&setters mDict
                      num-header-slots
-                     metaClass-ivar-names)
+                     all-metaClass-ivar-names)
     ($: aMetaClass 'name: name)
     ($: aMetaClass 'thisClass: for-class)
     (unless (st-nil? superclass)
