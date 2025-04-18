@@ -244,6 +244,141 @@
  (lambda (self) (symbol->string self)))
 
 
+;;; The regular way to make a new (sub)class instance:
+;;;   Ask MetaClass to make the metaClass
+;;;   Then ask the metaClass to make its instance
+
+;;; (newSubclassName:iVars:cVars: aClass nameSym instVars classVars)
+
+
+;; Internal helper. Create an INSTANCE of a Class or MetaClass
+(define (instantiateName:superclass:ivars:
+         selfClass
+         nameSymbol
+         superClass
+         addedInstanceVars)
+  (let* ( (inherited-vars (perform: superClass 'allInstVarNames))
+          (allIvars
+             (append inherited-vars addedInstanceVars))
+          (num-inherited-vars (length inherited-vars))
+          (numAddedVars (length addedInstanceVars))
+          (newInst
+             (basicNew: selfClass numAddedVars))
+          (newMethodDict
+             (clone-method-dictionary (perform: superClass 'methodDict)))
+        )
+    (perform:with: newInst 'methodDict: newMethodDict)
+    (primSetClass: newMethodDict newInst)
+    (unless (zero? numAddedVars)
+      (let ( (start-index (+ num-header-slots num-inherited-vars)) )
+;;@@DEBUG{
+ ;; (display (perform: selfClass 'name))
+ ;; (display ":  start-index for added vars: ")
+ ;; (display (number->string start-index))
+ ;; (newline)
+;;}DEBUG@@
+         (add-getters&setters newMethodDict start-index addedInstanceVars))
+    )
+    (setClass:     newInst    selfClass)
+    (perform:with: newInst    'superclass: superClass)
+    (addSubclass:  superClass newInst)
+    (perform:with: newInst    'name:       nameSymbol)
+    (perform:with:
+       newInst ;; ANSI requires a fresh (unshared) list
+       'instanceVariables: (list-copy addedInstanceVars))
+;;@@DEBUG{
+;;    (display-ivars newInst)
+;;}DEBUG@@
+    (perform: newInst 'initialize)  ;; NB: should always return newInst !!
+) )
+
+(define (name->metaName nameSym)
+  (string->symbol
+   (string-append
+    (symbol->string nameSym)
+    " class")))
+
+;;; Now we can ask a Class to create a new Subclass
+
+(define (newSubclassName:iVars:cVars:
+         selfClass nameSym instanceVars classVars)
+   ;; (when (hashtable-ref Smalltalk nameSym #f)
+   ;;  (error "Class already exists" nameSym))
+  (unless (and (symbol? nameSym)
+               (let ( (name (symbol->string nameSym)) )
+                 (and 
+                  (> (string-length name) 1)
+                  (char-upper-case? (string-ref name 0)))))
+    (error
+     'newSubclassName:iVars:cVars:
+     "subclass name must be a symbol which starts uppercase"
+     nameSym))
+  ;; (unless (or (string? category) (symbol? category))
+  ;;       (error "subclass name must be a string or symbol" category))
+  (unless (or (list? instanceVars) (vector? instanceVars))
+    (error 'newSubclassName:iVars:cVars:
+           "InstanceVariableNames must be a list or array of symbols"
+           instanceVars))
+  (unless (or (list? classVars) (vector? classVars))
+    (error 'newSubclassName:iVars:cVars:
+           "ClassVariableNames must be a list or array of symbols"
+           classVars))
+  (let ( (instanceVarsList
+          (if (vector? instanceVars)
+              (vector->list instanceVars)
+              instanceVars))
+         (classVarsList
+          (if (vector? classVars)
+              (vector->list classVars)
+              classVars))
+       )
+    (unless (every? symbol? instanceVarsList)
+      (error 'newSubclassName:iVars:cVars:
+             "InstanceVariableNames must be a list of symbols"
+             instanceVarsList))
+    (unless (every? symbol? classVarsList)
+      (error 'newSubclassName:iVars:cVars:
+             "ClassVariableNames must be a list of symbols"
+             classVarsList))
+    (let* ( (newMetaClass
+             (instantiateName:superclass:ivars:
+              MetaClass
+              (name->metaName nameSym)
+              (class selfClass) ;;(perform: selfClass 'class)
+              classVarsList))
+            (newSubclass
+             (instantiateName:superclass:ivars:
+              newMetaClass
+              nameSym
+              selfClass
+              instanceVarsList))
+          )
+      (for-each ;; give instances access to class vars
+        (lambda (getter-name)
+          (let* ( (setter-name
+                   (string->symbol
+                    (string-append
+                     (symbol->string getter-name) ":")))
+                )
+            (addSelector:withMethod:
+               newSubclass
+               getter-name
+               (lambda (self)
+                 (perform: (class self) getter-name)))
+            (addSelector:withMethod:
+               newSubclass
+               setter-name
+               (lambda (self newVal)
+                 (perform:with: (class self) setter-name newVal)))
+        ) )
+        classVarsList)
+      (perform:with: newMetaClass 'thisClass: newSubclass)
+      (addSubclass:  newMetaClass newSubclass)
+      (smalltalkAt:put: nameSym newSubclass)
+      newSubclass	;; @@??@@ move initialize to here?
+) ) )
+
+
 ;;;			--- E O F ---			;;;
 
 
