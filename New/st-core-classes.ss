@@ -1,6 +1,7 @@
 #!r6rs
 ;;; File: "st-core-classes.ss"
 ;;; IMPLEMENTS: Smalltalk Kernel Class Structure
+;;;  Object, Behavior, ClassDescription, MetaClass, Class
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: April 2025
@@ -162,7 +163,7 @@
 
 ;;; MetaClasses for the above
 ;;; Class Class, MetaClass Class, ..
-(define (make-meta name for-class superclass ivar-names)
+(define (make-meta name for-class superclass)
   (let* ( (mDict (make-method-dictionary))
 	  (aMetaClass
 	   (make-st-object mDict
@@ -176,7 +177,7 @@
     (unless (st-nil? superclass)
       ($: aMetaClass 'superclass: superclass)
       (addSubclass: superclass aMetaClass))
-    ($: aMetaClass 'instanceVariables: ivar-names)
+    ($: aMetaClass 'instanceVariables: st-nil)
     ($: aMetaClass 'methodDict: mDict)
     ($: for-class 'class: aMetaClass)
     aMetaClass)
@@ -186,33 +187,27 @@
 (define ObjectClass
   (make-meta (string->symbol "Object class")
              Object
-             Class
-             st-nil))
+             Class))
 
 (define BehaviorClass
   (make-meta (string->symbol "Behavior class")
              Behavior
-             ObjectClass
-             behavior-ivar-names))
+             ObjectClass))
 
 (define ClassDescriptionClass
   (make-meta (string->symbol "ClassDescription class")
              ClassDescription
-             BehaviorClass
-             classDescription-ivar-names))
-  
+             BehaviorClass))
 
 (define ClassClass
   (make-meta (string->symbol "Class class")
              Class
-             ClassDescriptionClass
-             class-ivar-names))
+             ClassDescriptionClass))
 
 (define MetaClassClass
   (make-meta (string->symbol "MetaClass class")
              MetaClass
-             ClassDescriptionClass
-             metaClass-ivar-names))
+             ClassDescriptionClass))
 
 ;; and of course UndefinedObject
 
@@ -225,8 +220,7 @@
 (define UndefinedObjectClass
   (make-meta (string->symbol "UndefinedObject class")
              UndefinedObject
-             ObjectClass
-             st-nil))
+             ObjectClass))
 
 
 ;; make accessable to Smalltalk
@@ -252,7 +246,7 @@
 
 
 ;; Internal helper. Create an INSTANCE of a Class or MetaClass
-(define (instantiateName:superclass:ivars:
+(trace-define (instantiateName:superclass:ivars:
          selfClass
          nameSymbol
          superClass
@@ -267,8 +261,6 @@
           (newMethodDict
              (clone-method-dictionary (perform: superClass 'methodDict)))
         )
-    (perform:with: newInst 'methodDict: newMethodDict)
-    (primSetClass: newMethodDict newInst)
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots num-inherited-vars)) )
 ;;@@DEBUG{
@@ -279,6 +271,8 @@
 ;;}DEBUG@@
          (add-getters&setters newMethodDict start-index addedInstanceVars))
     )
+    (perform:with: newInst 'methodDict: newMethodDict)
+    (primSetClass: newMethodDict newInst)
     (setClass:     newInst    selfClass)
     (perform:with: newInst    'superclass: superClass)
     (addSubclass:  superClass newInst)
@@ -298,13 +292,10 @@
     (symbol->string nameSym)
     " class")))
 
-;;; Now we can ask a Class to create a new Subclass
+;;; Helper Checks
 
-(define (newSubclassName:iVars:cVars:
-         selfClass nameSym instanceVars classVars)
-   ;; (when (hashtable-ref Smalltalk nameSym #f)
-   ;;  (error "Class already exists" nameSym))
-  (unless (and (symbol? nameSym)
+(define (checkClassName nameSym)
+    (unless (and (symbol? nameSym)
                (let ( (name (symbol->string nameSym)) )
                  (and 
                   (> (string-length name) 1)
@@ -312,17 +303,29 @@
     (error
      'newSubclassName:iVars:cVars:
      "subclass name must be a symbol which starts uppercase"
-     nameSym))
-  ;; (unless (or (string? category) (symbol? category))
-  ;;       (error "subclass name must be a string or symbol" category))
+     nameSym)))
+
+(define (checkInstVarNames instanceVars)
   (unless (or (list? instanceVars) (vector? instanceVars))
     (error 'newSubclassName:iVars:cVars:
            "InstanceVariableNames must be a list or array of symbols"
-           instanceVars))
+           instanceVars)))
+
+(define (checkClassVarNames classVars)
   (unless (or (list? classVars) (vector? classVars))
     (error 'newSubclassName:iVars:cVars:
            "ClassVariableNames must be a list or array of symbols"
-           classVars))
+           classVars)))
+
+;;; Now we can ask a Class to create a new Subclass
+
+(trace-define (newSubclassName:iVars:cVars:
+         selfClass nameSym instanceVars classVars)
+
+  (checkClassName nameSym)
+  (checkInstVarNames instanceVars)
+  (checkClassVarNames classVars)
+
   (let ( (instanceVarsList
           (if (vector? instanceVars)
               (vector->list instanceVars)
@@ -336,16 +339,19 @@
       (error 'newSubclassName:iVars:cVars:
              "InstanceVariableNames must be a list of symbols"
              instanceVarsList))
+
     (unless (every? symbol? classVarsList)
       (error 'newSubclassName:iVars:cVars:
              "ClassVariableNames must be a list of symbols"
              classVarsList))
+
     (let* ( (newMetaClass
              (instantiateName:superclass:ivars:
               MetaClass
               (name->metaName nameSym)
               (class selfClass) ;;(perform: selfClass 'class)
               classVarsList))
+	    
             (newSubclass
              (instantiateName:superclass:ivars:
               newMetaClass
@@ -373,7 +379,8 @@
         ) )
         classVarsList)
       (perform:with: newMetaClass 'thisClass: newSubclass)
-      (addSubclass:  newMetaClass newSubclass)
+      (addSubclass: selfClass newSubclass)
+      (addSubclass: MetaClass newMetaClass)
       (smalltalkAt:put: nameSym newSubclass)
       newSubclass	;; @@??@@ move initialize to here?
 ) ) )

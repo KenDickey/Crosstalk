@@ -1,11 +1,11 @@
 #!r6rs
 ;;; File: "st-core-methods.ss"
-;;; IMPLEMENTS: Basic Smalltalk Class Structure
+;;; IMPLEMENTS: Smalltalk Kernel Class methods
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: April 2025
 
-;; (load "st-core.ss")
+;; (load "st-core-classes.ss")
 
 ;;; OK, time to put some meat on the bones.
 ;;; Add methods to behaviors/methodDictionaries.
@@ -484,6 +484,11 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 )
 
 ;;; Classes create new (sub)classes
+
+(addSelector:withMethod:
+     Object
+     'newSubclassName:iVars:cVars:
+     newSubclassName:iVars:cVars:)
 
 (addSelector:withMethod:
      Class

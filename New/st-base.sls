@@ -188,6 +188,7 @@
    symbol<?
    bytevector-ref
    bytevector-set!
+   append-no-duplicates
    format
    )
 
@@ -1034,7 +1035,9 @@
    symbol<?
    (perform: class 'myMethodNames)))
     
-(define (display-obj obj) (display (safer-printString obj)))
+(define (display-obj obj)
+  (display (safer-printString obj))
+  (newline))
   
 ;; Most useful..
 (define (display-ivars st-obj)
