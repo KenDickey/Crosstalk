@@ -483,6 +483,17 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 	Object class superclass == Class."
 )
 
- ;;@@@MORE@@@;;
+;;; Classes create new (sub)classes
+
+(addSelector:withMethod:
+     Class
+     'newSubclassName:iVars:cVars:
+     newSubclassName:iVars:cVars:)
+
+(addSelector:withMethod:
+     MetaClass
+     'newSubclassName:iVars:cVars:
+     newSubclassName:iVars:cVars:)
+
 
 ;;;			--- E O F ---			;;;

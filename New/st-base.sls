@@ -120,8 +120,7 @@
    clone-behavior	;; alias for  clone-method-dictionary
    clone-method-dictionary 
 ;;; Internal Mechanics
-   behavior-add-from-other ; (behavior-add-from-other behavior mdict)
-   rebase-mdict! 	   ; (rebase-mdict! aClass public-behavior)
+   rebase-mdict! 	   ; (rebase-mdict! aClass st-*-behavior)
    insure-annotated ;; closure->method
    annotate-procedure-with-arity 
    selector-arity
@@ -687,13 +686,6 @@
    (hashtable-copy mDict #t)) ;; ensure mutable
 
 (define clone-behavior clone-method-dictionary) ;; shorter to type
-
-(define (behavior-add-from-other behavior mdict)
-  (let-values ( ((sel-vec meth-vec) (hashtable-entries mdict)) )
-    (vector-for-each (lambda (s m) (hashtable-set! behavior s m))
-                     sel-vec
-                     meth-vec)))
-    
 
 
 ;;; ============================================
@@ -1356,11 +1348,42 @@
                            my-subclasses))
 ) ) )
 
-(define (rebase-mdict! aClass public-behavior)
-  (behavior-add-from-other public-behavior
-                           ($ aClass 'methodDict))
-  ($: aClass 'methodDict: public-behavior))
+; internal helper
+(define (append-no-duplicates from to)
+  ;; retain original order
+  (let loop ( (src (reverse from)) (dest to) )
+    (cond
+     ((null? src) dest) ; done
+     ((memq (car src) dest)
+      (loop (cdr src) dest)) ; skip
+     (else  ; add
+      (loop (cdr src) (cons (car src) dest))))
+    ) )
 
+;;; Properly meld early bound st-*-bahavior method dictionary
+;;; into newly created Class to support Scheme datatypes.
+
+(define (rebase-mdict! aClass st-*-behavior)
+  (let ( (local-selectors
+	  (append-no-duplicates ($ aClass 'myMethodNames)
+				(primSelectors st-*-behavior)))
+	 )
+    ($: aClass 'myMethodNames: local-selectors)
+    (let-values ( ((sel-vec meth-vec)
+		   (hashtable-entries ($ aClass 'methodDict)) )
+		)
+      (vector-for-each
+       (lambda (s m) ;; copydown if not overidden
+	 (unless (memq s local-selectors)
+	   (hashtable-set! st-*-behavior s m)))
+       sel-vec
+       meth-vec))
+    ;; (behavior obj) returns a st-*-behavior
+    ($: aClass 'methodDict: st-*-behavior)
+    
+    aClass)
+  )
+    
 
 ) ;; library
 
