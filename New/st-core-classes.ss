@@ -1,6 +1,6 @@
 #!r6rs
-;;; File: "st-core.ss"
-;;; IMPLEMENTS: Basic Smalltalk Class Structure
+;;; File: "st-core-classes.ss"
+;;; IMPLEMENTS: Smalltalk Kernel Class Structure
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: April 2025
