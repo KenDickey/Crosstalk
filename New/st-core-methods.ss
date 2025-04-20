@@ -417,7 +417,7 @@ Because Object is the root of the inheritance tree, methods are often defined in
 	The maintenance of a ChangeSet, and logging changes on a file
 	Most of the mechanism for fileOut.
 	
-I am an abstract class, in particular, my facilities are intended for inheritance by two subclasses, Class and Metaclass.
+I am an abtsract class, in particular, my facilities are intended for inheritance by two subclasses, Class and Metaclass.
 "
 )
 
@@ -490,15 +490,17 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
      'newSubclassName:iVars:cVars:
      newSubclassName:iVars:cVars:)
 
-(addSelector:withMethod:
-     Class
-     'newSubclassName:iVars:cVars:
-     newSubclassName:iVars:cVars:)
+;; Via copydown:
 
-(addSelector:withMethod:
-     MetaClass
-     'newSubclassName:iVars:cVars:
-     newSubclassName:iVars:cVars:)
+;; (addSelector:withMethod:
+;;      Class
+;;      'newSubclassName:iVars:cVars:
+;;      newSubclassName:iVars:cVars:)
+
+;; (addSelector:withMethod:
+;;      MetaClass
+;;      'newSubclassName:iVars:cVars:
+;;      newSubclassName:iVars:cVars:)
 
 
 ;;;			--- E O F ---			;;;

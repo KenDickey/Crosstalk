@@ -180,6 +180,7 @@
     ($: aMetaClass 'instanceVariables: st-nil)
     ($: aMetaClass 'methodDict: mDict)
     ($: for-class 'class: aMetaClass)
+    ($: aMetaClass 'class: MetaClass)
     aMetaClass)
   )
 
@@ -252,7 +253,7 @@
 
 
 ;; Internal helper. Create an INSTANCE of a Class or MetaClass
-(trace-define (instantiateName:superclass:ivars:
+(define (instantiateName:superclass:ivars:
          selfClass
          nameSymbol
          superClass
@@ -352,15 +353,10 @@
              classVarsList))
 
     (let* (
-	    (super (superclass selfClass))
-
             (newSubclass
              (make-protoClass
 	      nameSym
-	      (if (st-nil? super)
-		  (make-method-dictionary)
-		  (clone-behavior
-		   ($ super 'methodDict)))
+	      (clone-behavior ($ selfClass 'methodDict))
 	      selfClass
 	      instanceVarsList))
 
