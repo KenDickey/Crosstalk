@@ -163,7 +163,7 @@
 
 ;;; MetaClasses for the above
 ;;; Class Class, MetaClass Class, ..
-(define (make-meta name for-class superclass)
+(define (make-meta name for-class superclass classVarNames)
   (let* ( (mDict (make-method-dictionary))
 	  (aMetaClass
 	   (make-st-object mDict
@@ -187,27 +187,32 @@
 (define ObjectClass
   (make-meta (string->symbol "Object class")
              Object
-             Class))
+             Class
+	     st-nil))
 
 (define BehaviorClass
   (make-meta (string->symbol "Behavior class")
              Behavior
-             ObjectClass))
+             ObjectClass
+	     st-nil))
 
 (define ClassDescriptionClass
   (make-meta (string->symbol "ClassDescription class")
              ClassDescription
-             BehaviorClass))
+             BehaviorClass
+	     st-nil))
 
 (define ClassClass
   (make-meta (string->symbol "Class class")
              Class
-             ClassDescriptionClass))
+             ClassDescriptionClass
+	     st-nil))
 
 (define MetaClassClass
   (make-meta (string->symbol "MetaClass class")
              MetaClass
-             ClassDescriptionClass))
+             ClassDescriptionClass
+	     st-nil))
 
 ;; and of course UndefinedObject
 
@@ -220,7 +225,8 @@
 (define UndefinedObjectClass
   (make-meta (string->symbol "UndefinedObject class")
              UndefinedObject
-             ObjectClass))
+             ObjectClass
+	     st-nil))
 
 
 ;; make accessable to Smalltalk
@@ -345,47 +351,30 @@
              "ClassVariableNames must be a list of symbols"
              classVarsList))
 
-    (let* ( (newMetaClass
-             (instantiateName:superclass:ivars:
-              MetaClass
-              (name->metaName nameSym)
-              (class selfClass) ;;(perform: selfClass 'class)
-              classVarsList))
-	    
+    (let* (
+	    (super (superclass selfClass))
+
             (newSubclass
-             (instantiateName:superclass:ivars:
-              newMetaClass
-              nameSym
-              selfClass
-              instanceVarsList))
-          )
-      (for-each ;; give instances access to class vars
-        (lambda (getter-name)
-          (let* ( (setter-name
-                   (string->symbol
-                    (string-append
-                     (symbol->string getter-name) ":")))
-                )
-            (addSelector:withMethod:
-               newSubclass
-               getter-name
-               (lambda (self)
-                 (perform: (class self) getter-name)))
-            (addSelector:withMethod:
-               newSubclass
-               setter-name
-               (lambda (self newVal)
-                 (perform:with: (class self) setter-name newVal)))
-        ) )
-        classVarsList)
-      (perform:with: newMetaClass 'thisClass: newSubclass)
-      (addSubclass: selfClass newSubclass)
-      (addSubclass: MetaClass newMetaClass)
+             (make-protoClass
+	      nameSym
+	      (if (st-nil? super)
+		  (make-method-dictionary)
+		  (clone-behavior
+		   ($ super 'methodDict)))
+	      selfClass
+	      instanceVarsList))
+
+	    (newMetaClass
+	     (make-meta
+	      (name->metaName nameSym)
+	      newSubclass
+	      (class selfClass)
+              classVarsList))
+	    )
+
       (smalltalkAt:put: nameSym newSubclass)
       newSubclass	;; @@??@@ move initialize to here?
 ) ) )
 
 
 ;;;			--- E O F ---			;;;
-
-
