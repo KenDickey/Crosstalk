@@ -1306,6 +1306,7 @@
 
 (define (display-subs class shown indent delta)
   (when (not (memq class shown))
+    (newline)
     (display-spaces indent)
     (display (name class)) ;; printString
     (for-each
