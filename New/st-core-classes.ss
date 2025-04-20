@@ -229,6 +229,8 @@
              ObjectClass
 	     st-nil))
 
+(setClass: st-nil UndefinedObject)
+
 
 ;; make accessable to Smalltalk
 (smalltalkAt:put: 'Object Object)

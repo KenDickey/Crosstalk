@@ -21,14 +21,14 @@
 	'True
 	st-nil
 	st-nil))
-(rebase-mdict! UndefinedObject st-true-behavior)
+(rebase-mdict! True st-true-behavior)
 
 (define False
   ($::: Boolean 'newSubclassName:iVars:cVars:
 	'False
 	st-nil
 	st-nil))
-(rebase-mdict! UndefinedObject st-false-behavior)
+(rebase-mdict! False st-false-behavior)
 
 
 

@@ -1296,7 +1296,7 @@
     
 
 (define (display-allSupers obj)
-  (display-obj (allSuperclasses obj)))
+  (map name (allSuperclasses obj)))
 
 (define (display-spaces n)
   (let loop ( (count 0) )
@@ -1306,9 +1306,8 @@
 
 (define (display-subs class shown indent delta)
   (when (not (memq class shown))
-    (newline)
     (display-spaces indent)
-    (display (printString class))
+    (display (name class)) ;; printString
     (for-each
      (lambda (sub)
        (display-subs sub (cons class shown) (+ delta indent) delta))

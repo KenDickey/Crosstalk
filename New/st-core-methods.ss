@@ -144,7 +144,7 @@
         'printOn:  ;; ANSI
         (lambda (self outport)
           (let ( (vowels (string->list "aeiouAEIOU"))
-                 (className ($ (className self) 'asString))
+                 (className ($ (name self) 'asString))
                )
             (display
              (string-append
