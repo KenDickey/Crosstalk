@@ -53,7 +53,7 @@
 ;; Note: for this toy Smalltalk, we are not implementing ProtoObject
 ;; or Pools.
 
-(import (st-base)) ; basic internal mechanics
+(import (st-core-mechanics))
 
 ;;; Enable reflective introspection
 (smalltalkAt:put: 'Smalltalk Smalltalk)

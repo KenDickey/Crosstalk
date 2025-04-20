@@ -1,6 +1,6 @@
 #!r6rs
-;;; File: "st-base.sls"
-;;; IMPLEMENTS: Basic Smalltalk object mechanics
+;;; File: "st-core-mechanics.sls"
+;;; IMPLEMENTS: Core Smalltalk object mechanics
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: April 2025
@@ -22,7 +22,7 @@
 ;;; a method dictionary including a binding of
 ;;; 'class -> (lambda (self) <class>)
 
-(library (st-base)
+(library (st-core-mechanics)
 
   (export
    
