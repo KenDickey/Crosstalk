@@ -1,22 +1,28 @@
 
 (compile-imported-libraries #t)
 (print-length 30)
-(print-depth 6)
+(print-level 6)
 
 (define st-files
   (list ;; order matters
-   "st-core-classes.ss"
-   "st-core-methods.ss"
-   "st-boolean.ss"
-   "st-collection.ss"
-   "st-array.ss"
-   "st-list.ss"
-   "st-blockClosure.ss"
-   "st-character.ss"
-   "st-string.ss"
-   "st-symbol.ss"
+   "st-core-classes"
+   "st-core-methods"
+   "st-boolean"
+   "st-collection"
+   "st-array"
+   "st-list"
+   "st-blockClosure"
+   "st-character"
+   "st-string"
+   "st-symbol"
+   "st-error"
    
-) )
+   ) )
+
+(define (loadss base-name)
+  (load (string-append base-name ".ss")))
+
+(for-each loadss st-files)
 
 (import (simple-regression-testing))
 (verbose-test-output? #f)

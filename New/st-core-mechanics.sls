@@ -996,7 +996,7 @@
   (make-mDict-placeholder 'ClassDescription))
 (define st-class-behavior        (make-mDict-placeholder 'Class))
 (define st-metaClass-behavior    (make-mDict-placeholder 'MetaClass))
-(define st-messageSend-behavior (make-mDict-placeholder 'MessageSend))
+(define st-messageSend-behavior  (make-mDict-placeholder 'MessageSend))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
 (define st-date+time-behavior    (make-mDict-placeholder 'DateAndTime))

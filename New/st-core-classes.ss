@@ -314,65 +314,58 @@
      "subclass name must be a symbol which starts uppercase"
      nameSym)))
 
-(define (checkInstVarNames instanceVars)
-  (unless (or (list? instanceVars) (vector? instanceVars))
+(define (checkVarNames whatStr names)
+  (unless (or (list? names) (vector? names))
     (error 'newSubclassName:iVars:cVars:
-           "InstanceVariableNames must be a list or array of symbols"
-           instanceVars)))
-
-(define (checkClassVarNames classVars)
-  (unless (or (list? classVars) (vector? classVars))
-    (error 'newSubclassName:iVars:cVars:
-           "ClassVariableNames must be a list or array of symbols"
-           classVars)))
+           (string-append whatStr
+			  " must be a list or array of symbols")
+           names))
+  (let ( (name-list
+	  (if (vector? names)
+              (vector->list names)
+              names))
+	)
+    (unless (every? symbol? name-list)
+      (error 'newSubclassName:iVars:cVars:
+             (string-append whatStr
+			    " must be a list of symbols")
+             name-list))
+    name-list
+    ) )
+    
 
 ;;; Now we can ask a Class to create a new Subclass
 
-(trace-define (newSubclassName:iVars:cVars:
+(define (newSubclassName:iVars:cVars:
          selfClass nameSym instanceVars classVars)
 
   (checkClassName nameSym)
-  (checkInstVarNames instanceVars)
-  (checkClassVarNames classVars)
 
-  (let ( (instanceVarsList
-          (if (vector? instanceVars)
-              (vector->list instanceVars)
-              instanceVars))
-         (classVarsList
-          (if (vector? classVars)
-              (vector->list classVars)
-              classVars))
-       )
-    (unless (every? symbol? instanceVarsList)
-      (error 'newSubclassName:iVars:cVars:
-             "InstanceVariableNames must be a list of symbols"
-             instanceVarsList))
+  (let* ( (instanceVarsList
+ 	     (checkVarNames "instance Variabless" instanceVars))
 
-    (unless (every? symbol? classVarsList)
-      (error 'newSubclassName:iVars:cVars:
-             "ClassVariableNames must be a list of symbols"
-             classVarsList))
+          (classVarsList
+ 	     (checkVarNames "class Variabless" classVars))
 
-    (let* (
-            (newSubclass
+          (newSubclass
              (make-protoClass
 	      nameSym
 	      (clone-behavior ($ selfClass 'methodDict))
 	      selfClass
 	      instanceVarsList))
 
-	    (newMetaClass
+	  (newMetaClass
 	     (make-meta
 	      (name->metaName nameSym)
 	      newSubclass
 	      (class selfClass)
               classVarsList))
-	    )
+	)
 
-      (smalltalkAt:put: nameSym newSubclass)
-      newSubclass	;; @@??@@ move initialize to here?
-) ) )
+    (smalltalkAt:put: nameSym newSubclass)
+
+    newSubclass	;; @@??@@ move initialize to here?
+) )
 
 
 ;;;			--- E O F ---			;;;
