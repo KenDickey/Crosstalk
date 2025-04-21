@@ -16,6 +16,7 @@
    "st-string"
    "st-symbol"
    "st-error"
+   "st-number"
    
    ) )
 

@@ -1254,7 +1254,7 @@
          (super     (perform: aClass 'superclass))
        )
     (if (st-nil? super)
-        (list-copy ivarNames)
+        (list-copy ivarNames) ;; ANSI Smalltalk requires a fresh list
         (append (perform: super 'allInstVarNames) ivarNames))
 ) )
 
@@ -1387,6 +1387,10 @@
     aClass)
   )
     
+;; earlly bound for debugging
+(primAddSelector:withMethod: st-nil-behavior
+			     'instanceVariables
+			     (lambda (self) st-nil))
 
 ) ;; library
 

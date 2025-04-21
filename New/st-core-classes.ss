@@ -123,9 +123,6 @@
     ($: aClass 'superclass: super)
     (addSubclass: super aClass)
     ($: aClass 'methodDict: mDict)
-    ;;; copydown
-    ;; (unless (st-nil? super)
-    ;;   (behavior-add-from-other mDict ($ super 'methodDict)))
     ($: aClass 'name: name)
     aClass)
   )
@@ -177,9 +174,9 @@
     (unless (st-nil? superclass)
       ($: aMetaClass 'superclass: superclass)
       (addSubclass: superclass aMetaClass))
-    ($: aMetaClass 'instanceVariables: st-nil)
+    ($: aMetaClass 'instanceVariables: classVarNames)
     ($: aMetaClass 'methodDict: mDict)
-    ($: for-class 'class: aMetaClass)
+    ($: for-class  'class: aMetaClass)
     ($: aMetaClass 'class: MetaClass)
     aMetaClass)
   )
@@ -360,7 +357,28 @@
 	      newSubclass
 	      (class selfClass)
               classVarsList))
-	)
+	  )
+    
+    (for-each ;; give instances access to class vars
+        (lambda (getter-name)
+          (let* ( (setter-name
+                   (string->symbol
+                    (string-append
+                     (symbol->string getter-name) ":")))
+                )
+            (addSelector:withMethod:
+               newSubclass
+               getter-name
+               (lambda (self)
+                 (perform: (class self) getter-name)))
+
+            (addSelector:withMethod:
+               newSubclass
+               setter-name
+               (lambda (self newVal)
+                 (perform:with: (class self) setter-name newVal)))
+        ) )
+        classVarsList)
 
     (smalltalkAt:put: nameSym newSubclass)
 
