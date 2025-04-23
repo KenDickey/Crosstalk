@@ -3,6 +3,8 @@
 (print-length 30)
 (print-level 6)
 
+(define st-base-lib-name "st-core-mechanics.sls")
+
 (define st-files
   (list ;; order matters
    "st-core-classes"
@@ -15,8 +17,10 @@
    "st-character"
    "st-string"
    "st-symbol"
-   "st-error"
    "st-number"
+   "st-error"
+   "st-dictionary"
+   "st-stream"
    
    ) )
 
@@ -53,9 +57,9 @@
     error
     condition
     dictionary
-    tokenizer
-    parser
-    xlate
+;    tokenizer
+;    parser
+;    xlate
 )  )
 
 ;; (for-each test-from test-names)
@@ -75,43 +79,11 @@
 ;; (map name (allSuperclasses class))
 ;; (map name (allSubclasses class))
 
-(define source-names
-  (list
-   "st-core-mechanics"
-   "st-core-classes"
-   "st-core-methods"
-   "st-behavior"
-   "st-collection"	
-   "st-sequence-coll"
-   "st-array-coll"
-   "st-array"
-   "st-boolean"
-   "st-character"
-   "st-string"
-   "st-symbol"
-   "st-list"
-   "st-magnitude"
-   "st-number"
-   "st-complex"
-   "st-float"
-   "st-fraction"
-   "st-integer"
-   "st-blockClosure"
-   "st-dictionary"
-   "st-exception"
-   "st-error"
-   "st-error-subs"
-   "st-arith-err-subs"
-   "st-stream"
-   "st-tokenizer"
-   "st-parser"
-   "st-xlate"
-) )
-
+(define source-names st-files)
 
 (define (compile-st-sources)
   (for-each
-   (lambda (name) (compile-library (string-append name ".sls")))
+   (lambda (name) (compile-library (string-append name ".ss")))
    source-names))
 
 (define (load-st-libraries)

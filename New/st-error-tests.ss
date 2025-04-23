@@ -2,10 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (simple-regression-testing)
-        (st-error)
-        (st-error-subs)
-        (st-exception))
 
 (define (setup-st-error-obj)   #f)
 (define (cleanup-st-error-obj) #f)

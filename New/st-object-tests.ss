@@ -3,14 +3,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016; May 2025
 
-(import
- (simple-regression-testing)
- (st-base)
- (st-class-structure)
- (st-metaclass)
- (st-behavior)
- (st-xlate) ;; st-eval
-)
 
 (define %%test-object #f)
 

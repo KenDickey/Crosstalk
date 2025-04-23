@@ -2,9 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 29 June 2016; March 2025
 
-(import (simple-regression-testing)
-        (st-tokenizer))
-
 (define get-token1 #f)
 (define get-token2 #f)
 (define get-token3 #f)

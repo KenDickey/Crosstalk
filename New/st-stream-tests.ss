@@ -2,9 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (simple-regression-testing)
-        (st-stream))
-
 (define (setup-st-stream)   #f)
 (define (cleanup-st-stream) #f)
 

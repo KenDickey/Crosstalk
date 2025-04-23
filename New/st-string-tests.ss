@@ -3,10 +3,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016; Marcg 2025
 
-(import (simple-regression-testing)
-        (st-string))
-
-
 (define (setup-st-string)   #f)
 (define (cleanup-st-string) #f)
 

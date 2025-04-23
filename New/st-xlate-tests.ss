@@ -2,9 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 29 June 2016; March 2025
 
-(import (simple-regression-testing)
-        (st-xlate))
-
 (define (setup-st-xlate)   #f)
 (define (cleanup-st-xlate) #f)
 

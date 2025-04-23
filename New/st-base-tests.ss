@@ -4,9 +4,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 18 May 2016; March 2025
 
-(import (simple-regression-testing)
-        (st-base))
-
 ;; (verbose-test-output? #t)
 ;; (break-on-test-error? #f) ; keep going
 ;; (run-all-tests)

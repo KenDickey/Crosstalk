@@ -2,8 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (simple-regression-testing)
-        (st-list))
 
 (define (setup-st-list)   #f)
 (define (cleanup-st-list) #f)

@@ -2,9 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017
 
-(import (simple-regression-testing)
-        (st-conditions))
-
 (define zero-divide #f)
 (define frob-error  #f)
 (define write-to-non-port #f)

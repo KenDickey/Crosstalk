@@ -2,9 +2,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 16 January 2017; March 2025
 
-(import (simple-regression-testing)
-        (st-symbol))
-
 (define (setup-st-symbol)   #f)
 (define (cleanup-st-symbol) #f)
 

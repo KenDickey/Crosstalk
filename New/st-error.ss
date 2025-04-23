@@ -3,7 +3,7 @@
 ;;; IMPLEMENTS: Exception, ExceptionSet, MessageSend
 ;;;		Error, Notification, Halt, Condition
 ;;;		UnhandledError, IllegalResumeAttempt
-;;;		Warning, MessageNotUnderstood,
+;;;		Warning, MessageNotUnderstood, ZeroDivide
 ;;;		ArithmeticError, AssertionFailure
 ;;; LANGUAGE: Scheme (R6RS; Chez Scheme)
 ;;; AUTHOR: Ken Dickey
@@ -93,6 +93,12 @@
   (newSubclassName:iVars:cVars:
    Halt
    'AssertionFailure st-nil st-nil))
+
+(define ZeroDivide
+  (newSubclassName:iVars:cVars:
+   ArithmeticError
+   'ZeroDivide '(dividend) st-nil))
+
 
 ;;;======================================================
 
@@ -964,6 +970,40 @@ Structure:
 "AssertionFailure is the exception signaled from Object>>assert:
  when the assertion block evaluates to false."
 )
+
+
+;;; ZeroDivide
+
+(perform:with: ZeroDivide
+               'methodDict:
+               (clone-method-dictionary
+                ($ ArithmeticError 'methodDict)))
+
+(addSelector:withMethod:
+     (class ZeroDivide)
+     'dividend:
+     (lambda (self dvdnd)
+       (let ( (ex ($ ZeroDivide 'new)) )
+         ($: ex 'receiver: dvdnd)
+         ($: ex 'dividend: dvdnd)
+         ($: ex 'messageText: (format #f "ZeroDivide: ~a / 0" dvdnd))
+         ex)))
+
+(addSelector:withMethod:
+     (class ZeroDivide)
+     'signalWithDividend:
+     (lambda (self dvdnd)
+       ($ ($: self 'dividend: dvdnd) 'signal)))
+
+(addSelector:withMethod:arity:  ;; REDEFINE
+        Number
+        (string->symbol "/")
+        (lambda (self aNumber)
+          (when (zero? aNumber)
+              ($: ZeroDivide 'signalWithDividend: self))
+          (/ self aNumber))
+        2)
+
 
 ;;; MessageNotUnderstood
 

@@ -3,9 +3,6 @@
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 14 June 2016; March 2025
 
-(import (simple-regression-testing)
-        (st-character))
-
 (define (setup-st-character)   #f)
 (define (cleanup-st-character) #f)
 
