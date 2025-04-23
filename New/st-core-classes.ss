@@ -92,6 +92,8 @@
     name
     myMethodNames ;; used to avoid overwrite
     ;; NB: pools are depricated !!
+    category
+    comment
     thisClass))
 
 (define all-metaClass-ivar-names
@@ -114,11 +116,11 @@
 
 ;;; Setup core class/superclass relations
 
-(define (make-protoClass name mDict super local-ivars)
-  (let ( (aClass (make-st-object mDict (length all-class-ivar-names))) )
+(define (make-protoClass name mDict super local-ivars class-vars)
+  (let ( (aClass (make-st-object mDict (length class-vars))) )
     (add-getters&setters mDict
 			 num-header-slots
-			 all-class-ivar-names)
+			 class-vars)
     ($: aClass 'instanceVariables: local-ivars)
     ($: aClass 'superclass: super)
     (addSubclass: super aClass)
@@ -131,31 +133,36 @@
   (make-protoClass 'Object
 		   st-object-behavior
 		   st-nil   ; nil superclass
-		   st-nil)) ; no local ivars
+		   st-nil   ; no local ivars
+		   all-class-ivar-names))
 
 (define Behavior
   (make-protoClass 'Behavior
 		   st-behavior-behavior
 		   Object
-		   behavior-ivar-names))
+		   behavior-ivar-names
+		   all-class-ivar-names))
 
 (define ClassDescription
   (make-protoClass 'ClassDescription
 		   st-classDescription-behavior
 		   Behavior
-		   classDescription-ivar-names))
+		   classDescription-ivar-names
+		   all-class-ivar-names))
 
 (define Class
   (make-protoClass 'Class
 		   st-class-behavior
 		   ClassDescription
-		   class-ivar-names))
+		   class-ivar-names
+		   all-class-ivar-names))
 
 (define MetaClass
   (make-protoClass 'MetaClass
 		   st-metaClass-behavior
 		   ClassDescription
-		   metaClass-ivar-names))
+		   metaClass-ivar-names
+		   all-metaClass-ivar-names))
 
 
 ;;; MetaClasses for the above
@@ -218,7 +225,8 @@
   (make-protoClass 'UndefinedObject
 		   st-nil-behavior
 		   Object
-		   st-nil))
+		   st-nil
+		   all-class-ivar-names))
 
 (define UndefinedObjectClass
   (make-meta (string->symbol "UndefinedObject class")
@@ -250,6 +258,22 @@
 
 ;;; (newSubclassName:iVars:cVars: aClass nameSym instVars classVars)
 
+; make-class is like protoClass, but also allows creation of class vars
+(define (make-class name mDict super local-ivars local-class-vars)
+  (let* ( (inharited-class-vars ($: (class super) 'allInstVarNames))
+	  (all-class-vars (append local-class-vars inherited-class-vars))
+	  (aClass (make-st-object mDict (length all-class-ivars)))
+	)
+    (add-getters&setters mDict
+			 (+ num-header-slots (length inherited-class-vars))
+			 all-class-ivars)
+    ($: aClass 'instanceVariables: local-ivars)
+    ($: aClass 'superclass: super)
+    (addSubclass: super aClass)
+    ($: aClass 'methodDict: mDict)
+    ($: aClass 'name: name)
+    aClass)
+  )
 
 ;; Internal helper. Create an INSTANCE of a Class or MetaClass
 (define (instantiateName:superclass:ivars:
@@ -344,19 +368,19 @@
           (classVarsList
  	     (checkVarNames "class Variabless" classVars))
 
-          (newSubclass
-             (make-protoClass
-	      nameSym
-	      (clone-behavior ($ selfClass 'methodDict))
-	      selfClass
-	      instanceVarsList))
-
 	  (newMetaClass
-	     (make-meta
-	      (name->metaName nameSym)
-	      newSubclass
-	      (class selfClass)
+             (instantiateName:superclass:ivars:
+              MetaClass
+              (name->metaName nameSym)
+              (class selfClass) ;;(perform: selfClass 'class)
               classVarsList))
+	    
+          (newSubclass
+             (instantiateName:superclass:ivars:
+              newMetaClass
+              nameSym
+              selfClass
+              instanceVarsList))
 	  )
     
     (for-each ;; give instances access to class vars
@@ -380,6 +404,7 @@
         ) )
         classVarsList)
 
+    (perform:with: newMetaClass 'thisClass: newSubclass)
     (smalltalkAt:put: nameSym newSubclass)
 
     newSubclass	;; @@??@@ move initialize to here?
