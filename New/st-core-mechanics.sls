@@ -882,6 +882,18 @@
    selector
    (annotate-procedure-with-arity method selector arity)))
 
+;; (rational? 0.3) -> #t
+;; So test for 3/10 vs 0.3
+(define (fraction? aNumber)
+  (and (rational? aNumber)
+       (let loop ((char-list
+		   (string->list
+		    (number->string aNumber))))
+	 (cond
+	  ((null? char-list) #f)
+	  ((eq? (car char-list) #\/) #t)
+	  (else (loop (cdr char-list)))))))
+
 
 ;;; ============================================
 ;;; Behavior adds intelligence to structure
@@ -904,7 +916,7 @@
       ((number?  thing)
        (cond
         ((integer? thing)  st-integer-behavior)
-;;      ((rational? thing) st-fraction-behavior) ;; test for 1/3 vs 0.333
+	((fraction? thing) st-fraction-behavior)
         ((real?     thing) st-float-behavior)     
         ((complex?  thing) st-complex-behavior)  
         ;; FIXME:: Scaled Decimal
