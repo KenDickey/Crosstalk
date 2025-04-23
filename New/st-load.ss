@@ -21,7 +21,9 @@
    "st-error"
    "st-dictionary"
    "st-stream"
-   
+   "st-tokenizer"
+   "st-parser"
+   "st-xlate"
    ) )
 
 (define (loadss base-name)
@@ -57,9 +59,9 @@
     error
     condition
     dictionary
-;    tokenizer
-;    parser
-;    xlate
+    tokenizer
+    parser
+    xlate
 )  )
 
 ;; (for-each test-from test-names)

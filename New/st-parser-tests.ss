@@ -1,4 +1,4 @@
-;;; IMPLEMENTS: Unit tests for st-parser.sls
+;;; IMPLEMENTS: Unit tests for st-parser.ss
 ;;; AUTHOR: Ken Dickey
 ;;; DATE: 15 August 2016; March 2025
 
@@ -206,7 +206,7 @@
        #(" #( 1 $c #($a 'b' 3) #[01 22 33] 'five' 7 #foo ) "
          0
          21))
-     #u8(1 22 33))
+     #vu8(1 22 33))
    #(astLiteral
      #(token
        string
