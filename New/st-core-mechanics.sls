@@ -900,12 +900,11 @@
 ;; eof-object -- err
     (else
      (cond  
-      ((char?    thing)    st-character-behavior) 
-      ((integer? thing)    st-integer-behavior)
       ((st-object? thing) (vector-ref thing st-obj-behavior-index))
       ((number?  thing)
        (cond
-        ((rational? thing) st-fraction-behavior) 
+        ((integer? thing)  st-integer-behavior)
+;;      ((rational? thing) st-fraction-behavior) ;; test for 1/3 vs 0.333
         ((real?     thing) st-float-behavior)     
         ((complex?  thing) st-complex-behavior)  
         ;; FIXME:: Scaled Decimal
@@ -918,6 +917,7 @@
       ((symbol? thing)     st-symbol-behavior) 
       ((procedure? thing)  st-blockClosure-behavior) 
       ((bytevector? thing) st-bytearray-behavior)   
+      ((char?    thing)    st-character-behavior) 
       ((port? thing)
        (cond
         ((textual-port? thing) st-char-stream-behavior)
@@ -1365,6 +1365,7 @@
 
 ;;; Properly meld early bound st-*-bahavior method dictionary
 ;;; into newly created Class to support Scheme datatypes.
+;;;   (behavior obj) returns a st-*-behavior
 
 (define (rebase-mdict! aClass st-*-behavior)
   (let ( (local-selectors
@@ -1381,7 +1382,8 @@
 	   (hashtable-set! st-*-behavior s m)))
        sel-vec
        meth-vec))
-    ;; (behavior obj) returns a st-*-behavior
+
+    (primSetClass: st-*-behavior aClass)
     ($: aClass 'methodDict: st-*-behavior)
     
     aClass)
