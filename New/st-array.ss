@@ -12,14 +12,15 @@
 (define Array
   (newSubclassName:iVars:cVars:
    ArrayedCollection
-   'Array '() '())
+   'Array st-nil st-nil)
 )
+(add-array-accessors st-array-behavior 0)
 (rebase-mdict! Array st-array-behavior)
 
 (define ByteArray
   (newSubclassName:iVars:cVars:
    ArrayedCollection
-   'ByteArray '() '())
+   'ByteArray st-nil st-nil)
   )
 (rebase-mdict! Array st-bytearray-behavior)
 
@@ -203,11 +204,6 @@
 
 (addSelector:withMethod:
      Array
-     'printString
-     printString)
-
-(addSelector:withMethod:
-     Array
      'printOn:
      (lambda (self port)
        (display "#( " port)
@@ -223,7 +219,7 @@
      Array
      'select:
      (lambda (self predicate?)
-       (let ( (results '()) )
+       (let ( (results st-nil) )
          (vector-for-each
           (lambda (each)
             (when (predicate? each)

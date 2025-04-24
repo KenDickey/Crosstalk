@@ -13,6 +13,18 @@
 (define aByteVector             #f)
 (define anArray                 #f)
 
+;; from st-core-mechanics.sls
+(define (make-mDict-placeholder classNameSym) 
+  (let ( (mDict (make-method-dictionary)) )
+    (primAddSelector:withMethod: mDict
+                             'class
+                             (lambda (self) classNameSym))
+    (primAddSelector:withMethod: mDict
+                             'name
+                             (lambda (self) classNameSym))
+    mDict
+) )
+
 (define (setup-st-base)
   (let* ( (slot-names        '(foo bar baz))
           (num-named-slots   (length slot-names))
