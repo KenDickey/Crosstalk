@@ -21,6 +21,7 @@
    "st-error"
    "st-dictionary"
    "st-stream"
+   "st-date-time"
    "st-tokenizer"
    "st-parser"
    "st-xlate"

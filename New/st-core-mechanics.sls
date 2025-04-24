@@ -153,9 +153,9 @@
    st-object-behavior
    st-byte-stream-behavior
    st-char-stream-behavior
-;;   st-date+time
-;;   st-time-behavior
-;;   st-duration-behavior
+   st-date+time-behavior
+   st-time-behavior
+   st-duration-behavior
    st-condition-behavior
    st-dictionary-behavior
    st-identity-dictionary-behavior
@@ -230,6 +230,8 @@
          open-output-string
          get-output-string
          vector-copy
+	 time? time-type
+	 date? 
          void
        )
    )
@@ -943,21 +945,21 @@
            st-dictionary-behavior)
        )
       ((pair? thing)  st-list-behavior)
-      ;; ((time? thing)
-      ;;  (cond
-      ;;   ((eq? 'time-duration (time-type thing))
-      ;;    st-duration-behavior
-      ;;    )
-      ;;   ((eq? 'time-utc (time-type thing))
-      ;;    st-time-behavior
-      ;;    )
+      ((time? thing)
+       (cond
+        ((eq? 'time-duration (time-type thing))
+         st-duration-behavior
+         )
+        ((eq? 'time-utc (time-type thing))
+         st-time-behavior
+         )
         ;; 'time-tai
         ;; 'time-monotonic
         ;; 'time-thread
         ;; 'time-process
-;;        (else (error "Unhandled type" (time-type thing) thing)))
-;;       )
-;;      ((date? thing)          st-date+time-behavior)
+        (else (error 'behavior "Unhandled type" (time-type thing) thing)))
+       )
+      ((date? thing)          st-date+time-behavior)
       ((condition? thing)     st-condition-behavior)
       ;; hashtable; other records & record types 5
       ;; @@FIXME ...

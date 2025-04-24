@@ -67,7 +67,7 @@
         (lambda (exn) (k x))
         (lambda ()
           (perform:with:
-           (lambda () (error 'bogus))
+           (lambda () (error 'bogus "always-error"))
            'ensure:
            (lambda () (set! x 4)))))))
     x)
