@@ -22,7 +22,7 @@
    ArrayedCollection
    'ByteArray st-nil st-nil)
   )
-(rebase-mdict! Array st-bytearray-behavior)
+(rebase-mdict! ByteArray st-bytearray-behavior)
 
 ;;;======================================================
 
