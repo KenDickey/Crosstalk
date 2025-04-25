@@ -169,23 +169,24 @@
 ;;; Class Class, MetaClass Class, ..
 (define (make-meta name for-class superclass classVarNames)
   (let* ( (mDict (make-method-dictionary))
-	  (aMetaClass
+	  (newMetaClass
 	   (make-st-object mDict
 			  (length all-metaClass-ivar-names)))
         )
     (add-getters&setters mDict
                      num-header-slots
                      all-metaClass-ivar-names)
-    ($: aMetaClass 'name: name)
-    ($: aMetaClass 'thisClass: for-class)
+    ($: newMetaClass 'name: name)
+    ($: newMetaClass 'thisClass: for-class)
     (unless (st-nil? superclass)
-      ($: aMetaClass 'superclass: superclass)
-      (addSubclass: superclass aMetaClass))
-    ($: aMetaClass 'instanceVariables: classVarNames)
-    ($: aMetaClass 'methodDict: mDict)
-    ($: for-class  'class: aMetaClass)
-    ($: aMetaClass 'class: MetaClass)
-    aMetaClass)
+      ($: newMetaClass 'superclass: superclass)
+      (addSubclass: superclass newMetaClass))
+    ($: newMetaClass 'instanceVariables: classVarNames)
+    ($: newMetaClass 'methodDict: mDict)
+    ($: for-class    'class: newMetaClass)
+    ($: newMetaClass 'class: MetaClass)
+    (addSubclass: MetaClass newMetaClass)
+    newMetaClass)
   )
 
     

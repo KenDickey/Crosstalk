@@ -21,35 +21,6 @@
     (perform:with: obj 'printOn: outport)
     (get-output-string outport)))
 
-;;; UndefinedObject
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printOn:
-        (lambda (self port)
-          (display "nil" port)))
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'printString
-        printString)
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'notNil
-        (lambda (self) st-false))
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'asSymbol
-        (lambda (self) 'nil)) 
-
-
-(primAddSelector:withMethod: 
- 	st-nil-behavior
-        'isNil
-        (lambda (self) st-true))
-
 
 ;;; Object
 
@@ -502,5 +473,175 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
 ;;      'newSubclassName:iVars:cVars:
 ;;      newSubclassName:iVars:cVars:)
 
+
+;;; UndefinedObject -> st-nil
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'printOn:
+        (lambda (self port)
+          (display "nil" port)))
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'printString
+        printString)
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'notNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'asSymbol
+        (lambda (self) 'nil)) 
+
+
+(addSelector:withMethod: 
+ 	UndefinedObject
+        'isNil
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'notNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod:
+        Object
+        'notNil
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'isNil
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        Object
+        'isNil
+        (lambda (self) st-false))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'isEmptyOrNil ;; collection protocol
+        (lambda (self) st-true))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNil:
+        (lambda (self thunk) (thunk)))
+
+(addSelector:withMethod:
+        Object
+        'ifNil:  ;; NB: return self  !!
+        (lambda (self thunk) self))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNil:ifNotNil:
+        (lambda (self nilBlock ifNotNilBlock)
+          (nilBlock)))
+
+(addSelector:withMethod:
+        Object
+        'ifNil:ifNotNil:
+        (lambda (self nilBlock ifNotNilBlock)
+          (ifNotNilBlock)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNil:
+        (lambda (self nilBlock) st-nil))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNil:
+        (lambda (self nilBlock)
+          (nilBlock)))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNil:ifNil
+        (lambda (self ifNotNilBlock nilBlock)
+          (ifNotNilBlock)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNil:ifNil:
+        (lambda (self ifNotNilBlock nilBlock)
+          (nilBlock)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'ifNotNilDo:
+        (lambda (self block) st-nil))
+
+(addSelector:withMethod:
+        Object
+        'ifNotNilDo:
+        (lambda (self block) (block self)))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'basicCopy
+        (lambda (self) self))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'asSymbol
+        (lambda (self) 'nil))
+
+(addSelector:withMethod:
+        UndefinedObject
+        'asString
+        (lambda (self) "nil"))
+
+(addSelector:withMethod: 
+ 	(class  UndefinedObject)
+        'basicNew:
+        (lambda (self size)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'new
+        (lambda (self)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'new:
+        (lambda (self size)
+          (error "You may not create any more undefined objects--use nil" self)))
+
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'value
+        (lambda (self) st-nil))
+
+
+(addSelector:withMethod:
+        UndefinedObject
+        'shallowCopy ;; Can't clone nil
+        (lambda (self) self))
+
+(addSelector:withMethod: 
+ 	(class UndefinedObject)
+        'initializedInstance
+        (lambda (self) st-nil)) ; '()
+
+(perform:with:
+     UndefinedObject
+     'category: 'Kernel-Objects)
+
+(perform:with:
+     UndefinedObject
+     'comment:
+"I describe the behavior of my sole instance, nil. nil represents a prior
+ value for variables that have not been initialized, or for results which
+ are meaningless."
+)
 
 ;;;			--- E O F ---			;;;

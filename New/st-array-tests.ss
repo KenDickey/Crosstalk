@@ -55,6 +55,12 @@
 
 (add-equal-test 'st-array
   2
+  (perform:with: (bytevector 1 2 3)
+                 'at: 2)
+  "#vu8(1 2 3) at: 2 --> 2")
+
+(add-equal-test 'st-array
+  2
   (perform:with: (vector 1 2 3)
                  'at: 2)
   "#(1 2 3) at: 2 --> 2")
@@ -66,7 +72,16 @@
        array
        'at:put: 2 'two)
     (perform:with: array 'at: 2))
-  "#(1 2 3) at: 2 put: 'two")
+  "#(1 2 3) at: 2 put: #two")
+
+(add-eq-test 'st-array
+  22
+  (let ( (array (bytevector 1 2 3)) )
+    (perform:with:with:
+       array
+       'at:put: 2 22)
+    (perform:with: array 'at: 2))
+  "#vu(1 2 3) at: 2 put: 22")
 
   (add-eq-test 'st-array
   4

@@ -40,8 +40,10 @@
  	test-behavior
         'superclass
         (lambda ignored '()))
+  ;; test ibject with both names & indexed slots
   (add-getters&setters test-behavior num-header-slots '(foo bar baz))
-  (add-array-accessors test-behavior array-start-index) ;; (5)
+  (primAddArrayAccessors:start:at:atput:length:
+   test-behavior array-start-index vector-ref vector-set! vector-length)
   (set! indexed+named-slots-obj
         (make-st-object test-behavior
                         (+ num-named-slots num-indexed-slots)))

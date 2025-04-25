@@ -18,7 +18,7 @@
   "Object's name method's name")
 
 (add-equal-test 'st-blockClosure
-  1
+  0 ;; self is not counted
   (perform: (primLookup: (behavior Object) 'name)
             'argumentCount)
   "Object's name method's argument count/arity")

@@ -58,7 +58,7 @@
     stream
     blockClosure
     error
-    condition
+;;    condition
     dictionary
     tokenizer
     parser
