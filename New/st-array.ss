@@ -331,33 +331,6 @@
 
 (addSelector:withMethod:
      ByteArray
-     'at:
-     (lambda (self index)
-       ;; NB: ST 1-based, Scheme 0-based
-       (if (<= 1 index (bytevector-length self))
-           (bytevector-ref self (- index 1))
-           (error 'at:
-                  "Index out of range"
-                  self
-                  index))))
-     
-(addSelector:withMethod:
-     ByteArray
-     'at:put:
-     (lambda (self index newVal)
-       (if (<= 1 index (bytevector-length self))
-           (bytevector-set! self (- index 1) newVal)
-           (error 'at:put: "Index out of range" self index))))
-
-(addSelector:withMethod:
-     ByteArray
-     'size 
-     (lambda (self)
-    ;; (perform: self 'basicSize)
-       (bytevector-length self)))
-
-(addSelector:withMethod:
-     ByteArray
      'basicSize
      (lambda (self)
        (bytevector-length self)))

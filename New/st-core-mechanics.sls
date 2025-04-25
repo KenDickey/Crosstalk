@@ -780,7 +780,7 @@
      (lambda (self user-index)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-length self))
+         (if (< pre-start vec-index (primLength self))
              (primAt: self vec-index)
              (error 'at:
                     "Index out of range"
@@ -793,7 +793,7 @@
      (lambda (self user-index newVal)
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
-         (if (< pre-start vec-index (vector-length self))
+         (if (< pre-start vec-index (primLength self))
              (begin
                (primAt:put: self vec-index newVal)
                self)
