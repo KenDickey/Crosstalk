@@ -14,7 +14,8 @@
    ArrayedCollection
    'Array st-nil st-nil)
 )
-(add-array-accessors st-array-behavior 0)
+(primAddArrayAccessors:start:at:atput:length:
+ st-array-behavior 0 vector-ref vector-set! vector-length)
 (rebase-mdict! Array st-array-behavior)
 
 (define ByteArray
@@ -22,6 +23,8 @@
    ArrayedCollection
    'ByteArray st-nil st-nil)
   )
+(primAddArrayAccessors:start:at:atput:length:
+ st-bytearray-behavior 0 bytevector-ref bytevector-set! bytevector-length)
 (rebase-mdict! ByteArray st-bytearray-behavior)
 
 ;;;======================================================

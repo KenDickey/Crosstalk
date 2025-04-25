@@ -63,6 +63,7 @@
    primMethodsDo:
    primAddSelector:withMethod:
    primAddSelector:withMethod:arity:
+   primAddArrayAccessors:start:at:atput:length:
    primSelectors
    
 
@@ -97,7 +98,6 @@
    behavior ;; (behavior object) -> answers a method dictionary
 ;;; mechanics
    add-getters&setters ;; internal
-   add-array-accessors ;; internal
    st-obj-behavior	; (st-obj-behavior obj)
    st-obj-behavior-set!	; (st-obj-behavior-set! obj new-behavior)
    st-object-length	; (st-object-length obj)
@@ -124,13 +124,6 @@
    insure-annotated ;; closure->method
    annotate-procedure-with-arity 
    selector-arity
-;;; Do
-   primSelectorsDo:	; (primSelectorsDo: methodDict closure)
-   primSelectorsAndMethodsDo:
-             ; (primSelectorsAndMethodsDo: methodDict closure)
-   primMethodsDo:	 ; (primMethodsDo: methodDict closure)
-
-
 
 ;;; Method Dictionaries for supported Scheme objects
    
@@ -776,8 +769,9 @@
   )
 )
 
-(define (add-array-accessors behavior start-index)
-;; #at: #at:put: #basicSize #at:modify
+(define (primAddArrayAccessors:start:at:atput:length:
+	 behavior start-index primAt: primAt:put: primLength)
+  ;; #at: #at:put: #basicSize #at:modify
   (let ( (pre-start (- start-index 1)) )
 
     (primAddSelector:withMethod:
@@ -787,7 +781,7 @@
        ;; NB: ST 1-based, Scheme 0-based
        (let ( (vec-index (+ start-index user-index -1)) )
          (if (< pre-start vec-index (vector-length self))
-             (vector-ref self vec-index)
+             (primAt: self vec-index)
              (error 'at:
                     "Index out of range"
                     user-index))))
@@ -801,7 +795,7 @@
        (let ( (vec-index (+ start-index user-index -1)) )
          (if (< pre-start vec-index (vector-length self))
              (begin
-               (vector-set! self vec-index newVal)
+               (primAt:put: self vec-index newVal)
                self)
              (error 'at:put:
                     "Index out of range"
@@ -816,7 +810,7 @@
        (let ( (vec-index (+ start-index user-index -1)) )
          (if (< pre-start vec-index (vector-length self))
              (let ( (original-elt (vector-ref self vec-index)) )
-               (vector-set! self
+               (primAt:put: self
                             vec-index
                             (aBlock original-elt))
                self)
@@ -829,7 +823,7 @@
      behavior
      'basicSize
      (lambda (self)
-       (- (vector-length self) start-index))
+       (- (primLength self) start-index))
      )
 ) )
 
