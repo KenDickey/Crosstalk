@@ -111,7 +111,7 @@
 (define debug-st-runtime (make-parameter #t)) ;; @@DEBUG
 
 (define (saferIsKindOf: self someClass)
-  (let loop ( (super-class (perform: self 'class)) )
+  (let loop ( (super-class (perform: self 'superclass)) )
     (cond
      ((null? super-class) #f)
      ((eq? super-class someClass) #t)
