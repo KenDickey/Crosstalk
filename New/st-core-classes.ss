@@ -19,7 +19,7 @@
 ;;; An instance's shape (instance variables)
 ;;;   and behavior (instance methods)
 ;;;   is defined in its class
-;;;      (anObj behavior) == (anObj class methodDict)
+;;;      (anObj behavior) == (anObj class instanceBehavior)
 
 ;;; A class's shape (class variables) and behavior (class methods)
 ;;;   is defined in the instance class's metaClass 
@@ -80,7 +80,7 @@
 (define behavior-ivar-names
   '(class
     superclass
-    methodDict	;; shared by all instances
+    instanceBehavior	;; shared by all instances
     format))	;; layout/structure
 
 (define classDescription-ivar-names
@@ -124,7 +124,7 @@
     ($: aClass 'instanceVariables: local-ivars)
     ($: aClass 'superclass: super)
     (addSubclass: super aClass)
-    ($: aClass 'methodDict: mDict)
+    ($: aClass 'instanceBehavior: mDict)
     ($: aClass 'name: name)
     aClass)
   )
@@ -182,7 +182,7 @@
       ($: newMetaClass 'superclass: superclass)
       (addSubclass: superclass newMetaClass))
     ($: newMetaClass 'instanceVariables: classVarNames)
-    ($: newMetaClass 'methodDict: mDict)
+    ($: newMetaClass 'instanceBehavior: mDict)
     ($: for-class    'class: newMetaClass)
     ($: newMetaClass 'class: MetaClass)
     newMetaClass)
@@ -270,7 +270,7 @@
     ($: aClass 'instanceVariables: local-ivars)
     ($: aClass 'superclass: super)
     (addSubclass: super aClass)
-    ($: aClass 'methodDict: mDict)
+    ($: aClass 'instanceBehavior: mDict)
     ($: aClass 'name: name)
     aClass)
   )
@@ -289,7 +289,7 @@
           (newInst
              (basicNew: selfClass numAddedVars))
           (newMethodDict
-             (clone-method-dictionary (perform: superClass 'methodDict)))
+             (clone-method-dictionary (perform: superClass 'instanceBehavior)))
         )
     (unless (zero? numAddedVars)
       (let ( (start-index (+ num-header-slots num-inherited-vars)) )
@@ -301,7 +301,7 @@
 ;;}DEBUG@@
          (add-getters&setters newMethodDict start-index addedInstanceVars))
     )
-    (perform:with: newInst 'methodDict: newMethodDict)
+    (perform:with: newInst 'instanceBehavior: newMethodDict)
     (primSetClass: newMethodDict newInst)
     (setClass:     newInst    selfClass)
     (perform:with: newInst    'superclass: superClass)

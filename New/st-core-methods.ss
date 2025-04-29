@@ -229,7 +229,7 @@
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
 ;; selector is not in the dictionary, create an error notification."
      (lambda (self selectorSymbol)
-       (primLookup: (perform: self 'methodDict) selectorSymbol))
+       (primLookup: (perform: self 'instanceBehavior) selectorSymbol))
      2)
 
 (addSelector:withMethod:

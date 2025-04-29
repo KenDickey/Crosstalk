@@ -975,9 +975,9 @@ Structure:
 ;;; ZeroDivide
 
 (perform:with: ZeroDivide
-               'methodDict:
+               'instanceBehavior:
                (clone-method-dictionary
-                ($ ArithmeticError 'methodDict)))
+                ($ ArithmeticError 'instanceBehavior)))
 
 (addSelector:withMethod:
      (class ZeroDivide)

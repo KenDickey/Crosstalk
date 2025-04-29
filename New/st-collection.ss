@@ -48,8 +48,8 @@
      ;; Answer identSet of non-inherited method selectors
      (lambda (self)
        (let ( (superDict
-               ($ (superclass self) 'methodDict))
-              (selfDict ($ self 'methodDict))
+               ($ (superclass self) 'instanceBehavior))
+              (selfDict ($ self 'instanceBehavior))
               (iSet ($ IdentitySet 'new))
             )
          ($: selfDict
@@ -75,8 +75,8 @@
      ;; Answer identSet of non-inherited method selectors
      (lambda (self)
        (let ( (superDict
-               ($ (superclass self) 'methodDict))
-              (selfDict ($ self 'methodDict))
+               ($ (superclass self) 'instanceBehavior))
+              (selfDict ($ self 'instanceBehavior))
               (iSet ($ IdentitySet 'new))
             )
          ($: selfDict

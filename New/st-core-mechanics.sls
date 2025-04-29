@@ -54,8 +54,8 @@
    allSuperclasses
    allSubclasses
 ;; 'prim' prefix -> operates on behavior/hashtable
-   primLookup:		; (primLookup: methodDict selector)
-   primSet:toValue:     ; (primSet:toValue: methodDict selector method)
+   primLookup:		; (primLookup: instanceBehavior selector)
+   primSet:toValue:     ; (primSet:toValue: instanceBehavior selector method)
    primNew:		; (primNew: classSelf num-object-slots)
    primSetClass:
    primSelectorsDo:
@@ -270,9 +270,9 @@
 (define (lookupSelector: self selectorSym) ;; Polymorphic
   (primLookup: (behavior self) selectorSym))
 
-;; methodDict primLookup: aSymbol
-(define (primLookup: methodDict symbol)
-  (hashtable-ref methodDict
+;; instanceBehavior primLookup: aSymbol
+(define (primLookup: instanceBehavior symbol)
+  (hashtable-ref instanceBehavior
                  symbol
                  (lambda (self . rest-args)
                    (send-failed self symbol rest-args)))
@@ -426,7 +426,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-      ((primLookup: ($ the-super 'methodDict) selectorSym) self))))
+      ((primLookup: ($ the-super 'instanceBehavior) selectorSym) self))))
 
 (define (superPerform:with: self selectorSym arg)
   (let ( (the-super   (next-super-for self))
@@ -436,7 +436,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg))))
+  ((primLookup: ($ the-super 'instanceBehavior) selectorSym) self arg))))
 
 (define (superPerform:with:with: self selectorSym arg1 arg2)
   (let ( (the-super   (next-super-for self))
@@ -446,7 +446,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2))))
+  ((primLookup: ($ the-super 'instanceBehavior) selectorSym) self arg1 arg2))))
 
 (define (superPerform:with:with:with: self selectorSym arg1 arg2 arg3)
   (let ( (the-super   (next-super-for self))
@@ -456,7 +456,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3))))
+  ((primLookup: ($ the-super 'instanceBehavior) selectorSym) self arg1 arg2 arg3))))
 
 (define (superPerform:with:with:with:with:
          self selectorSym arg1 arg2 arg3 arg4)
@@ -467,7 +467,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-  ((primLookup: ($ the-super 'methodDict) selectorSym) self arg1 arg2 arg3 arg4))))
+  ((primLookup: ($ the-super 'instanceBehavior) selectorSym) self arg1 arg2 arg3 arg4))))
 
 (define (superPerform:withArguments: self selectorSym argsArray)
   (let ( (the-super   (next-super-for self))
@@ -477,7 +477,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+      (apply (primLookup: ($ the-super 'instanceBehavior) selectorSym)
              (cons self (vector->list argsArray))))))
 
 (define (superPerform:withArgsList: self selectorSym argsList)
@@ -488,7 +488,7 @@
                      (cons (cons self the-super)
                            super-alist))
                   )
-      (apply (primLookup: ($ the-super 'methodDict) selectorSym)
+      (apply (primLookup: ($ the-super 'instanceBehavior) selectorSym)
              (cons self argsList)))))
 
 ;;; Shorter Syntax
@@ -848,7 +848,7 @@
 ;;;  so adding a selector_method to a class affects
 ;;;  its instances, NOT the class instance itself.
 (define (addSelector:withMethod: classSelf selector method)
-  (primAddSelector:withMethod: ($ classSelf 'methodDict)
+  (primAddSelector:withMethod: ($ classSelf 'instanceBehavior)
 			       selector
 			       method)
   (add-method-name-to-myMethods classSelf selector) ;; def'ed here
@@ -863,7 +863,7 @@
      ;; if not overriden, copy down
      ;; Non-standard: avoids dynamic super-chain lookup
      (unless (memq selector (perform: subClass 'myMethodNames))
-       (primAddSelector:withMethod: ($ subClass 'methodDict)
+       (primAddSelector:withMethod: ($ subClass 'instanceBehavior)
 				    selector
 				    method)
        (subclassAddSelector:withMethod: subClass selector method)))
@@ -1331,7 +1331,7 @@
 ;; Below basicNew: Make a new instance of some class
 (define (primNew: classSelf num-object-slots)
   (make-st-object
-   (perform: classSelf 'methodDict)
+   (perform: classSelf 'instanceBehavior)
    num-object-slots)
 )
 
@@ -1382,7 +1382,7 @@
 	 )
     ($: aClass 'myMethodNames: local-selectors)
     (let-values ( ((sel-vec meth-vec)
-		   (hashtable-entries ($ aClass 'methodDict)) )
+		   (hashtable-entries ($ aClass 'instanceBehavior)) )
 		)
       (vector-for-each
        (lambda (s m) ;; copydown if not overidden
@@ -1392,7 +1392,7 @@
        meth-vec))
 
     (primSetClass: st-*-behavior aClass)
-    ($: aClass 'methodDict: st-*-behavior)
+    ($: aClass 'instanceBehavior: st-*-behavior)
     
     aClass)
   )
