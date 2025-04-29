@@ -185,7 +185,6 @@
     ($: newMetaClass 'methodDict: mDict)
     ($: for-class    'class: newMetaClass)
     ($: newMetaClass 'class: MetaClass)
-    (addSubclass: MetaClass newMetaClass)
     newMetaClass)
   )
 
