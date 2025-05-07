@@ -1,9 +1,9 @@
 ;; "SampleSubclass.ss"
 ;; Create a SampleClass, subclass of Object
 
- (load "st-core-classes.ss")
- (load "st-create-subclass.ss")
- (load "st-core-methods.ss")
+ ;; (load "st-core-classes.ss")
+ ;; (load "st-create-subclass.ss")
+ ;; (load "st-core-methods.ss")
 
 (define SampleClass
   (newSubclassName:iVars:cVars:
