@@ -110,6 +110,7 @@
 	 )
     
     (perform:with: newMetaClass 'thisClass: newSubclass)
+    (addSubclass: aClass newSubclass)
     (smalltalkAt:put: nameSym newSubclass)
 
     newSubclass	;; @@??@@ move initialize to here?

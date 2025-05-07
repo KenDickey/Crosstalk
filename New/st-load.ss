@@ -32,7 +32,9 @@
   (format #t "~%About to load ~a.ss" base-name)
   (load (string-append base-name ".ss")))
 
-(for-each loadss st-files)
+(begin
+  (for-each loadss st-files)
+  (newline))
 
 (import (simple-regression-testing))
 (verbose-test-output? #f)
