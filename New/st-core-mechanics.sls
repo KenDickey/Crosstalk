@@ -36,7 +36,8 @@
 
    lookupSelector:	; (lookupSelector: obj 'selectorSymbol)
    send-failed		; (send-failed receiver selector rest-args)
-   basicNew:		; (basicNew: classSelf num-added-vars)
+   basicNew:		; (basicNew: classSelf num-instance-var-slots)
+   basicNew		; (basicNew classSelf)
    setClass:
    addSubclass:
    printString
@@ -56,7 +57,6 @@
 ;; 'prim' prefix -> operates on behavior/hashtable
    primLookup:		; (primLookup: instanceBehavior selector)
    primSet:toValue:     ; (primSet:toValue: instanceBehavior selector method)
-   primNew:		; (primNew: classSelf num-object-slots)
    primSetClass:
    primSelectorsDo:
    primSelectorsAndMethodsDo:
@@ -143,7 +143,7 @@
    st-list-behavior
    st-bytearray-behavior
    st-blockClosure-behavior
-   st-object-behavior
+;;   st-object-behavior
    st-byte-stream-behavior
    st-char-stream-behavior
    st-date+time-behavior
@@ -155,10 +155,10 @@
 ;;; for DNU
    st-messageSend-behavior
 ;;; Other bootstrap
-   st-behavior-behavior
-   st-classDescription-behavior
-   st-class-behavior
-   st-metaClass-behavior
+   ;; st-behavior-behavior
+   ;; st-classDescription-behavior
+   ;; st-class-behavior
+   ;; st-metaClass-behavior
 
 ;;; Debug helpers (interactive)
 
@@ -166,8 +166,15 @@
    selectors		; (selectors obj) -> method names
    name			; (name 3) -> 'Integer
    className		; (className thing) ~> (name (class thing))
-   display-selectors	; (display-selectors obj) -> selectors of (behavior obj)
-   inst-method-names    ; (inst-method-names aClass) -> ($ aClass 'myMethodNames)
+   display-selectors	; (display-selectors obj)
+			;   ~> selectors of (behavior obj)
+   inst-method-names    ; (inst-method-names aClass)
+   			;   ~> ($ aClass 'myMethodNames)
+   inst-var-names	; (inst-var-names aClass)
+   		        ;   ~> ($ aClass 'instanceVariableNames)
+   inst-behavior-selectors
+			; (inst-behavior-selectors aClass)
+   			;  ~> ($ aClass 'instanceBehavior)
    display-ivars	; (display-ivars st-obj)
    display-obj		; obj printString
    describe		; (describe object)
@@ -267,12 +274,12 @@
 ;;; Message lookup
 ;;; ============================================
   
-(define (lookupSelector: self selectorSym) ;; Polymorphic
-  (primLookup: (behavior self) selectorSym))
+(define (lookupSelector: anObject selectorSym) ;; Polymorphic
+  (primLookup: (behavior anObject) selectorSym))
 
 ;; instanceBehavior primLookup: aSymbol
-(define (primLookup: instanceBehavior symbol)
-  (hashtable-ref instanceBehavior
+(define (primLookup: methodDictionary symbol)
+  (hashtable-ref methodDictionary
                  symbol
                  (lambda (self . rest-args)
                    (send-failed self symbol rest-args)))
@@ -281,9 +288,12 @@
 
 (define (safer-printString obj)
   (cond 
-   ((respondsTo: obj 'printOn:)
-    (perform: obj 'printString)
+   ((and (respondsTo: obj 'printOn:)
+	 (respondsTo: obj 'printString))
+    (perform: obj 'printString) ;; we live in hope..
     )
+   ((respondsTo: obj 'name)
+    (format #f "<~a>" (perform: obj 'name)))
    ((respondsTo: obj 'class)
     (let ( (class (perform: obj 'class)) )
       (cond
@@ -298,25 +308,6 @@
    )
 )
 
-
-(define (send-failed receiver selector rest-args)
-  (let ( (messageSend (make-messageSend receiver selector rest-args)) )
-    (if (respondsTo: messageSend 'sendFailed)
-    	($ messageSend 'sendFailed)
-        (error 'send-failed
-               (format #f
-                       "**Failed message send: #~a to: ~a"
-                       selector
-                       (safer-printString receiver))
-               rest-args)
-) ) )
-
-(define (make-messageSend receiver selector args-list)
-  ;; args list was captured by a .rest
-  (vector st-messageSend-behavior
-          receiver
-          selector
-          (ensure-st-array args-list)))
 
 (define list->st-array list->vector)
 
@@ -519,14 +510,14 @@
 
 (define (describe obj)
   (cond
-   ((null? obj) (display "nil")
+   ((st-nil? obj) (display "nil")
+    )
+   ((st-object? obj)
+    (display (safer-printString obj))
     )
    ((list? obj)
     (display "a list of length ")
     (display (length obj))
-    )
-   ((st-object? obj)
-    (display (safer-printString obj))
     )
    ((vector? obj)
     (display "an array of length ")
@@ -540,18 +531,24 @@
     (display "a number with value: ")
     (display obj)
     )
-   ((eq? obj #t)  (display "true")
+   ((eq? obj #t) (display "true")
     )
    ((eq? obj #f) (display "false")
     )
    ((string? obj)
-    (display "a string of length ")
-    (display (string-length obj))
+    (display "a string: '")
+    (display obj)
+    (display "'")
     )
    ((symbol? obj)
-    (display "a symbol of length ")
-    (display (string-length (symbol->string obj)))
-    )
+    (display "a symbol: #")
+    (let ( (charList (string->list (symbol->string obj))) )
+      (if (memq #\  charList)
+	  (begin (display "'")
+		 (display (symbol->string obj))
+		 (display "'"))
+	  (display (symbol->string obj))
+    ) ) )
    ((char? obj)
     (display "$") (display obj)
     (display " is a character")
@@ -585,6 +582,7 @@
         (format #f "~a" thing-class)))
     )
    (else "#<classless Object>")))
+
 
 ;;;
 ;;; Smalltalk BlockClosures know their name and arity..
@@ -734,24 +732,24 @@
 ) )
   
 ;; Done at class creation
-;; NB: start-index includes num-header-slots, which is the minimum index
-(define (add-getters&setters behavior start-index slot-names-list)
-  (let loop ( (index start-index) (slot-names slot-names-list) )
+;; NB: start-index includes num-header-slots, which is
+;;     the minimum index.
+;; Returns list of setter & getter name symbols
+(define (add-getters&setters behavior
+			     start-index
+			     slot-names-list)
+  (let loop ( (index start-index) ;; index laft to right
+	      (slot-names slot-names-list)
+	      (setter+getter-names '()) )
     (if (null? slot-names)
-        'done
+	setter+getter-names ;; result
         (let* ( (getter-name (car slot-names))
                 (setter-name
                  (string->symbol
                   (string-append
                    (symbol->string getter-name) ":")))
                 )
-;;@@DEBUG{
-;; (display "[")
-;; (display (number->string index))
-;; (display "] -> ")
-;; (display getter-name)
-;; (newline)
-;;}DEBUG@@
+
           (primAddSelector:withMethod:
            behavior
            getter-name
@@ -765,9 +763,13 @@
              (vector-set! self index newVal)
              self))
           
-          (loop (+ index 1) (cdr slot-names))))
+          (loop (+ index 1)
+		(cdr slot-names)
+		(append (list getter-name setter-name)
+			setter+getter-names))
+	  )
+	) ) ;; let loop
   )
-)
 
 (define (primAddArrayAccessors:start:at:atput:length:
 	 behavior start-index primAt: primAt:put: primLength)
@@ -825,6 +827,7 @@
      (lambda (self)
        (- (primLength self) start-index))
      )
+    '(basicSize at: at:put: at:modify:)
 ) )
 
 (define (primSetClass: behavior class)
@@ -836,47 +839,54 @@
 
 ;;; Track which methods are added to a particular class
 ;;;  so they are not copied over from above.
-;;  See #subclassAddSelector:withMethod: below
-(define (add-method-name-to-myMethods self selector)
-  (let ( (old-names (perform: self 'myMethodNames)) )
+;;  See #subclassAddSelector:withMethod: below.
+(define (add-method-name-to-myMethods aClass selector)
+  (let ( (old-names ($ aClass 'myMethodNames)) )
     (unless (memq selector old-names)
-      (perform:with: self 'myMethodNames: (cons selector old-names)))
-    self
-) )
+      ($: aClass 'myMethodNames: (cons selector old-names))
+      )
+    ($ aClass 'myMethodNames))
+  )
 
-;;; Subclasses inherit mDict methods from their superclass
-;;;  so adding a selector_method to a class affects
-;;;  its instances, NOT the class instance itself.
+;;; Subclass instances inherit behavior methods from their superclass.
+;;; Within a Class, a method may be redefined, multiple times.
+;;; Subclasses of this classSelf may have overriden a selector
+;;; as noted in their #myMethodNames classVar, otherwise,
+;;; we copy-down recursively.
+;;; Note that these are added _instance_ methods, so instanceBehavior.
+;;; Add class methods to  (class classSelf) !
+;;; (eq? (behavior <aClass>) ($ (class <aClass>) 'instanceBehavior) ==> #t
 (define (addSelector:withMethod: classSelf selector method)
   (primAddSelector:withMethod: ($ classSelf 'instanceBehavior)
 			       selector
 			       method)
-  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
-  (subclassAddSelector:withMethod: classSelf selector method))
+  (add-method-name-to-myMethods classSelf selector) ;; def'ed above
+  (when (respondsTo: classSelf 'subclasses) ;; a Class, not a MetaClass
+    (subclassesAddSelector:withMethod: classSelf selector method)))
 
-;;; NB: method added to methodDict of class
-;;; => behavior of instances, not class itself !!
-(define (subclassAddSelector:withMethod:
+;;; Recurse..  [Er, curse and curse again? recurse-ively? ;^]
+(define (subclassesAddSelector:withMethod:
          classSelf selector method)
   (for-each
    (lambda (subClass)
      ;; if not overriden, copy down
-     ;; Non-standard: avoids dynamic super-chain lookup
+     ;; Non-standard: avoids dynamic super-chain lookup; no PIC
      (unless (memq selector (perform: subClass 'myMethodNames))
        (primAddSelector:withMethod: ($ subClass 'instanceBehavior)
 				    selector
 				    method)
-       (subclassAddSelector:withMethod: subClass selector method)))
+       (subclassesAddSelector:withMethod: subClass selector method)))
    ($ classSelf 'subclasses))
   classSelf
 )
 
 (define (addSelector:withMethod:arity: classSelf selector method arity)
   (add-method-name-to-myMethods classSelf selector) ;; def'ed here
-  (subclassAddSelector:withMethod:
-   classSelf
-   selector
-   (annotate-procedure-with-arity method selector arity)))
+  (when (respondsTo: classSelf 'subclasses) ;; a Class, not a MetaClass
+    (subclassesAddSelector:withMethod:
+     classSelf
+     selector
+     (annotate-procedure-with-arity method selector arity))))
 
 ;; (rational? 0.3) -> #t
 ;; So test for 3/10 vs 0.3
@@ -981,6 +991,7 @@
     mDict
 ) )
 
+;; Placeholders for Scheme values
 (define st-nil-behavior          (make-mDict-placeholder 'UndefinedObject))
 (define st-true-behavior         (make-mDict-placeholder 'True))
 (define st-false-behavior        (make-mDict-placeholder 'False))
@@ -998,12 +1009,12 @@
 (define st-list-behavior         (make-mDict-placeholder 'List))
 (define st-bytearray-behavior    (make-mDict-placeholder 'ByteArray))
 (define st-blockClosure-behavior (make-mDict-placeholder 'BlockClosure))
-(define st-object-behavior       (make-mDict-placeholder 'Object))
-(define st-behavior-behavior     (make-mDict-placeholder 'Behavior))
-(define st-classDescription-behavior
-  (make-mDict-placeholder 'ClassDescription))
-(define st-class-behavior        (make-mDict-placeholder 'Class))
-(define st-metaClass-behavior    (make-mDict-placeholder 'MetaClass))
+;(define st-object-behavior       (make-mDict-placeholder 'Object))
+;(define st-behavior-behavior     (make-mDict-placeholder 'Behavior))
+;(define st-classDescription-behavior
+;				 (make-mDict-placeholder 'ClassDescription))
+;(define st-class-behavior        (make-mDict-placeholder 'Class))
+;(define st-metaClass-behavior    (make-mDict-placeholder 'MetaClass))
 (define st-messageSend-behavior  (make-mDict-placeholder 'MessageSend))
 (define st-byte-stream-behavior  (make-mDict-placeholder 'ByteStream))
 (define st-char-stream-behavior  (make-mDict-placeholder 'CharStream))
@@ -1017,6 +1028,25 @@
 				(make-mDict-placeholder 'IdentityDictionary))
 
 ;;; Some basics
+
+(define (send-failed receiver selector rest-args)
+  (let ( (messageSend (make-messageSend receiver selector rest-args)) )
+    (if (respondsTo: messageSend 'sendFailed)
+    	($ messageSend 'sendFailed)
+        (error 'send-failed
+               (format #f
+                       "**Failed message send: #~a to: ~a"
+                       selector
+                       (safer-printString receiver))
+               rest-args)
+) ) )
+
+(define (make-messageSend receiver selector args-list)
+  ;; args list was captured by a .rest
+  (vector st-messageSend-behavior
+          receiver
+          selector
+          (ensure-st-array args-list)))
 
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
@@ -1043,6 +1073,16 @@
    symbol<?
    (perform: class 'myMethodNames)))
     
+(define (inst-var-names class)
+  (list-sort
+   symbol<?
+   (perform: class 'instanceVariableNames)))
+
+(define (inst-behavior-selectors aClass)
+  (list-sort
+   symbol<?
+   (vector->list (hashtable-keys ($ aClass 'instanceBehavior)))))
+    
 (define (display-obj obj)
   (display (safer-printString obj))
   (newline))
@@ -1050,16 +1090,13 @@
 ;; Most useful..
 (define (display-ivars st-obj)
   (if (not (st-object? st-obj))
-      (begin (describe st-obj) (display " has no instance vars"))
-      (let* ( (obj-class (perform: st-obj 'class))
-              (ivarNames
-               (if (null? obj-class)
-                   '()
-                   ($ obj-class 'allInstVarNames)))
-           )
-        (cond
-         ((null? obj-class)
+      (begin (describe st-obj)
+	     (display " has no instance vars")
+	     (newline))
+      (cond
+         ((null? (class st-obj))
           (display "entity has no class!!")
+	  (format #t "<wierd object: ~a>" st-obj)
           )
          (else
           (describe st-obj)
@@ -1070,12 +1107,11 @@
                   )
              (format #t "  ~s -> ~a ~%" ivarName printVal)
              ) )
-           ivarNames)
+           ($ (class st-obj) 'allInstVarNames))
           (newline)
-        ) ) )
+        ))
       )
-  (newline)
-)
+  )
 
 
 (define (stringify thunk)
@@ -1258,19 +1294,19 @@
 ;;         MetaClass    MetaClass class          "
 
 (define (allInstVarNames aClass)
-  (let ( (ivarNames (perform: aClass 'instanceVariables))
+  (let ( (ivarNames (perform: aClass 'instanceVariableNames))
          (super     (perform: aClass 'superclass))
        )
     (if (st-nil? super)
         (list-copy ivarNames) ;; ANSI Smalltalk requires a fresh list
-        (append (perform: super 'allInstVarNames) ivarNames))
+        (append (allInstVarNames super) ivarNames)) ;; supernames 1st
 ) )
 
 (define (allSuperclasses aClass)
   (let ( (mySuper (perform: aClass 'superclass)) )
     (if (null? mySuper)
-        st-nil
-        (append (allSuperclasses mySuper) (list mySuper)))
+        st-nil ;; answer (sub super super-super ..)
+        (append (list mySuper) (allSuperclasses mySuper)))
 ) )
 
 
@@ -1328,26 +1364,18 @@
   (display-subs class '() 0 3)
   (newline))
   
-;; Below basicNew: Make a new instance of some class
-(define (primNew: classSelf num-object-slots)
+;; basicNew: Make a new instance of some class
+(define (basicNew: classSelf num-object-slots)
   (make-st-object
    (perform: classSelf 'instanceBehavior)
    num-object-slots)
 )
 
-;; basicNew: Make a new instance of some class
-(define (basicNew: classSelf num-added-vars)
-;; NB: Added vars could be named and/or indexed
-  (let* ( (num-inherited-vars
-           (length
-            (perform: classSelf 'allInstVarNames)))
-          (newInst
-           (primNew: classSelf
-                     (+ num-inherited-vars num-added-vars)))
-       )
-    (setClass: newInst classSelf)
-    newInst
-) )
+(define (basicNew classSelf)
+  (make-st-object
+   (perform: classSelf 'instanceBehavior)
+   (length (allInstVarNames classSelf)))
+  )
 
 
 (define (addSubclass: classSelf subclass)
@@ -1372,8 +1400,9 @@
     ) )
 
 ;;; Properly meld early bound st-*-bahavior method dictionary
-;;; into newly created Class to support Scheme datatypes.
-;;;   (behavior obj) returns a st-*-behavior
+;;; into newly created Class to support Scheme datatype.
+;;;   (behavior obj) returns an early-bound st-*-behavior,
+;;; Classes for Scheme objects need to use & maintain this binding.
 
 (define (rebase-mdict! aClass st-*-behavior)
   (let ( (local-selectors
@@ -1397,11 +1426,6 @@
     aClass)
   )
     
-;; earlly bound for debugging
-(primAddSelector:withMethod: st-nil-behavior
-			     'instanceVariables
-			     (lambda (self) st-nil))
-
 ) ;; library
 
 ;;;			--- E O F ---			;;;

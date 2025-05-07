@@ -6,6 +6,7 @@
 ;;; DATE: April 2025
 
 ;; (load "st-core-classes.ss")
+;; (load "st-create-subclass.ss")
 ;; (load "st-core-methods.ss")
 
 (define Boolean

@@ -9,23 +9,44 @@
 ;;; Smalltalk objects are typically created and managed by
 ;;;   a Class.
 
-;;; Because Smalltalk is a self-knowledgeable system, it requires
-;;;   some grounding for consistent reflective behavior.
+;;; An instance's shape (instance variables)
+;;;   and behavior (instance methods)
+;;;   is defined in its class
+
+;;; All instances of a Class SHARE the SAME method dictionary.
+;;;   (anObj behavior) == (anObj class instanceBehavior)
+
+;;; A class's shape (class variables) and behavior (class methods)
+;;;   is defined in the instance class's metaClass
 
 ;;; Basically, each class has a superclass (except Object) and
 ;;;   each Class's class is a metaClass which is an
 ;;;   instance of MetaClass.
 
-;;; An instance's shape (instance variables)
-;;;   and behavior (instance methods)
-;;;   is defined in its class
-;;;      (anObj behavior) == (anObj class instanceBehavior)
+;;; Because Smalltalk is a self-knowledgeable system, it requires
+;;;   some grounding for consistent reflective behavior.
+;;; This is probably the most complex idea to understand about
+;;;   reflective OO, the requirement that the system must
+;;;   contain a model of itself.  The model is then used
+;;;   to reason about and control the system and can be changed
+;;;   by/from/within the system itself.
+;;; The contribution here is an operational model of the Smaltalk
+;;;   solution in Scheme code.  [Note "st-create-subclass.ss"].
 
-;;; A class's shape (class variables) and behavior (class methods)
-;;;   is defined in the instance class's metaClass 
+;;; Inheritance is via the chain of superclasses (single inheritance)
+;;; The superclass of the Object class is nil.
 
-;;; Classes are instances of metaClasses
-;;; metaClasses are instances of class MetaClass
+;;; The class of class Object is 'Object class' whose class is
+;;; the singleton class MetaClass.
+
+;;; So each Class is an instances of a singleton instance
+;;;   of a metaClasses.
+
+;;; All metaClasses are instances of class MetaClass
+
+;;; Each instance of a class has, in addition to its own behavior,
+;;; a class variable, #instanceBehavior, which is the single method 
+;;; dictionary shared by every one of that Class's instances.
 
 ;;; We tie these together here by making instances and then setting
 ;;;  up the proper references via instance variables and behaviors.
@@ -46,12 +67,12 @@
 ;;; Behavior class class -> MetaClass
 ;;; MetaClass class -> 'MetaClass Class' (a metaClass)
 ;;; MetaClass class class -> MetaClass (wraps around)
-;;; Behavior class superclass -> 'Object Class' (Object's metaClass)
+;;; Behavior class superclass -> 'Object class' (Object's metaClass)
 ;;; Behavior class superclass class -> Class
 ;;; Object class superclass -> Class
 
 ;; Note: for this toy Smalltalk, we are not implementing ProtoObject
-;; or Pools.
+;; nor Pools.
 
 (import (st-core-mechanics))
 
@@ -77,6 +98,48 @@
 ;;; and lookup only requires a single hashtable reference.
 ;;; 
 
+;;; Setup core class/superclass relations
+;;; Start with Classes, add metaClasses, stitch together.
+
+(define (make-protoClass name super added-instance-ivars my-ivars)
+  (let* ( (myBehavior (make-method-dictionary)) ; no metaclass yet
+	  (protoClass
+	   (make-st-object myBehavior (length my-ivars)))
+	  (instanceBehavior
+	   (if (st-nil? super)
+	       (make-method-dictionary)
+	       (clone-method-dictionary
+		($ super 'instanceBehavior))))
+	  (setter-getter-list
+	   (add-getters&setters myBehavior
+				num-header-slots
+				my-ivars)) ;; for class or metaClass
+	  (num-super-var-slots
+	   (if (st-nil? super)
+	       0
+	       (length (allInstVarNames super))))
+	  )
+    (unless (st-nil? added-instance-ivars)
+      (add-getters&setters instanceBehavior
+			   (+ num-header-slots num-super-var-slots)
+			   added-instance-ivars)
+      ($: protoClass 'instanceVariableNames: added-instance-ivars))
+    ($: protoClass 'instanceBehavior: instanceBehavior)
+    ($: protoClass 'myMethodNames: setter-getter-list)
+
+    ($: protoClass 'superclass: super)
+    (unless (st-nil? super)
+      (if (respondsTo: super 'subclasses)
+	  (addSubclass: super protoClass)))
+    ($: protoClass 'name: name)
+    ;; Nota Bene -- no metaclass yet, so don't set #class
+    ;; for the protoClass.  See make-meta, below
+    (primSetClass: instanceBehavior protoClass) ;My instances know me
+    
+    protoClass)
+  )
+
+
 (define behavior-ivar-names
   '(class
     superclass
@@ -84,27 +147,14 @@
     format))	;; layout/structure
 
 (define classDescription-ivar-names
-  '(instanceVariables
-    organization))
-
-(define metaClass-ivar-names
-  '(subclasses
-    name
+  '(name
+    instanceVariableNames
+    organization
     myMethodNames ;; used to avoid overwrite
-    ;; NB: pools are depricated !!
-    category
-    comment
-    thisClass))
-
-(define all-metaClass-ivar-names
-  (append  behavior-ivar-names
-	   classDescription-ivar-names
-	   metaClass-ivar-names))
+    ))
 
 (define class-ivar-names
   '(subclasses
-    name
-    myMethodNames ;; used to avoid overwrite
     ;; NB: pools are depricated !!
     category
     comment))
@@ -114,116 +164,135 @@
 	   classDescription-ivar-names
 	   class-ivar-names))
 
-;;; Setup core class/superclass relations
+(define metaClass-ivar-names
+  '(thisClass))  ;; NB: pools are depricated !!
 
-(define (make-protoClass name mDict super local-ivars class-vars)
-  (let ( (aClass (make-st-object mDict (length class-vars))) )
-    (add-getters&setters mDict
-			 num-header-slots
-			 class-vars)
-    ($: aClass 'instanceVariables: local-ivars)
-    ($: aClass 'superclass: super)
-    (addSubclass: super aClass)
-    ($: aClass 'instanceBehavior: mDict)
-    ($: aClass 'name: name)
-    aClass)
-  )
+(define all-metaClass-ivar-names
+  (append  behavior-ivar-names
+	   classDescription-ivar-names
+	   metaClass-ivar-names))
 
-(define Object ;; an object'a Class
+
+(define Object ;; an Object instance's Class
   (make-protoClass 'Object
-		   st-object-behavior
 		   st-nil   ; nil superclass
 		   st-nil   ; no local ivars
-		   all-class-ivar-names))
+		   all-class-ivar-names)) ;; my slot-names
 
-(define Behavior
+(define Behavior ;; a Behavior instance's Class
   (make-protoClass 'Behavior
-		   st-behavior-behavior
 		   Object
 		   behavior-ivar-names
 		   all-class-ivar-names))
 
 (define ClassDescription
   (make-protoClass 'ClassDescription
-		   st-classDescription-behavior
 		   Behavior
 		   classDescription-ivar-names
 		   all-class-ivar-names))
 
 (define Class
   (make-protoClass 'Class
-		   st-class-behavior
 		   ClassDescription
 		   class-ivar-names
 		   all-class-ivar-names))
 
 (define MetaClass
   (make-protoClass 'MetaClass
-		   st-metaClass-behavior
 		   ClassDescription
 		   metaClass-ivar-names
 		   all-metaClass-ivar-names))
 
-
 ;;; MetaClasses for the above
-;;; Class Class, MetaClass Class, ..
-(define (make-meta name for-class superclass classVarNames)
-  (let* ( (mDict (make-method-dictionary))
+;;; Object class, Class class, MetaClass class, ..
+(define (make-meta name for-class superclass)
+  (let* ( (classBehavior ($ MetaClass 'instanceBehavior))
+	  (super-ivar-names (allInstVarNames superclass))
+	  (newMeta-ivar-names
+	   (append super-ivar-names metaClass-ivar-names))
 	  (newMetaClass
-	   (make-st-object mDict
-			  (length all-metaClass-ivar-names)))
-        )
-    (add-getters&setters mDict
-                     num-header-slots
-                     all-metaClass-ivar-names)
+	   (make-st-object classBehavior
+			   (length newMeta-ivar-names)))
+          )
+    ;;; extend metaclass instance accessors for #thisClass slot
+    ;; (add-getters&setters classBehavior
+    ;; 			 (+ num-header-slots (length super-ivar-names))
+    ;; 			 metaClass-ivar-names)
     ($: newMetaClass 'name: name)
     ($: newMetaClass 'thisClass: for-class)
-    (unless (st-nil? superclass)
-      ($: newMetaClass 'superclass: superclass)
-      (addSubclass: superclass newMetaClass))
-    ($: newMetaClass 'instanceVariables: classVarNames)
-    ($: newMetaClass 'instanceBehavior: mDict)
+    ($: newMetaClass 'superclass: superclass)
+;;;               superclass
+;;;  for-class  <- ^^meta^^ -> MetaClass
     ($: for-class    'class: newMetaClass)
     ($: newMetaClass 'class: MetaClass)
+    (copyDownInstBehaviorFromSuper newMetaClass) ; instanceBehavior
+
     newMetaClass)
   )
 
+(define (copyDownInstBehaviorFromSuper aMetaClassInst)
+  ;; instanceBehavior needs copydown from superclass.
+  ;; Here, the singleton instance #thisClass has a
+  ;;   partially initialized behavior.
+  ;; The metaClass #instanceBehavior needs to be set to this
+  ;;   and superclass #instanceBehavior inherited methods added.
+  (let* ( (my-superclass  ($ aMetaClassInst 'superclass))
+	  (my-instance-behavior
+	   (behavior ($ aMetaClassInst 'thisClass)))
+	  (my-method-name-overrides
+	   (vector->list
+	    (hashtable-keys my-instance-behavior)))
+       )
+    (let-values ( ((sel-vec meth-vec)
+		   (hashtable-entries
+		    ($ my-superclass 'instanceBehavior)))
+		)
+      (vector-for-each
+       (lambda (s m) ;; copydown if not overidden
+	 (unless (memq s my-method-name-overrides)
+	   (hashtable-set! my-instance-behavior s m)))
+       sel-vec
+       meth-vec)
+      ($: aMetaClassInst 'instanceBehavior: my-instance-behavior)
+;; (eq? (behavior <aClass>) ($ (class <aClass>) 'instanceBehavior) ==> #t
+      aMetaClassInst ;; Convention is to return the #self object
+) ) )
     
-(define ObjectClass
+(define ObjectClass ;; `Object class`, a metaClass
   (make-meta (string->symbol "Object class")
-             Object
-             Class
-	     st-nil))
+             Object   ;; for-class
+             Class))  ;; superclass
+		      ;; class -> MetaClass (known)
 
 (define BehaviorClass
   (make-meta (string->symbol "Behavior class")
              Behavior
-             ObjectClass
-	     st-nil))
+             ObjectClass))
 
 (define ClassDescriptionClass
   (make-meta (string->symbol "ClassDescription class")
              ClassDescription
-             BehaviorClass
-	     st-nil))
+             BehaviorClass))
 
 (define ClassClass
   (make-meta (string->symbol "Class class")
              Class
-             ClassDescriptionClass
-	     st-nil))
+             ClassDescriptionClass))
 
 (define MetaClassClass
   (make-meta (string->symbol "MetaClass class")
              MetaClass
-             ClassDescriptionClass
-	     st-nil))
+             ClassDescriptionClass))
+
+;; (addSelector:withMethod:
+;;         MetaClassClass
+;; 	'subclasses
+;; 	 (lambda (self) '()))
 
 ;; and of course UndefinedObject
 
 (define UndefinedObject
   (make-protoClass 'UndefinedObject
-		   st-nil-behavior
 		   Object
 		   st-nil
 		   all-class-ivar-names))
@@ -231,10 +300,10 @@
 (define UndefinedObjectClass
   (make-meta (string->symbol "UndefinedObject class")
              UndefinedObject
-             ObjectClass
-	     st-nil))
+             ObjectClass))
 
 (setClass: st-nil UndefinedObject)
+(rebase-mdict! UndefinedObject st-nil-behavior)
 
 
 ;; make accessable to Smalltalk
@@ -251,164 +320,68 @@
  'asString
  (lambda (self) (symbol->string self)))
 
+(addSelector:withMethod:
+        Object
+	'allInstVarNames
+	allInstVarNames)
 
-;;; The regular way to make a new (sub)class instance:
-;;;   Ask MetaClass to make the metaClass
-;;;   Then ask the metaClass to make its instance
+(addSelector:withMethod:
+        ObjectClass
+	'allInstVarNames
+	 allInstVarNames)
 
-;;; (newSubclassName:iVars:cVars: aClass nameSym instVars classVars)
+(addSelector:withMethod:
+        MetaClass
+	'allInstVarNames
+	 allInstVarNames)
 
-; make-class is like protoClass, but also allows creation of class vars
-(define (make-class name mDict super local-ivars local-class-vars)
-  (let* ( (inharited-class-vars ($: (class super) 'allInstVarNames))
-	  (all-class-vars (append local-class-vars inherited-class-vars))
-	  (aClass (make-st-object mDict (length all-class-ivars)))
-	)
-    (add-getters&setters mDict
-			 (+ num-header-slots (length inherited-class-vars))
-			 all-class-ivars)
-    ($: aClass 'instanceVariables: local-ivars)
-    ($: aClass 'superclass: super)
-    (addSubclass: super aClass)
-    ($: aClass 'instanceBehavior: mDict)
-    ($: aClass 'name: name)
-    aClass)
-  )
+(addSelector:withMethod:
+        MetaClassClass
+	'allInstVarNames
+	 allInstVarNames)
 
-;; Internal helper. Create an INSTANCE of a Class or MetaClass
-(define (instantiateName:superclass:ivars:
-         selfClass
-         nameSymbol
-         superClass
-         addedInstanceVars)
-  (let* ( (inherited-vars (perform: superClass 'allInstVarNames))
-          (allIvars
-             (append inherited-vars addedInstanceVars))
-          (num-inherited-vars (length inherited-vars))
-          (numAddedVars (length addedInstanceVars))
-          (newInst
-             (basicNew: selfClass numAddedVars))
-          (newMethodDict
-             (clone-method-dictionary (perform: superClass 'instanceBehavior)))
-        )
-    (unless (zero? numAddedVars)
-      (let ( (start-index (+ num-header-slots num-inherited-vars)) )
-;;@@DEBUG{
- ;; (display (perform: selfClass 'name))
- ;; (display ":  start-index for added vars: ")
- ;; (display (number->string start-index))
- ;; (newline)
-;;}DEBUG@@
-         (add-getters&setters newMethodDict start-index addedInstanceVars))
-    )
-    (perform:with: newInst 'instanceBehavior: newMethodDict)
-    (primSetClass: newMethodDict newInst)
-    (setClass:     newInst    selfClass)
-    (perform:with: newInst    'superclass: superClass)
-    (addSubclass:  superClass newInst)
-    (perform:with: newInst    'name:       nameSymbol)
-    (perform:with:
-       newInst ;; ANSI requires a fresh (unshared) list
-       'instanceVariables: (list-copy addedInstanceVars))
-;;@@DEBUG{
-;;    (display-ivars newInst)
-;;}DEBUG@@
-    (perform: newInst 'initialize)  ;; NB: should always return newInst !!
-) )
+;; earlly bound for debugging
+(primAddSelector:withMethod: st-nil-behavior
+			     'instanceVariableNames
+			     (lambda (self) st-nil))
 
-(define (name->metaName nameSym)
-  (string->symbol
-   (string-append
-    (symbol->string nameSym)
-    " class")))
-
-;;; Helper Checks
-
-(define (checkClassName nameSym)
-    (unless (and (symbol? nameSym)
-               (let ( (name (symbol->string nameSym)) )
-                 (and 
-                  (> (string-length name) 1)
-                  (char-upper-case? (string-ref name 0)))))
-    (error
-     'newSubclassName:iVars:cVars:
-     "subclass name must be a symbol which starts uppercase"
-     nameSym)))
-
-(define (checkVarNames whatStr names)
-  (unless (or (list? names) (vector? names))
-    (error 'newSubclassName:iVars:cVars:
-           (string-append whatStr
-			  " must be a list or array of symbols")
-           names))
-  (let ( (name-list
-	  (if (vector? names)
-              (vector->list names)
-              names))
-	)
-    (unless (every? symbol? name-list)
-      (error 'newSubclassName:iVars:cVars:
-             (string-append whatStr
-			    " must be a list of symbols")
-             name-list))
-    name-list
+(primAddSelector:withMethod: 
+    st-symbol-behavior
+    'printOn:
+    (lambda (self port)
+      (let ( (charList (string->list (symbol->string self))) )
+	(if (memq #\  charList)
+    	    (format port "#'~a'" self)
+	    (format port "#~a" self)))
     ) )
-    
 
-;;; Now we can ask a Class to create a new Subclass
+(primAddSelector:withMethod: 
+    st-string-behavior
+    'printOn:
+    (lambda (self port)
+      (format port "'~a'" self))
+    )
 
-(define (newSubclassName:iVars:cVars:
-         selfClass nameSym instanceVars classVars)
+(primAddSelector:withMethod: 
+    st-list-behavior
+    'printOn:
+    (lambda (self port)
+      (format port "List~a" self))
+    )
 
-  (checkClassName nameSym)
+(primAddSelector:withMethod: 
+    st-symbol-behavior
+    'printString
+     printString)
 
-  (let* ( (instanceVarsList
- 	     (checkVarNames "instance Variabless" instanceVars))
+(primAddSelector:withMethod: 
+    st-string-behavior
+    'printString
+     printString)
 
-          (classVarsList
- 	     (checkVarNames "class Variabless" classVars))
-
-	  (newMetaClass
-             (instantiateName:superclass:ivars:
-              MetaClass
-              (name->metaName nameSym)
-              (class selfClass) ;;(perform: selfClass 'class)
-              classVarsList))
-	    
-          (newSubclass
-             (instantiateName:superclass:ivars:
-              newMetaClass
-              nameSym
-              selfClass
-              instanceVarsList))
-	  )
-    
-    (for-each ;; give instances access to class vars
-        (lambda (getter-name)
-          (let* ( (setter-name
-                   (string->symbol
-                    (string-append
-                     (symbol->string getter-name) ":")))
-                )
-            (addSelector:withMethod:
-               newSubclass
-               getter-name
-               (lambda (self)
-                 (perform: (class self) getter-name)))
-
-            (addSelector:withMethod:
-               newSubclass
-               setter-name
-               (lambda (self newVal)
-                 (perform:with: (class self) setter-name newVal)))
-        ) )
-        classVarsList)
-
-    (perform:with: newMetaClass 'thisClass: newSubclass)
-    (smalltalkAt:put: nameSym newSubclass)
-
-    newSubclass	;; @@??@@ move initialize to here?
-) )
-
+(primAddSelector:withMethod: 
+    st-list-behavior
+    'printString
+     printString)
 
 ;;;			--- E O F ---			;;;

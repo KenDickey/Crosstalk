@@ -8,6 +8,7 @@
 (define st-files
   (list ;; order matters
    "st-core-classes"
+   "st-create-subclass"
    "st-core-methods"
    "st-boolean"
    "st-collection"
@@ -28,6 +29,7 @@
    ) )
 
 (define (loadss base-name)
+  (format #t "~%About to load ~a.ss" base-name)
   (load (string-append base-name ".ss")))
 
 (for-each loadss st-files)

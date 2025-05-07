@@ -18,7 +18,9 @@
 (define (printString obj) ;; polymorphic
 ;; String streamContents: [:s | self printOn: s]
   (let ( (outport (open-output-string)) )
-    (perform:with: obj 'printOn: outport)
+    (if (respondsTo: obj 'printOn:)
+	(perform:with: obj 'printOn: outport)
+	(format #f "~a" obj))
     (get-output-string outport)))
 
 
@@ -115,13 +117,27 @@
         'printOn:  ;; ANSI
         (lambda (self outport)
           (let ( (vowels (string->list "aeiouAEIOU"))
-                 (className ($ (name self) 'asString))
+                 (nameStr ($ (name self) 'asString))
                )
             (display
              (string-append
-              (if (memq (string-ref className 0) vowels)
+              (if (memq (string-ref nameStr 0) vowels)
                   "an " "a ")
-              className)
+              nameStr)
+             outport))))
+
+(addSelector:withMethod:
+ 	ObjectClass
+        'printOn:  ;; ANSI
+        (lambda (self outport)
+          (let ( (vowels (string->list "aeiouAEIOU"))
+                 (nameStr ($ (name self) 'asString))
+               )
+            (display
+             (string-append
+              (if (memq (string-ref nameStr 0) vowels)
+                  "an " "a ")
+              nameStr)
              outport))))
 
 
@@ -223,7 +239,7 @@
         (lambda (self) self)) ;; St ideom
 
 (addSelector:withMethod:arity:
-     Object
+     ObjectClass
      '>>
 ;; "Answer the compiled method associated with the argument, selector (a 
 ;; Symbol), a message selector in the receiver's method dictionary. If the 
@@ -232,22 +248,29 @@
        (primLookup: (perform: self 'instanceBehavior) selectorSymbol))
      2)
 
-(addSelector:withMethod:
-     Object
-     'allSuperclasses
-     allSuperclasses)
+
+;; Am I self-referential, or what??
+;;   Talk about "meta-circular"!!
+(addSelector:withMethod: ObjectClass
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: ObjectClass
+			 'allSuperclasses
+			 allSuperclasses)
+
+(addSelector:withMethod: ObjectClass
+                         'allInstVarNames
+                          allInstVarNames)
 
 (addSelector:withMethod: Object
-                         'allInstVarNames
-                         allInstVarNames)
+			 'superPerform:
+			 superPerform:)
 
 (addSelector:withMethod:
      Object
-     'superPerform: superPerform:)
-
-(addSelector:withMethod:
-     Object
-     'superPerform:with: superPerform:with:)
+     'superPerform:with:
+     superPerform:with:)
 
 (addSelector:withMethod:
      Object
@@ -272,46 +295,36 @@
      (lambda (self) (class self)))
 
 
-;; Am I self-referential, or what??
-;;   Talk about "meta-circular"!!
-(addSelector:withMethod: (class Object)
-                         'addSelector:withMethod:
-                         addSelector:withMethod:)
-
-(addSelector:withMethod: (class Object)
-                          'allInstVarNames
-                          allInstVarNames)
-
-;; ObjectClass
+(addSelector:withMethod:
+     ObjectClass
+     'basicNew:   ;; NB: not initialized
+      basicNew:) 
 
 (addSelector:withMethod:
-     (class Object)   ;; NB: not initialized
-     'basicNew: basicNew:) 
-
-(addSelector:withMethod:
-     (class Object)
+     ObjectClass
      'basicNew  ;; NB: not initialized
-     (lambda (self) (basicNew: self 0)))
+      basicNew)
 
 (addSelector:withMethod:
-     (class Object)
+     ObjectClass
      'new:    ;; initialized
      (lambda (self size)
-       (perform: (perform:with: self 'basicNew: size)
+       (perform: ($: self 'basicNew: size)
                  'initialize)))
 
 (addSelector:withMethod:
-     (class Object)
+     ObjectClass
      'new    ;; initialized
      (lambda (self)
-       (perform: (basicNew: self 0) 'initialize)))
+       ($ (basicNew self) 'initialize))
+     )
 
 (addSelector:withMethod:
-     (class Object)
+     ObjectClass
      'addSubclass: addSubclass:)
 
 (addSelector:withMethod:
-     (class Object)
+     ObjectClass
      'subclassesDo:
      (lambda (self aBlock)
        (for-each aBlock (perform: self 'subclasses))))
@@ -437,22 +450,22 @@ My instances describe the representation and behavior of objects. I add more com
      'allSubclasses
      allSubclasses)
 
-(perform:with:
-     MetaClass
-     'category: 'Kernel-Classes)
+;; (perform:with:
+;;      MetaClass
+;;      'category: 'Kernel-Classes)
 
-(perform:with:
-     MetaClass
-     'comment:
-"My instances add instance-specific behavior to various class-describing objects in the system. This typically includes messages for initializing class variables and instance creation messages particular to a class. There is only one instance of a particular Metaclass, namely the class which is being described. A Metaclass shares the class variables of its instance.
+;; (perform:with:
+;;      MetaClass
+;;      'comment:
+;; "My instances add instance-specific behavior to various class-describing objects in the system. This typically includes messages for initializing class variables and instance creation messages particular to a class. There is only one instance of a particular Metaclass, namely the class which is being described. A Metaclass shares the class variables of its instance.
 	
-In general, the superclass hierarchy for metaclasses parallels that for classes. Thus,
-	Integer superclass == Number, and
-	Integer class superclass == Number class.
-However there is a singularity at Object. Here the class hierarchy terminates, but the metaclass hierarchy must wrap around to Class, since ALL metaclasses are subclasses of Class. Thus,
-	Object superclass == nil, and
-	Object class superclass == Class."
-)
+;; In general, the superclass hierarchy for metaclasses parallels that for classes. Thus,
+;; 	Integer superclass == Number, and
+;; 	Integer class superclass == Number class.
+;; However there is a singularity at Object. Here the class hierarchy terminates, but the metaclass hierarchy must wrap around to Class, since ALL metaclasses are subclasses of Class. Thus,
+;; 	Object superclass == nil, and
+;; 	Object class superclass == Class."
+;; )
 
 ;;; Classes create new (sub)classes
 
@@ -599,28 +612,27 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
         (lambda (self) "nil"))
 
 (addSelector:withMethod: 
- 	(class  UndefinedObject)
+ 	UndefinedObject
         'basicNew:
         (lambda (self size)
-          (error "You may not create any more undefined objects--use nil" self)))
+          (error 'basicNew: "You may not create any more undefined objects--use nil" self)))
 
 (addSelector:withMethod: 
- 	(class UndefinedObject)
+ 	UndefinedObject
         'new
         (lambda (self)
-          (error "You may not create any more undefined objects--use nil" self)))
+          (error 'new "You may not create any more undefined objects--use nil" self)))
 
 (addSelector:withMethod: 
- 	(class UndefinedObject)
+ 	UndefinedObject
         'new:
         (lambda (self size)
-          (error "You may not create any more undefined objects--use nil" self)))
+          (error 'new: "You may not create any more undefined objects--use nil" self)))
 
 (addSelector:withMethod: 
- 	(class UndefinedObject)
+ 	UndefinedObject
         'value
         (lambda (self) st-nil))
-
 
 (addSelector:withMethod:
         UndefinedObject
@@ -628,7 +640,7 @@ However there is a singularity at Object. Here the class hierarchy terminates, b
         (lambda (self) self))
 
 (addSelector:withMethod: 
- 	(class UndefinedObject)
+ 	UndefinedObject
         'initializedInstance
         (lambda (self) st-nil)) ; '()
 
