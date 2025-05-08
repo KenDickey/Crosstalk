@@ -29,4 +29,12 @@
 	  ($: aSample 'ivar3: 33)
 	  aSample))
 
+($ SampleClass 'initialize)
+
+(define sampleInstance ($ SampleClass 'new))
+
+;; (display-ivars (class SampleClass))
+;; (display-ivars SampleClass)
+;; (display-ivars sampleInstance)
+
 ;;; E O F ;;;

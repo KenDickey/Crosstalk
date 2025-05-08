@@ -571,7 +571,7 @@
 (define (name thing)
   (if (respondsTo: thing 'name)
       ($ thing 'name)
-      (describe thing)))
+      (format #f "<nameless: ~a>" thing)))
 
 (define (className thing)
   (cond
