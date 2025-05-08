@@ -78,6 +78,17 @@
         'respondsTo:    ;; ANSI
         respondsTo:)
 
+
+(addSelector:withMethod:
+ 	Object
+        'isKindOf:    ;; ANSI
+        isKindOf:)
+
+(addSelector:withMethod:
+ 	(class Object)
+        'isKindOf:    ;; ANSI
+        isKindOf:)
+
 (addSelector:withMethod:arity:
         Object
         '==    ;; ANSI

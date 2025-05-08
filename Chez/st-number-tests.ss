@@ -47,32 +47,32 @@
 
 (add-equal-test 'st-number
   "3r1200201"
-  (st-eval "1234 printStringRadix: 3")
+  ($: 1234 'printStringRadix: 3)
   "1234 printStringRadix: 3")
 
 (add-equal-test 'st-number
-  "(12r3.0 +12r44a.0 i)"
+  "(12r3 +12r44A i)"
   ($: 3+634i 'printStringRadix: 12)
   "(3 + 634 i) printStringRadix: 12")
 
 (add-equal-test 'st-number
   "6"
-  (perform:with: (* 2 3) 'printString)
+  (perform: (* 2 3) 'printString)
   "(* 2 3) printString")
 
 (add-equal-test 'st-number
   "2/3"
-  (perform:with: (/ 2 3) 'printString)
+  (perform: (/ 2 3) 'printString)
   "(/ 2 3) printString")
 
 (add-equal-test 'st-number
   "0+2i"
-  (perform:with: (sqrt -4) 'printString)
+  (perform: (sqrt -4) 'printString)
   "(sqrt -4) printString")
 
 (add-equal-test 'st-number
   "2.3"
-  (perform:with: 2.3 'printString)
+  (perform: 2.3 'printString)
   "2.3 printString")
 
 

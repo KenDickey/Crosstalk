@@ -288,11 +288,12 @@ Here are some example of my protocol:
         (lambda (self aNumber) (floor (/ self aNumber)))
 	2)
 
-(addSelector:withMethod: 
+(addSelector:withMethod:arity:
         Number
         (string->symbol "=")
         (lambda (self aNumber)
-          (= self aNumber)))
+          (= self aNumber))
+	2)
 
 (addSelector:withMethod: 
         Number
@@ -639,7 +640,7 @@ Here are some example of my protocol:
  	Complex
         'printOn:
         (lambda (self port)
-          (format port "(~a ~a~ai)"
+          (format port "~a~a~ai"
                   (real-part self)
                   (if (negative? (imag-part self)) #\- #\+)
                   (imag-part self)))
