@@ -881,12 +881,11 @@
 )
 
 (define (addSelector:withMethod:arity: classSelf selector method arity)
-  (add-method-name-to-myMethods classSelf selector) ;; def'ed here
-  (when (respondsTo: classSelf 'subclasses) ;; a Class, not a MetaClass
-    (subclassesAddSelector:withMethod:
-     classSelf
-     selector
-     (annotate-procedure-with-arity method selector arity))))
+  (addSelector:withMethod:
+   	classSelf
+	selector
+	(annotate-procedure-with-arity method selector arity))
+  )
 
 ;; (rational? 0.3) -> #t
 ;; So test for 3/10 vs 0.3

@@ -73,6 +73,11 @@
         'respondsTo:    ;; ANSI
         respondsTo:)
 
+(addSelector:withMethod:
+ 	(class Object)
+        'respondsTo:    ;; ANSI
+        respondsTo:)
+
 (addSelector:withMethod:arity:
         Object
         '==    ;; ANSI
@@ -181,6 +186,19 @@
         ) )
 )
 
+(addSelector:withMethod:  ;; base case
+ 	(class Object)
+        'basicSize ;; number of indexable slots in basic object
+        (lambda (self)
+          (cond
+            ((st-object? self)  (st-object-length self))
+            ((vector? self)     (vector-length self))
+            ((string? self)     (string-length self))
+            ((symbol? self)     (symbol-length self))
+            ((bytevector? self) (bytevector-length self))
+            (else 0)
+        ) )
+)
 
 (addSelector:withMethod:
  	Object

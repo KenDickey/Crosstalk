@@ -8,18 +8,19 @@
 
 (define (setup-st-object)
   (primAddSelector:withMethod:
- 	st-object-behavior
+ 	($ Object 'instanceBehavior) ;; add instance method
         'with:with:with:with:with:
         (lambda (self a1 a2 a3 a4 a5) (list a1 a2 a3 a4 a5)))
 
   (set! %%test-object ;; (st-eval "Object new"))
-        (make-st-object st-object-behavior 0))
+        ($ Object 'new))
 
   (smalltalkAt:put: 'TestObject %%test-object)
 )
 
 (define (cleanup-st-object)
-  (hashtable-delete! st-object-behavior 'with:with:with:with:with)
+  (hashtable-delete! ($ Object 'instanceBehavior)
+		     'with:with:with:with:with)
   (set! %%test-object #f)
 )
 
@@ -122,7 +123,7 @@
   "anObject == anObject")
 
 (add-equal-test 'st-object
-  10 ;; (display-ivars Object)
+  11 ;; (display-ivars Object)
   (perform: Object 'basicSize)
   "Object basicSize")
 
