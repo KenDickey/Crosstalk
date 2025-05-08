@@ -428,7 +428,7 @@
        )  )
 ) )
 
-(addSelector:withMethod:
+(addSelector:withMethod:arity:
      Set
      '=
      (lambda (self otherSet)
@@ -449,7 +449,8 @@
                                     'includes:
                                     elt)
                              (return st-false))))
-          (return st-true)))))
+          (return st-true))))
+     2)
 
 (addSelector:withMethod:
      Set
