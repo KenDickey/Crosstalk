@@ -552,7 +552,7 @@
           ($ exception 'printString)))
 ;;@@@DEBUG}
                ($ exception 'defaultAction))))))
-        (lambda () (eval (st->scm st-string) st-environment))
+        (lambda () (eval (st->scm st-string) (scheme-environment)))
         )
 ) ) ) )
 
