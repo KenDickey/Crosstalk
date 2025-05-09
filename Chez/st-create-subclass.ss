@@ -184,6 +184,18 @@
 			       addedInstanceVars)))
     newClassInst))  ; NB: no #initialize performed here
 
+;; Classes have ivars to know their super and sub classes.
+;; MetaClasses know only their superclasses.
+;; To allow "copydown" to work, we need to fix this.
+;;  (map printString ($ (class Boolean) 'subclasses))
+;;     ==> ("a False class" "a True class")
+(addSelector:withMethod:
+ MetaClass
+ 'subclasses
+ (lambda (aMetaClass)
+   (map class ($ ($ aMetaClass 'thisClass) 'subclasses)))
+ )
+
 ;; make this available as a Class method
 (addSelector:withMethod:
  	ObjectClass
