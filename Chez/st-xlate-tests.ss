@@ -97,19 +97,17 @@
      (lambda (self x)
        (call/cc
          (lambda (return)
-           (let ((y nil))
-             ($: ($: ($: true '& ($ false 'not))
-                     '&
-                     ($ nil 'isNil))
+           (let ([y nil])
+             ($: ($: ($: true '& ($ false 'not)) '& ($ nil 'isNil))
                  'ifFalse:
                  (lambda () ($ self 'halt)))
-             (let ((%%val%% ($: ($ self 'size) '+ (@ self 'size))))
+             (let ([%%val%% ($: ($ self 'size) '+ (% self 'size))])
                (set! y %%val%%)
                %%val%%)
-             ($: '#( #\a 'a "a" 1 1.0 )
+             ($: '#(#\a 'a "a" 1 1.0)
                  'do:
                  (lambda (each)
-                   (let ((receiver (smalltalkAt: 'Transcript)))
+                   (let ([receiver (smalltalkAt: 'Transcript)])
                      ($: (smalltalkAt: 'Transcript)
                          'show:
                          ($ ($ each 'class) 'name))

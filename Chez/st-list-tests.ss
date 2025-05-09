@@ -26,7 +26,7 @@
    "(1 2 3) select: [:e | e > 1]")
 
 (add-equal-test 'st-list
-   "List( 1 2 )"
+   "List(1 2)"
    (st-eval "(List with: 1 with: 2) printString")
    "(1 2) printString")
 

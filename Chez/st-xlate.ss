@@ -545,6 +545,7 @@
                ;;        ($ anException 'printString)
                ;;        anException))
                )
+	      
               (else
 ;;@@@DEBUG{
 (when (debug-st-runtime)
@@ -552,7 +553,7 @@
           ($ exception 'printString)))
 ;;@@@DEBUG}
                ($ exception 'defaultAction))))))
-        (lambda () (eval (st->scm st-string) (scheme-environment)))
+        (lambda () (eval (st->scm st-string) (interaction-environment)))
         )
 ) ) ) )
 

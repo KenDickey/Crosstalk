@@ -79,6 +79,29 @@
           (else
            (loop (cdr elts)))))))
 
+(addSelector:withMethod:
+     (class List)
+     'with:
+     (lambda (self elt1)
+       (list elt1)))
+
+(addSelector:withMethod:
+     (class List)
+     'with:with:
+     (lambda (self elt1 elt2)
+       (list elt1 elt2)))
+
+(addSelector:withMethod:
+     (class List)
+     'with:with:with:
+     (lambda (self elt1 elt2 elt3)
+       (list elt1 elt2 elt3)))
+
+(addSelector:withMethod:
+     (class List)
+     'with:with:with:with:
+     (lambda (self elt1 elt2 elt3 elt4)
+       (list elt1 elt2 elt3 elt4)))
 
 'st-list
 
