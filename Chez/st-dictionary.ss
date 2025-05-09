@@ -212,7 +212,7 @@
      Dictionary
      'keysDo:
      (lambda (self aBlock)
-       (for-each aBlock (hashtable-keys self))
+       (vector-for-each aBlock (hashtable-keys self))
        self)
      )
 
