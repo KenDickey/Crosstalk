@@ -304,7 +304,8 @@
 
 (setClass: st-nil UndefinedObject)
 (rebase-mdict! UndefinedObject st-nil-behavior)
-
+;; for st->scm generated code
+(define nil st-nil)
 
 ;; make accessable to Smalltalk
 (smalltalkAt:put: 'Object Object)

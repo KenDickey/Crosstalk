@@ -88,15 +88,29 @@
 
 (define source-names st-files)
 
-(define (compile-st-sources)
-  (for-each
-   (lambda (name) (compile-library (string-append name ".ss")))
-   source-names))
+(define scm-root-directory-prefix ".") ;; "/home/kend/Crosstalk")
 
-(define (load-st-libraries)
-  (for-each
-   (lambda (name) (load-library (string-append name ".so")))
-   source-names))
+(define st-kernel-prefix
+  (string-append scm-root-directory-prefix
+                 "/../SmalltalkKernel/"))
+
+(define st-unit-test-prefix
+  (string-append scm-root-directory-prefix
+                 "/UnitTests/"))
+
+(define temp-dir-prefix
+  (string-append scm-root-directory-prefix "/../Temp/"))
+
+;; xlate uses pretty-print, so
+(print-level 100)
+
+
+(define (xlate-st-file fname)
+  (format #t "~%St->Scm translate ~a" fname)
+  (xlate-st-file->scm-file
+   (string-append st-kernel-prefix  fname ".st")
+   (string-append temp-dir-prefix   fname ".ss"))
+)
 
 
 ;;;			--- E O F ---			;;;

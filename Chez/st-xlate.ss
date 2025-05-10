@@ -487,9 +487,8 @@
   (call-with-port (current-output-port)
     (lambda (outp)
       (let loop ( (form (parse-st-code)) )
-        (format outp
-                "~%~y" ;; pretty-print
-                (AST->scm form))
+        (newline outp)
+        (pretty-print (AST->scm form) outp)
         (skip-whitespace)
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
@@ -504,9 +503,8 @@
     (lambda (outp)
       (format outp "~%;; \"~a\" (translated)~%" outfile-name)
       (let loop ( (form (parse-st-code)) )
-        (format outp
-                "~%~y" ;; pretty-print
-                (AST->scm form))
+        (newline outp)
+        (pretty-print (AST->scm form) outp)
         (skip-whitespace)
         (unless (eq? 'eof (curr-token-kind))
           (loop (parse-st-code)))
