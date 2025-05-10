@@ -37,7 +37,7 @@
   "at:")
 
 (add-equal-test 'st-dictionary
-  '(a b c)
+  '(a c b)
   (let ( (keys '()) )
     ($: %%dict%%
       'keysDo:
@@ -57,7 +57,7 @@
   "valuesDo:")
 
 (add-equal-test 'st-dictionary
-  (vector '(a b c) 6)
+  (vector '(a c b) 6)
   (let ( (keys '()) (total 0) )
     ($: %%dict%%
       'keysAndValuesDo:

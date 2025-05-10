@@ -12,8 +12,10 @@
   (set! set2 ($ Set 'new)))
 
 (define (cleanup-st-set) 
-  (set! set1 #f)
-  (set! set2 #f))
+  ;; (set! set1 #f)
+  ;; (set! set2 #f)
+  33
+  )
 
 (add-test-suite 'st-set
                 setup-st-set
@@ -34,12 +36,12 @@
 
 (add-equal-test 'st-set
   9
-  (begin
-    ($: set1 'add: "another string")
+  (let ( (aString  "another string") )
+    ($: set1 'add: aString)
     ($: set1 'add: 'aSymbol)
     ($: set1 'add: 1/2)
     ($: set1 'add: 1/2)
-    ($: set1 'add: "another string")
+    ($: set1 'add: aString)
     ($: set1 'add: #t)
     ($: set1 'add: 23.4)
     ($: set1 'add: (sqrt -4))
@@ -65,9 +67,9 @@
   9
   (let ( (count 0) )
     ($: set2
-                   'do:
-                   (lambda (elt)
-                     (set! count (+ 1 count))))
+        'do:
+        (lambda (elt)
+          (set! count (+ 1 count))))
     count)
   "via #do: (set2 size) --> 9")
 

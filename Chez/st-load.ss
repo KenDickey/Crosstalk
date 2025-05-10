@@ -60,9 +60,9 @@
     list
     set
     stream
-    blockClosure
-    error
-;;    condition
+;   blockClosure
+;    error
+;    condition
     dictionary
     tokenizer
     parser

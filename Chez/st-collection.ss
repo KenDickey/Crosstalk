@@ -288,6 +288,25 @@
 )    ) )
 
 (addSelector:withMethod:
+     Set
+     'init:
+     (lambda (self size)
+       ;; make large enough to hold size elts
+       ;; without growing -- see #fullCheck
+       (let ( (initialSize
+               (if (<= size 0)
+                   1
+                   (floor (/ (* (+ size 1) 4) 3))))
+            )
+         (superPerform: self 'initialize)
+         (perform:with: self 'tally: 0)
+         (perform:with: self
+                        'array:
+                        (perform:with: Array 'new: initialSize))
+         self))
+)
+
+(addSelector:withMethod:
      (class Set)
      'with:
      (lambda (self elt1)
@@ -342,6 +361,27 @@
 
 (addSelector:withMethod:
      Set
+     'grow ;; private
+     (lambda (self)
+       (let* ( (old-array  (perform: self 'array))
+               (array-size (perform: old-array 'size))
+               (new-size (+ array-size (max array-size 2)))
+               (new-array
+                  (perform:with: Array 'new: new-size))
+             )
+         (perform:with: self 'array: new-array)
+         (perform:with: self 'tally: 0)
+         (perform:with: old-array
+                        'do:
+                        (lambda (elt)
+                          (unless (st-nil? elt)
+                            (perform:with: self
+                                           'noCheckAdd:
+                                           elt))))
+         self)))
+
+(addSelector:withMethod:
+     Set
      'noCheckAdd: ;; private -- obj not a duplicate
      (lambda (self elt)
        (let ( (index (perform:with: self 'findElementOrNil: elt)) )
@@ -351,41 +391,6 @@
          (perform:with: self 'tally:
                         (+ 1 (perform: self 'tally)))
          self)))
-
-(addSelector:withMethod:
-     Set
-     'scanFor:
-     (lambda (self obj)
-       ; Scan key array for 1st slot containing nil
-       ; or an element matching obj.  Answer index or zero.
-       ; Subclasses may override me for different match predicates.
-       (let* ( (array (perform: self 'array))
-               (array-size (vector-length array))
-               (start (mod (equal-hash obj) ;; hash fn
-                               array-size))
-               (right-end (- array-size 1)) ;; Scheme index 0 based
-             )
-         (let right-loop ( (index start) ) ;; start to end
-           (let ( (elt (vector-ref array index)) )
-;;             (newline) (display index)
-             (cond
-              ((st-nil? elt)    (+ 1 index)) ;; Scheme->ST index
-              ((equal? obj elt) (+ 1 index)) ;; Scheme->ST index ;; equal?
-              ((= index right-end)
-               (let ( (mid-end (- start 1)) )
-                 (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
-                 ;; look 1 to start-1
-  ;;                 (newline) (display index)
-                   (let ( (elt (vector-ref array index)) )
-                     (cond
-                      ((st-nil? elt)    (+ 1 index))
-                      ((equal? obj elt) (+ 1 index))
-                      ((= index mid-end)
-                       0) ;; failed
-                      (else (left-loop (+ 1 index))))))
-               ))
-              (else (right-loop (+ 1 index)))))))))
-
 
 (addSelector:withMethod:
      Set
@@ -545,18 +550,20 @@
        ;; Removed elt at (ST) index.
        ;; Now relocate entries displaced by hash
        ;; collision at this index
-       (let* ( (length (perform: (perform: self 'array) 'size))
-               (fixupIndex
-                 (if (= oldIndex length) 1 (+ 1 oldIndex)))
-             )
-         (let loop ( (oldIndex fixupIndex)
-                     (elt (perform:with: self 'keyAt: fixupIndex)) )
-           (unless (st-nil? elt)
-             (let ( (newIndex (perform:with: self 'findElementOrNil: elt)) )
-               (unless (= newIndex oldIndex)
-                 (perform:with:with: self 'swap:with: oldIndex newIndex))
-               (loop newIndex (perform:with: self 'keyAt: fixupIndex))))))     
-)    )
+       (let ( (length (perform: (perform: self 'array) 'size)) )
+	 
+	 (let loop ( (oldIndex
+		      (if (= oldIndex length) 1 (+ 1 oldIndex)))
+		   )
+	   (let ( (elt (perform:with: self 'keyAt: oldIndex)) )
+
+             (unless (st-nil? elt)
+               (let ( (newIndex (perform:with: self 'findElementOrNil: elt)) )
+		 (format #t "~%fixCollisionsFrom: old=~a new=~a" oldIndex newIndex) ; @@debug
+		 (unless (= newIndex oldIndex)
+                   (perform:with:with: self 'swap:with: oldIndex newIndex))
+		 (loop newIndex))))))
+	   ) )
 
 (addSelector:withMethod:
      Set
@@ -605,27 +612,27 @@
        ; Subclasses may override me for different match predicates.
        (let* ( (array (perform: self 'array))
                (array-size (vector-length array))
-               (start (mod (equal-hash obj) ;; hash fn
-                           array-size))
+               (start (modulo (equal-hash obj) ;; hash fn
+                              array-size))
                (right-end (- array-size 1)) ;; Scheme index 0 based
              )
          (let right-loop ( (index start) ) ;; start to end
            (let ( (elt (vector-ref array index)) )
-;;             (newline) (display index)
+             (newline) (display index) (display " ") ; @@debug
              (cond
               ((st-nil? elt) (+ 1 index)) ;; Scheme->ST index
-              ((eq? obj elt) (+ 1 index)) ;; Scheme->ST index ;; eq?
+              ((eqv? obj elt) (+ 1 index)) ;; Scheme->ST index ;; eq?
               ((= index right-end)
                (let ( (mid-end (- start 1)) )
                  (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
                  ;; look 1 to start-1
-  ;;                 (newline) (display index)
+                 (newline) (display index) (display " ") ; @@debug
                    (let ( (elt (vector-ref array index)) )
                      (cond
-                      ((st-nil? elt) (+ 1 index))
-                      ((eq? obj elt) (+ 1 index))
+                      ((st-nil? elt)  (+ 1 index))
+                      ((eqv? obj elt) (+ 1 index)) ;; equal?
                       ((= index mid-end)
-                       0) ;; failed
+                       0) ;; failed [Smalltalk is 1 based]
                       (else (left-loop (+ 1 index))))))
                ))
               (else (right-loop (+ 1 index)))))))))
