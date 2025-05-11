@@ -327,7 +327,7 @@ Here are some example of my protocol:
 
 (addSelector:withMethod:arity:
         Number 
-        (string->symbol "\\")
+        (string->symbol "\\\\") ;; #\\
         (lambda (self aNumber) (modulo self aNumber))
 	2)
 
