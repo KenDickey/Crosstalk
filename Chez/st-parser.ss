@@ -1099,7 +1099,13 @@
       (if (eq? (token-kind (astLiteral-token selector)) 'binarySelector)
           (make-astKeywordSend receiver
                       'addSelector:withMethod:arity:
-                      (list selector method-block (st->AST "2")))
+                      (list selector
+                            method-block
+                            (make-astLiteral
+                             (make-token 'integer
+                                         "2"
+                                         (vector "2" 0 0))
+                             2)))
           (make-astKeywordSend receiver
                                'addSelector:withMethod:
                                (list selector method-block)))
