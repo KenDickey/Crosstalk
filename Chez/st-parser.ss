@@ -1095,9 +1095,14 @@
                                     (vector "self" 0 0))
                         'self))))
       )
-      (make-astKeywordSend receiver
-                      'addSelector:withMethod:
-                      (list selector method-block))
+;;    (format #t "selector token: ~a" (astLiteral-token selector))
+      (if (eq? (token-kind (astLiteral-token selector)) 'binarySelector)
+          (make-astKeywordSend receiver
+                      'addSelector:withMethod:arity:
+                      (list selector method-block (st->AST "2")))
+          (make-astKeywordSend receiver
+                               'addSelector:withMethod:
+                               (list selector method-block)))
 ) ) )
                           
 
