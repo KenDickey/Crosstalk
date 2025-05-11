@@ -277,10 +277,24 @@
        (primLookup: (perform: self 'instanceBehavior) selectorSymbol))
      2)
 
+(addSelector:withMethod:arity:
+     MetaClass
+     '>>
+;; "Answer the compiled method associated with the argument, selector (a 
+;; Symbol), a message selector in the receiver's method dictionary. If the 
+;; selector is not in the dictionary, create an error notification."
+     (lambda (self selectorSymbol)
+       (primLookup: (perform: self 'instanceBehavior) selectorSymbol))
+     2)
+
 
 ;; Am I self-referential, or what??
 ;;   Talk about "meta-circular"!!
 (addSelector:withMethod: ObjectClass
+                         'addSelector:withMethod:
+                         addSelector:withMethod:)
+
+(addSelector:withMethod: MetaClass
                          'addSelector:withMethod:
                          addSelector:withMethod:)
 
