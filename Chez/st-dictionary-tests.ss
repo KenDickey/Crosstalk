@@ -37,13 +37,15 @@
   "at:")
 
 (add-equal-test 'st-dictionary
-  '(a c b)
+  st-true
   (let ( (keys '()) )
     ($: %%dict%%
       'keysDo:
       (lambda (k)
         (set! keys (cons k keys))))
-    keys)
+    ($: ($ (vector 'a 'c 'b) 'asSet)
+        '=
+        ($ keys 'asSet)))
   "keysDo:")
 
 (add-equal-test 'st-dictionary

@@ -80,6 +80,16 @@
            (loop (cdr elts)))))))
 
 (addSelector:withMethod:
+     List
+     'asArray
+     (lambda (self) (list->vector self)))
+
+(addSelector:withMethod:
+     List
+     'asSet
+     (lambda (self) ($ (list->vector self) 'asSet)))
+
+(addSelector:withMethod:
      (class List)
      'with:
      (lambda (self elt1)
