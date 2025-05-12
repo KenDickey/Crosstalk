@@ -299,6 +299,14 @@
                          addSelector:withMethod:)
 
 (addSelector:withMethod: ObjectClass
+                         'addSelector:withMethod:arity:
+                         addSelector:withMethod:arity:)
+
+(addSelector:withMethod: MetaClass
+                         'addSelector:withMethod:arity:
+                         addSelector:withMethod:arity:)
+
+(addSelector:withMethod: ObjectClass
 			 'allSuperclasses
 			 allSuperclasses)
 

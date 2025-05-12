@@ -115,17 +115,21 @@
   "sum Set( 1 2 3 ) --> 6")
 
 (add-equal-test 'st-set
-  (vector 2 6 4)
-  ($ ($: ($::: Set 'with:with:with: 1 2 3)
-         'collect: (lambda (elt) (* 2 elt)))
-     'asArray)
-  "(Set with: 1 with: 2 with: 3) collect: [:e |2 * e]) asArray")
+  st-true
+  ($: ($::: Set 'with:with:with: 2 4 6)
+      '=
+      ($: ($::: Set 'with:with:with: 1 2 3)
+          'collect: (lambda (elt) (* 2 elt)))
+  )
+  "(Set with: 1 with: 2 with: 3) collect: [:e |2 * e])")
 
 (add-equal-test 'st-set
-  (vector 2 6 4)
-  ($ ($: ($ (vector 1 2 3) 'asSet)
-         'collect: (lambda (elt) (* 2 elt)))
-     'asArray)
+  st-true
+  ($: ($::: Set 'with:with:with: 6 4 2)
+      '=
+      ($: ($ (vector 1 2 3) 'asSet)
+          'collect: (lambda (elt) (* 2 elt)))
+   )
   "(#(1 2 3) asSet collect: [:e |2 * e]) asArray")
 
 ;;;			--- E O F ---			;;;

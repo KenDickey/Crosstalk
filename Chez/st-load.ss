@@ -29,7 +29,7 @@
    ) )
 
 (define (loadss base-name)
-  (format #t "~%About to load ~a.ss" base-name)
+  (format #t "~%About to load ~a.ss~%" base-name)
   (load (string-append base-name ".ss")))
 
 (begin

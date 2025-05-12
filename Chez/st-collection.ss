@@ -271,21 +271,35 @@
        (or (eq? symbol 'Set)
            (superPerform:with: self 'is: symbol))))
 
+($:: ($ (smalltalkAt: 'Set) 'class)
+       'addSelector:withMethod:
+       'new  ;; 4 is default size
+       (lambda (self) ($: self 'new: 4)))
+
 (addSelector:withMethod:
      (class Set)
      'new:
      (lambda (self size)
-       (let ( (newInst (perform: self 'new)) )
-         (perform:with: newInst 'init: size)
-         newInst)))
+       ;; make large enough to hold size elts
+       ;; without growing -- see #fullCheck
+       (let* ( (initialSize
+                (if (<= size 0)
+                    1
+                    (floor (/ (* (+ size 1) 4) 3))))
+               (newSet ($ self 'basicNew))
+              )
+;;       (superPerform: newSet 'initialize) ;; unneeded
+         (perform:with: newSet 'tally: 0)
+         (perform:with: newSet
+                        'array:
+                        (perform:with: Array 'new: initialSize))
+         ($ newSet 'initialize)))
+     )
 
 (addSelector:withMethod:
      Set
      'initialize
-     (let ( (defaultSize 4) )
-       (lambda (self)
-         (perform:with: self 'init: defaultSize)
-)    ) )
+     (lambda (self) self))
 
 (addSelector:withMethod:
      Set
@@ -297,8 +311,8 @@
                (if (<= size 0)
                    1
                    (floor (/ (* (+ size 1) 4) 3))))
-            )
-         (superPerform: self 'initialize)
+             )
+;;       (superPerform: self 'initialize) ;; unneeded
          (perform:with: self 'tally: 0)
          (perform:with: self
                         'array:
@@ -355,7 +369,7 @@
                          'size))
               (tally (perform: self 'tally))
             )
-         (unless (> (- array-size tally)
+         (unless (>= (- array-size tally)
                     (max 1 (floor (/ array-size 4))))
            (perform: self 'grow)))))
 
@@ -413,7 +427,7 @@
        (perform:with:with:
           (perform: self 'array)
           'swap:with: oneIndex anotherIndex)))
-
+ 
 (addSelector:withMethod:
      Set
      'size ;; number of elements
@@ -423,15 +437,15 @@
      Set
      'do:
      (lambda (self aBlock)
-       (if (zero? (perform: self 'tally))
-           self
+       (unless (zero? (perform: self 'tally))
            (perform:with: (perform: self 'array)
                           'do:
                           (lambda (elt)
                             (unless (st-nil? elt)
                               (aBlock elt)))
-       )  )
-) )
+                          )  )
+       self)
+)
 
 (addSelector:withMethod:arity:
      Set
@@ -530,7 +544,6 @@
        (let ( (index (perform:with: self
                                     'findElementOrNil:
                                     oldObj))
-              (array (perform: self 'array))
             )
        (if (st-nil? (perform:with: self 'keyAt: index))
            (absentBlock)
@@ -559,25 +572,28 @@
 
              (unless (st-nil? elt)
                (let ( (newIndex (perform:with: self 'findElementOrNil: elt)) )
-		 (format #t "~%fixCollisionsFrom: old=~a new=~a" oldIndex newIndex) ; @@debug
+;; (format #t "~%fixCollisionsFrom: old=~a new=~a" oldIndex newIndex) ; @@debug
 		 (unless (= newIndex oldIndex)
                    (perform:with:with: self 'swap:with: oldIndex newIndex))
-		 (loop newIndex))))))
-	   ) )
+		 (loop oldIndex))))))
+       self)
+     )
 
 (addSelector:withMethod:
      Set
      'collect:
      (lambda (self aBlock)
-       (let ( (new-set (perform:with: (class self) ;NB: subclass may invoke
-                                      'new:
-                                      (perform: self 'size)))
-              (array (perform: self 'array))
-            )
+       (let* ( (size ($ self 'tally))
+               (new-set
+                (if (zero? size)
+                    ($: (class self) 'new)
+                    ($: (class self) 'new: size)))
+               (array (perform: self 'array))
+             )
          (vector-for-each
           (lambda (elt)
             (unless (st-nil? elt)
-              (perform:with: new-set 'add: (aBlock elt))))
+              ($: new-set 'add: (aBlock elt))))
           array)
          new-set)))
 
@@ -613,24 +629,24 @@
        (let* ( (array (perform: self 'array))
                (array-size (vector-length array))
                (start (modulo (equal-hash obj) ;; hash fn
-                              array-size))
+                                array-size))
                (right-end (- array-size 1)) ;; Scheme index 0 based
              )
          (let right-loop ( (index start) ) ;; start to end
            (let ( (elt (vector-ref array index)) )
-             (newline) (display index) (display " ") ; @@debug
+;; (newline) (display index) (display " ") ; @@debug
              (cond
-              ((st-nil? elt) (+ 1 index)) ;; Scheme->ST index
-              ((eqv? obj elt) (+ 1 index)) ;; Scheme->ST index ;; eq?
+              ((st-nil? elt)    (+ 1 index)) ;; Scheme->ST index
+              ((equal? obj elt) (+ 1 index)) ;; Scheme->ST index ;; eqv?
               ((= index right-end)
                (let ( (mid-end (- start 1)) )
                  (let left-loop ( (index 0) ) ;; Scheme arrays 0 based
                  ;; look 1 to start-1
-                 (newline) (display index) (display " ") ; @@debug
+;;  (newline) (display index) (display " ") ; @@debug
                    (let ( (elt (vector-ref array index)) )
                      (cond
-                      ((st-nil? elt)  (+ 1 index))
-                      ((eqv? obj elt) (+ 1 index)) ;; equal?
+                      ((st-nil? elt)    (+ 1 index))
+                      ((equal? obj elt) (+ 1 index)) ;; eqv?
                       ((= index mid-end)
                        0) ;; failed [Smalltalk is 1 based]
                       (else (left-loop (+ 1 index))))))
