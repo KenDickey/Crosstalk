@@ -190,6 +190,12 @@
    bytevector-set!
    append-no-duplicates
    format
+
+;;; exported for unit testing
+   condition-name condition-names
+   simple-condition? condition-name->predicate-symbol
+   condition->dictionary
+   dict->alist
    )
 
   (import

@@ -59,14 +59,17 @@
   "valuesDo:")
 
 (add-equal-test 'st-dictionary
-  (vector '(a c b) 6)
+  (vector #t 6)
   (let ( (keys '()) (total 0) )
     ($: %%dict%%
       'keysAndValuesDo:
       (lambda (k v)
         (set! keys (cons k keys))
         (set! total (+ total v))))
-    (vector keys total))
+    (vector ($: ($ keys 'asSet)
+		'=
+		($ (list->vector '(a c b)) 'asSet))
+	    total))
   "keysAndValuesDo:")
 
 ;; (ensure-exception-raised 'st-dictionary

@@ -17,6 +17,31 @@
          (lambda ()  form))))
 ) ) )
 
+;; (dict->alist (condition->dictionary zero-divide))
+;; ==>
+;; ((isMessage . #t) (isFormat . #t) (irritants 0) (who . /)
+;;   (k . #<system continuation in dynamic-wind>)
+;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
+;;   (message . "undefined for ~s") (isWho . #t))
+
+;; (dict->alist (condition->dictionary frob-error))
+;; ==>
+;; ((isMessage . #t) (isFormat . #t) (irritants a "frob" ("bee" #\c 47))
+;;   (who . error) (k . #<system continuation in dynamic-wind>)
+;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
+;;   (message
+;;     .
+;;     "invalid message argument ~s (who = ~s, irritants = ~s)")
+;;   (isWho . #t))
+
+;; (dict->alist (condition->dictionary write-to-non-port))
+;; ==>
+;; ((isMessage . #t) (isFormat . #t) (irritants 0) (who . write)
+;;   (k . #<system continuation in dynamic-wind>)
+;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
+;;   (message . "~s is not a textual output port") (isWho . #t))
+;; > 
+
 (define (setup-st-conditions)
   (set! zero-divide
         (capture-condition (/ 3 0)))
@@ -25,7 +50,38 @@
          (error "frob" 'a "bee" #\c 47)))
   (set! write-to-non-port
         (capture-condition (write 3 0)))
-)
+  )
+
+;; (dict->alist (condition->dictionary zero-divide))
+;; ==>
+;; ( (isMessage . #t) (isFormat . #t)
+;;   (message . "undefined for ~s")
+;;   (isIrritants . #t) (irritants 0)
+;;   (isWho . #t)       (who . /)
+;;   (isContinuation . #t)  (k . #<system continuation in dynamic-wind>)
+;;   (isAssertion . #t)
+;; )
+
+;; (dict->alist (condition->dictionary frob-error))
+;; ==>
+;; ( (isMessage . #t) (isFormat . #t)
+;;   (message . "invalid message argument ~s (who = ~s, irritants = ~s)")
+;;   (isIrritants . #t) (irritants a "frob" ("bee" #\c 47))
+;;   (isWho . #t)       (who . error) 
+;;   (isContinuation . #t) (k . #<system continuation in dynamic-wind>)
+;;   (isAssertion . #t) 
+;; )
+
+;; (dict->alist (condition->dictionary write-to-non-port))
+;; ==>
+;; ( (isMessage . #t) (isFormat . #t)
+;;   (message . "~s is not a textual output port")
+;;   (isIrritants . #t) (irritants 0)
+;;   (isWho . #t)       (who . write)
+;;   (isContinuation . #t) (k . #<system continuation in dynamic-wind>)
+;;   (isAssertion . #t) 
+;;   )
+
 
 (define (cleanup-st-conditions)
   (set! zero-divide #f)
@@ -37,32 +93,45 @@
                 setup-st-conditions
                 cleanup-st-conditions)
 
-(add-equivalent-alist-test 'st-conditions
-;;(add-equal-test 'st-conditions                           
- '((message . "undefined for ~s") (isAssertion . #t) (isIrritants . #t)
-  (k . #<system continuation in dynamic-wind>) (isWho . #t)
-  (irritants 0) (isMessage . #t) (isContinuation . #t)
-  (who . /) (isFormat . #t))
- (dict->alist (condition->dictionary zero-divide))
- "zero-divide condition asDictionary")
+(add-equal-test 'st-conditions
+   st-true
+  (let ( (zd (condition->dictionary zero-divide)) )
+    ($: ($ (hashtable-keys zd) 'asSet)
+	'=
+	($ (list->vector
+       '(isMessage isFormat irritants who k isContinuation
+		 isAssertion isIrritants message isWho))
+     'asSet)))
+  "zero-divide condition asDictionary")
 
-(add-equivalent-alist-test 'st-conditions
-  '((message
-   .
-   "invalid message argument ~s (who = ~s, irritants = ~s)") (isAssertion . #t) (isIrritants . #t)
-  (k . #<system continuation in dynamic-wind>) (isWho . #t)
-  (irritants a "frob" ("bee" #\c 47)) (isMessage . #t)
-  (isContinuation . #t) (who . error) (isFormat . #t))
- (dict->alist (condition->dictionary frob-error))
- "Scheme error condition asDictionary")
+(add-equal-test 'st-conditions
+  "undefined for ~s"
+  (let ( (zd (condition->dictionary zero-divide)) )
+    ($: zd 'at: 'message))
+  "zero-divide condition asDictionary")
 
-(add-equivalent-alist-test 'st-conditions
- '((message . "~s is not a textual output port") (isAssertion . #t) (isIrritants . #t)
-  (k . #<system continuation in dynamic-wind>) (isWho . #t)
-  (irritants 0) (isMessage . #t) (isContinuation . #t)
-  (who . write) (isFormat . #t))
- (dict->alist (condition->dictionary write-to-non-port))
- "write-to-non-port condition asDictionary")
+(add-equal-test 'st-conditions
+  "invalid message argument ~s (who = ~s, irritants = ~s)"
+  (let ( (fe (condition->dictionary frob-error)) )
+    ($: fe 'at: 'message))
+  "Scheme error condition asDictionary")
+
+(add-equal-test 'st-conditions
+   st-true
+  (let ( (fe (condition->dictionary frob-error)) )
+    ($: ($ (hashtable-keys fe) 'asSet)
+	'=
+	($ (list->vector
+	       '(isMessage isFormat irritants who k isContinuation
+	         isAssertion isIrritants message isWho))
+      'asSet)))
+  "Scheme error condition asDictionary")
+
+(add-equal-test 'st-conditions
+  "~s is not a textual output port"
+  (let ( (wtnp (condition->dictionary write-to-non-port)) )
+    ($: wtnp 'at: 'message))
+  "write-to-non-port condition asDictionary")
 
 ;; (ensure-exception-raised 'st-conditions
 ;;    (make-error-string-predicate   "Failed message send: #glerph to ")
