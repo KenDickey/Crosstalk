@@ -17,31 +17,6 @@
          (lambda ()  form))))
 ) ) )
 
-;; (dict->alist (condition->dictionary zero-divide))
-;; ==>
-;; ((isMessage . #t) (isFormat . #t) (irritants 0) (who . /)
-;;   (k . #<system continuation in dynamic-wind>)
-;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
-;;   (message . "undefined for ~s") (isWho . #t))
-
-;; (dict->alist (condition->dictionary frob-error))
-;; ==>
-;; ((isMessage . #t) (isFormat . #t) (irritants a "frob" ("bee" #\c 47))
-;;   (who . error) (k . #<system continuation in dynamic-wind>)
-;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
-;;   (message
-;;     .
-;;     "invalid message argument ~s (who = ~s, irritants = ~s)")
-;;   (isWho . #t))
-
-;; (dict->alist (condition->dictionary write-to-non-port))
-;; ==>
-;; ((isMessage . #t) (isFormat . #t) (irritants 0) (who . write)
-;;   (k . #<system continuation in dynamic-wind>)
-;;   (isContinuation . #t) (isAssertion . #t) (isIrritants . #t)
-;;   (message . "~s is not a textual output port") (isWho . #t))
-;; > 
-
 (define (setup-st-conditions)
   (set! zero-divide
         (capture-condition (/ 3 0)))
