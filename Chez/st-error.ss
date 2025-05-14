@@ -284,11 +284,11 @@ Structure:
      ExceptionSet
      'printOn:
      (lambda (self aStream)
-       ($: aStream 'nextPutAll: (className: self))
+       ($: aStream 'nextPutAll: (className self))
        ($: aStream 'nextPutAll: "( " )
        ($: ($ self 'exceptions)
            'do:
-           (lambda (elt) (format aStream "[~a] " (className: elt))))
+           (lambda (elt) (format aStream "[~a] " (className elt))))
        ($: aStream 'nextPut: #\) ))
 )
 
@@ -434,7 +434,7 @@ Structure:
      'description
      (lambda (self)
        (let ( (msg ($ self 'messageText))
-              (name ($ (className: self) 'asString))
+              (name ($ (className self) 'asString))
             )
          (if (st-nil? msg)
              name
@@ -653,7 +653,7 @@ Structure:
      (lambda (self aStream)
        (format aStream
                "~%~a( ~a -> ~a )"
-               (className: self)
+               (className self)
                ($ self 'selector)
                (if (isKindOf: ($ self 'receiver) MessageSend)
                    "a MessageSend" ;; avoid recursion
