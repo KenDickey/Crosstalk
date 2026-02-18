@@ -1,0 +1,694 @@
+\input texinfo  @c -*-texinfo-*-
+
+@settitle UMB Scheme Release Notes
+@setfilename scheme.info
+
+@ifinfo
+This file documents the installation and use of UMB Scheme.
+
+Copyright (C) 1988, 1996 William R Campbell.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through Tex and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+section entitled ``GNU General Public License'' is included exactly as
+in the original, and provided that the entire resulting derived work is
+distributed under the terms of a permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that the section entitled ``GNU General Public License'' and
+this permission notice may be included in translations approved by the
+Free Software Foundation instead of in the original English.
+@end ifinfo
+
+@setchapternewpage odd
+
+@titlepage
+@title @thistitle
+@subtitle last updated Janaury 22, 1996
+@subtitle $Revision: 3.2 $
+@author William R Campbell
+@page
+@vskip 0pt plus 1filll
+UMB Scheme Release Notes $Revision: 3.2 $
+Copyright @copyright{} 1989, 1996 William R Campbell.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+section entitled ``GNU General Public License'' is included exactly as
+in the original, and provided that the entire resulting derived work is
+distributed under the terms of a permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that the section entitled ``GNU General Public License'' and
+this permission notice may be included in translations approved by the
+Free Software Foundation instead of in the original English.
+@end titlepage
+@page
+
+@ifinfo
+@node Top, Copying,, (DIR)
+@ichapter Introduction
+
+This manual documents how to install and use UMB Scheme as
+well as its new features and incompatibilities, and how to report bugs.
+
+@end ifinfo
+@menu
+* Copying::         GNU General Public License says
+                     how you can copy and share GNU CC.
+* Why::		    Why we implemented UMB Scheme.
+* What::	    What's supported by UMB Scheme.
+* Performance::	    Remarks on performance.
+* Contributors::    People who have contributed to UMB Scheme.
+* Installation::    How to compile and install UMB Scheme.
+* Use::		    How to use UMB Scheme.
+* Bugs::	    How to report bugs (if you want them fixed).
+* Files::	    Distribution files.
+
+@end menu
+
+@node Copying, Why, Top, Top
+@unnumbered GNU GENERAL PUBLIC LICENSE
+@center Version 1, February 1989
+
+@display
+Copyright @copyright{} 1989 Free Software Foundation, Inc.
+675 Mass Ave, Cambridge, MA 02139, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+@end display
+
+@unnumberedsec Preamble
+
+  The license agreements of most software companies try to keep users
+at the mercy of those companies.  By contrast, our General Public
+License is intended to guarantee your freedom to share and change free
+software---to make sure the software is free for all its users.  The
+General Public License applies to the Free Software Foundation's
+software and to any other program whose authors commit to using it.
+You can use it for your programs, too.
+
+  When we speak of free software, we are referring to freedom, not
+price.  Specifically, the General Public License is designed to make
+sure that you have the freedom to give away or sell copies of free
+software, that you receive source code or can get it if you want it,
+that you can change the software or use pieces of it in new free
+programs; and that you know you can do these things.
+
+  To protect your rights, we need to make restrictions that forbid
+anyone to deny you these rights or to ask you to surrender the rights.
+These restrictions translate to certain responsibilities for you if you
+distribute copies of the software, or if you modify it.
+
+  For example, if you distribute copies of a such a program, whether
+gratis or for a fee, you must give the recipients all the rights that
+you have.  You must make sure that they, too, receive or can get the
+source code.  And you must tell them their rights.
+
+  We protect your rights with two steps: (1) copyright the software, and
+(2) offer you this license which gives you legal permission to copy,
+distribute and/or modify the software.
+
+  Also, for each author's protection and ours, we want to make certain
+that everyone understands that there is no warranty for this free
+software.  If the software is modified by someone else and passed on, we
+want its recipients to know that what they have is not the original, so
+that any problems introduced by others will not reflect on the original
+authors' reputations.
+
+  The precise terms and conditions for copying, distribution and
+modification follow.
+
+@iftex
+@unnumberedsec TERMS AND CONDITIONS
+@end iftex
+@ifinfo
+@center TERMS AND CONDITIONS
+@end ifinfo
+
+@enumerate
+@item
+This License Agreement applies to any program or other work which
+contains a notice placed by the copyright holder saying it may be
+distributed under the terms of this General Public License.  The
+``Program'', below, refers to any such program or work, and a ``work based
+on the Program'' means either the Program or any work containing the
+Program or a portion of it, either verbatim or with modifications.  Each
+licensee is addressed as ``you''.
+
+@item
+You may copy and distribute verbatim copies of the Program's source
+code as you receive it, in any medium, provided that you conspicuously and
+appropriately publish on each copy an appropriate copyright notice and
+disclaimer of warranty; keep intact all the notices that refer to this
+General Public License and to the absence of any warranty; and give any
+other recipients of the Program a copy of this General Public License
+along with the Program.  You may charge a fee for the physical act of
+transferring a copy.
+
+@item
+You may modify your copy or copies of the Program or any portion of
+it, and copy and distribute such modifications under the terms of Paragraph
+1 above, provided that you also do the following:
+
+@itemize @bullet
+@item
+cause the modified files to carry prominent notices stating that
+you changed the files and the date of any change; and
+
+@item
+cause the whole of any work that you distribute or publish, that
+in whole or in part contains the Program or any part thereof, either
+with or without modifications, to be licensed at no charge to all
+third parties under the terms of this General Public License (except
+that you may choose to grant warranty protection to some or all
+third parties, at your option).
+
+@item
+If the modified program normally reads commands interactively when
+run, you must cause it, when started running for such interactive use
+in the simplest and most usual way, to print or display an
+announcement including an appropriate copyright notice and a notice
+that there is no warranty (or else, saying that you provide a
+warranty) and that users may redistribute the program under these
+conditions, and telling the user how to view a copy of this General
+Public License.
+
+@item
+You may charge a fee for the physical act of transferring a
+copy, and you may at your option offer warranty protection in
+exchange for a fee.
+@end itemize
+
+Mere aggregation of another independent work with the Program (or its
+derivative) on a volume of a storage or distribution medium does not bring
+the other work under the scope of these terms.
+
+@item
+You may copy and distribute the Program (or a portion or derivative of
+it, under Paragraph 2) in object code or executable form under the terms of
+Paragraphs 1 and 2 above provided that you also do one of the following:
+
+@itemize @bullet
+@item
+accompany it with the complete corresponding 
+machine-readable
+source code, which must be distributed under the terms of
+Paragraphs 1 and 2 above; or,
+
+@item
+accompany it with a written offer, valid for at least three
+years, to give any third party free (except for a nominal charge
+for the cost of distribution) a complete machine-readable copy of the
+corresponding source code, to be distributed under the terms of
+Paragraphs 1 and 2 above; or,
+
+@item
+accompany it with the information you received as to where the
+corresponding source code may be obtained.  (This alternative is
+allowed only for noncommercial distribution and only if you
+received the program in object code or executable form alone.)
+@end itemize
+
+Source code for a work means the preferred form of the work for making
+modifications to it.  For an executable file, complete source code means
+all the source code for all modules it contains; but, as a special
+exception, it need not include source code for modules which are standard
+libraries that accompany the operating system on which the executable
+file runs, or for standard header files or definitions files that
+accompany that operating system.
+
+@item
+You may not copy, modify, sublicense, distribute or transfer the
+Program except as expressly provided under this General Public License.
+Any attempt otherwise to copy, modify, sublicense, distribute or transfer
+the Program is void, and will automatically terminate your rights to use
+the Program under this License.  However, parties who have received
+copies, or rights to use copies, from you under this General Public
+License will not have their licenses terminated so long as such parties
+remain in full compliance.
+
+@item
+By copying, distributing or modifying the Program (or any work based
+on the Program) you indicate your acceptance of this license to do so,
+and all its terms and conditions.
+
+@item
+Each time you redistribute the Program (or any work based on the
+Program), the recipient automatically receives a license from the original
+licensor to copy, distribute or modify the Program subject to these
+terms and conditions.  You may not impose any further restrictions on the
+recipients' exercise of the rights granted herein.
+
+@item
+The Free Software Foundation may publish revised and/or new versions
+of the General Public License from time to time.  Such new versions will
+be similar in spirit to the present version, but may differ in detail to
+address new problems or concerns.
+
+Each version is given a distinguishing version number.  If the Program
+specifies a version number of the license which applies to it and ``any
+later version'', you have the option of following the terms and conditions
+either of that version or of any later version published by the Free
+Software Foundation.  If the Program does not specify a version number of
+the license, you may choose any version ever published by the Free Software
+Foundation.
+
+@item
+If you wish to incorporate parts of the Program into other free
+programs whose distribution conditions are different, write to the author
+to ask for permission.  For software which is copyrighted by the Free
+Software Foundation, write to the Free Software Foundation; we sometimes
+make exceptions for this.  Our decision will be guided by the two goals
+of preserving the free status of all derivatives of our free software and
+of promoting the sharing and reuse of software generally.
+
+@iftex
+@heading NO WARRANTY
+@end iftex
+@ifinfo
+@center NO WARRANTY
+@end ifinfo
+
+@item
+BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE PROGRAM ``AS IS'' WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED
+OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS
+TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE
+PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING,
+REPAIR OR CORRECTION.
+
+@item
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL
+ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES,
+INCLUDING ANY GENERAL, SPECIAL, 
+INCIDENTAL OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT
+LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES
+SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE
+WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+@end enumerate
+
+@iftex
+@heading END OF TERMS AND CONDITIONS
+@end iftex
+@ifinfo
+@center END OF TERMS AND CONDITIONS
+@end ifinfo
+
+@node Why, What, Copying, Top
+@chapter Why We Implemented UMB Scheme
+
+Our reasons form implementing yet another version of Scheme are the following:
+
+@enumerate
+@item
+We use Scheme for modeling the operational semantics of programming languages
+in our undergraduate languages course.  We wanted a Scheme system that was
+easily ported to the various architectures on campus and that gave reasonable
+run-time performance.
+
+@item
+We wanted to produce a relatively large piece if code as an example of good
+program organization for our undergraduate and graduate software engineering
+students.
+
+@item
+We wanted to involve students in all phases of the implementation effort,
+including initial development, testing, extensions, and performance tuning.
+
+@item
+We wanted to illustrate that object-oriented design might successfully be
+applied to programs written in vanilla programming languages such as C.
+
+@end enumerate
+
+Although this effort was meant as an exercise in design and programming, we
+have ended up with what we think to be a rather nice interpreter.  It runs
+relatively fast (performance comparisons with MIT Scheme are made below) and
+we (as well as others not involved in development) have found the code 
+very easy to maintain and extend.  
+
+@node What, Performance, Why, Top 
+@chapter What's Supported by UMB Scheme
+
+UMB Scheme is an implementation of the language described in the 
+@var{IEEE Standard for the Scheme Programming Language}
+(December, 1990). It also supports R4RS (with the help of the Scheme Portable
+Library (Aubrey Jaffrey) for high level macros.
+
+All syntax, variables and procedures are implemented. 
+Integers are implemented as fixnums and bignums, rationals as pairs of integers,
+(inexact) reals as double-precision floats, and (inexact) complex numbers as 
+pairs of double-precision floats.
+
+For information on what additional functionality is supported, see the
+man page (scheme.1).
+
+The following files are loaded in order at startup:
+
+If the variable SCHEME_INIT is set in the user's environment by executing
+@example
+        setenv SCHEME_INIT file
+@end example
+then file is loaded.
+
+If SCHEME_INIT is not set and if a file 
+@var{.scheme}
+exists in the user's home directory then it is loaded.
+
+The files named as optional arguments are loaded from left to right.
+
+@node Performance, Contributors, What, Top
+@chapter Remarks on Performance
+
+So far as speed is concerned, UMB Scheme loses to MIT's C Scheme
+in pure evaluation but performs significantly better than C Scheme when it
+comes to compile-load-and-go.  
+
+For example, consider the following @var{tak} benchmark code from
+Richard P Gabriel, 
+@var{Performance and Evaluation of Lisp Systems,}
+MIT Press, 1985.
+@example
+
+; tak
+; function-call-heavy; test of function call and recursion
+
+(define (tak x y z)
+  (if (not (< y x))
+      z
+      (tak (tak (- x 1) y z)
+	   (tak (- y 1) z x)
+	   (tak (- z 1) x y))))
+
+(tak 18 12 6)
+
+@end example
+On a Sun 3/140, C Scheme gets through this in 75 seconds while UMB Scheme
+takes 98 seconds; in this instance C Scheme runs faster.
+
+But consider a definition-heavy file of code such as the following.
+@example
+
+(define (fac x) (if (= x 0) 1 (* x (fac (- x 1))) ))
+(fac 5)
+
+(define (fac x) (if (= x 0) 1 (* x (fac (- x 1))) ))
+(fac 5)
+
+(define (fac x) (if (= x 0) 1 (* x (fac (- x 1))) ))
+(fac 5)
+
+;; ...  1000 copies 
+
+@end example
+To get through these 1000 definitions of (and calls to) @var{fac},
+C Scheme takes 432 seconds but UMB Scheme takes only 19 seconds;
+in this instance UMB Scheme runs 22 times faster than C Scheme.
+
+Therefore, UMB Scheme appears to do much better in a heavy compile-load-and-go
+environment (such as one would find in an undergraduate languages course)
+than in raw computation.  
+
+Space is more difficult to address when comparing Scheme systems since it 
+depends on one's choice for a heap size.  UMB Scheme's load module has a size
+of 216K bytes; C Scheme's load module is 279K bytes.  As they are currently
+configured, UMB Scheme runs in a 1600K region as compared to C Scheme's 3944K 
+(as measured by top(1) on Unix).  
+UMB Scheme's storage allocator begins with a small
+(200K byte) heap and increases heap size as necessary (and as permitted by the
+operating system) at garbage collection time.
+
+
+@node Contributors, Installation, Performance, Top
+@chapter Contributors to UMB Scheme
+
+@itemize @bullet
+@item
+The interpreter is based on the Explicit-Control Evaluator described
+in the textbook: Harold Abelson and Gerald Jay Sussman,
+@var{Structure and Interpretation of Computer Programs},
+MIT Press, Cambridge, Massachusetts, 1985.
+
+@item
+Bill Campbell was the primary author and project manager.
+
+@item
+The idea of organizing the control of the interpreter around objects
+comes from Richard Schooler.
+
+@item
+Karl Berry and Kathy Hargreaves helped with the initial programming.
+
+@item
+Bill McCabe coded some performance improvements,
+particularly lexical variable addressing.
+
+@item
+Mary Glaser, Tim Holt, Long Nguyen and Thang Quoc Tran worked on numbers.
+
+@item
+Ira Gerstein and Jeyashree Sivasubram help bring UMB Scheme up to R4RS
+standard.
+
+@item
+Barbara Dixey, Susan Quina and Bela Sohoni coded some additional
+performance improvements, handling varying numbers of arguments to
+functions in C.
+
+@item
+John Tam rewrote the macro facility for supporting defmacro and for
+interfacing to the Scheme Portable Library.
+@item
+Many undergraduate students at UMB wrote test programs and offered
+suggestions for improvement.
+
+@end itemize
+
+
+@node Installation, Use, Contributors, Top
+@chapter Compiling and Installing UMB Scheme
+
+UMB Scheme has been installed successfully using both @var{cc} and @var{gcc}
+(the Gnu C compiler) on the following machines and operating systems:
+
+@itemize @bullet
+
+@item
+Sun 3 and Sun 4 running Unix.
+
+@item
+Sun 386i running Sun Unix 4.0.1.
+
+@item
+DEC Vax 11/750 running Unix 4.3 BSD.
+
+@item DEC Decstation 5000 running Ultrix.
+@end itemize
+
+UMB Scheme was written so as to be easily ported to other systems. 
+Some modifications may be required.
+
+To install UMB Scheme one of the systems listed above, simply go into
+the distribution directory and do the following.
+
+@enumerate 
+
+@item
+Carefully read the file portable.h file.  Any minor modifications will
+want to be made here.
+
+Of particular importance are ALIGNMENT, NEGATIVE_ADDRESSES and the 
+definition for Intergral_Pointer; see portable.h for details.
+
+@item
+Compile UMB Scheme using the @file{Makefile} provided.  If you have the Gnu
+C Compiler, @var{gcc}, then simply type
+@example
+
+	make
+
+@end example
+or,
+@example
+
+	make CC=gcc
+
+@end example
+
+Otherwise, to use @var{cc}, type
+@example
+
+	make CC=cc CFLAGS=-O
+
+@end example
+
+This will compile all necessary source files and create the executable
+file @file{scheme}.
+
+@item
+Install the executable file in some public bin, e.g.
+@example
+
+	cp scheme /usr/local/bin/scheme
+
+@end example
+
+@item
+Install the UMB Scheme @var{standard prelude} in the public library.
+@example
+
+	mkdir /usr/local/lib/scheme
+	cp prelude.scheme /usr/local/lib/scheme
+
+@end example
+This pathname is wired into UMB Scheme.  If necessary, you can change
+the definition of @code{STANDARD_PRELUDE_FILENAME} 
+in the source file @file{steering.c}.
+
+@item
+Install the SLIB directory.
+@example
+
+        cp -r slib /usr/local/lib  # not in /scheme
+        cp SLIB-for-umb-scheme.init /usr/local/lib/scheme
+
+@end example
+The standard prelude, @code{prelude.scheme}, assumes that the start up file
+@code{SLIB-for-umb_scheme.init} is here; if you put it somewhere else,
+modify @code{prelude.scheme} accordingly.
+
+If you do not wish to use SLIB, then comment out the load near the end 
+of @code{prelude.scheme}.
+@item
+Copy the manual page to the appropriate directory, e.g.
+@example
+	cp scheme.l /usr/spool/man/man1
+@end example
+Some shops maintain a separate @file{manl} directory for local manual pages;
+consult your local system administrator.
+@end enumerate
+
+That should do it!
+
+@node Use, Bugs, Installation, Top
+@chapter Using UMB Scheme
+
+Invoking UMB Scheme is straightforward; simply type
+@example
+	scheme [names of any scheme files to be loaded]
+@end example
+
+To get out of UMB Scheme type @code{Control-D}.
+
+See the man pages (scheme.l) for details.
+
+@node Bugs, Files, Use, Top
+@chapter What To Do About Bugs
+
+UMB Scheme has been used by many undergraduate students and several bugs
+have been exposed and repaired.  No doubt, bugs remain.  The author 
+would appreciate hearing about any bugs found (and any fixes made).
+
+Send reports to
+@example
+	bill@@cs.umb.edu
+@end example
+or, by postal service, to
+@example
+	Bill Campbell
+	Department of Mathematics and Computer Science
+	University of Massachusetts at Boston
+	Harbor Campus
+	Boston, MA 02125
+
+	617-287-6449
+@end example
+
+@node Files, Top, Bugs, Top
+@chapter Distribution files
+
+@example
+Distribution Files for UMB Scheme Version 1.1
+
+README               This list of files.
+scheme.texinfo       UMB Scheme Release Notes.
+Makefile             For compiling UMB Scheme.
+prelude.scheme       The Scheme prelude, primitives loaded at start.
+scheme.l             UMB Scheme manual page (in man(1) format).
+
+
+Source files:
+
+portable.h           Portability considerations.
+
+steering.c           UMB Scheme steering -- including main().
+steering.h
+
+debug.c              Debugger steering and debug primitives.
+debug.h
+
+architecture.c       Registers, stacks, heap, name handling.
+architecture.h
+
+object.c             Scheme objects.
+object.h
+
+io.c                 Read, display, print, file handling.
+io.h
+
+compiler.c           Compiler: Expression -> Graph.
+compiler.h
+
+eval.c               Eval().
+eval.h
+
+primitive.c          (Non-numeric) primitives implemented in C.
+primitive.h
+
+number.c             Number primitives.
+number.h     
+
+bignum.c             Bignum (integers of arbitrary magnitude).
+bignum.h
+
+complex.c            Complex number support.
+complex.h
+
+fixnum.c             Fixnum (smaller integers) support.
+fixnum.h
+
+real.c               Real number (C double) support.
+real.h
+
+rational.c           NB: rationals not yet implemented (skeletons).
+rational.h
+
+See the Release Notes (scheme.texinfo) for installation.
+@end example
+@contents
+@bye

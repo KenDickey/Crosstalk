@@ -1,0 +1,376 @@
+.TH SCHEME 1  "Janaury 22, 1996" "local"
+.SH NAME
+scheme  \-  UMB Scheme  ($Revision: 3.2 $)
+.SH ORIGIN
+University of Massachusetts at Boston
+.SH SYNOPSIS
+.B scheme [file ...]
+.SH DESCRIPTION
+.ta +0.5i 2.0i 
+.PP
+UMB Scheme is an implementation of the language described in the 
+.I "IEEE Standard for the Scheme Programming Language"
+(December, 1990).  It also supports R4RS, relying on Aubrey Jaffer's
+.I "Scheme Portable Library (SLIB)" 
+for R4RS macro support.
+.PP
+All syntax, variables and procedures are implemented. 
+Integers are implemented as fixnums and bignums, rationals as pairs of integers,
+(inexact) reals as double-precision floats, and (inexact) complex numbers as 
+pairs of double-precision floats.
+.PP
+The following files are loaded in order at startup:
+.PP
+If the variable SCHEME_INIT is set in the user's environment by executing
+.nf
+        setenv SCHEME_INIT file
+.fi
+then file is loaded.
+.PP
+If SCHEME_INIT is not set and if a file 
+.I " .scheme "
+exists in the user's home directory then it is loaded.
+.PP
+The files named as optional arguments are loaded from left to right.
+.PP
+The primitive procedure
+.I edit
+may be used for editing files during a scheme session.
+.nf
+
+	(edit filename)
+	(edit)
+
+.fi
+Filename is a string object specifying the file to be edited.
+If no filename is given then that file that was most recently edited
+is assumed.
+The editor used is taken from the shell variable, EDITOR, in the
+user's environment; if this variable is not set then 
+.I "vi(1)" 
+is used by default.
+The user can make sure EDITOR is always set by putting a setenv in 
+his 
+.I ".login"
+file; e.g.
+.nf
+
+	setenv EDITOR /usr/ucb/emacs
+
+.fi
+Upon leaving the editor, that file specified by filename is
+automatically loaded using the primitive procedure 
+.I loadv,
+which causes the interpreter output to be sent to the current output port,
+normally the user's terminal. If verbose loading is not desired use the
+commands
+.nf
+
+    	(edits filename)
+	(edits)
+
+.fi
+causing filename to be loaded silently by the primitive procedure
+.I load.
+.PP
+.I Load
+and
+.I loadv
+can be used to load any file in silent or verbose mode respectively:
+.nf
+
+    	(load filename)
+	(loadv filename).
+
+.fi
+.PP
+UMB Scheme has 
+.I "property lists:"
+.nf
+
+	(put symbol property-name object)
+	(get symbol property-name)
+
+.fi
+where
+.I "property-names"
+are symbols.
+.SH SCHEME PORTABLE LIBRARY
+
+UMB Scheme can access Aubrey Jaffer's 
+.I "Scheme Portable Library (SLIB)."
+For documentation on SLIB see either
+.br
+.I "http://www.cs.indiana.edu/scheme-repository/SCM/slib_toc.html"
+or
+.I "/usr/local/lib/slib/slib.texinfo."
+
+.SH SYSTEM INTERFACE
+
+UMB Scheme supports calls to the underlying system.  The call,
+.nf
+
+	(system cmd-string)
+
+.fi
+where 
+.I cmd-string
+is a string representing a system command, causes that command to be passed
+to the underlying operating system.
+.PP
+And,
+.nf
+
+	(time)
+
+.fi
+returns the number of seconds since 00:00:00 GMT,  Jan.  1,  1970.
+
+.SH DEFMACRO
+
+UMB Scheme supports the standard 
+.I "defmacro facility."
+For example, assuming quasi-quote notation, the definition
+.nf
+
+        (defmacro := (lhs rhs)
+            `(set! ,lhs ,rhs))
+
+.fi
+defines a macro := that translates forms like
+.nf
+
+        (:= a b)    to    (set! a b)
+
+.fi
+We rely on the Scheme Portable Library (SLIB) to provide R4RS macros;
+to load this, type,
+.nf
+
+	(require 'macro)
+
+.fi
+
+.SH EVAL and ENVIRONMENTS
+
+We implement environments as first-class Scheme objects and
+introduce an explicit
+.I eval
+procedure.  So,
+.nf
+
+    	(current-environment)
+
+.fi
+produces the environment in which the call was made.  and,
+.nf
+
+	(environment? obj) 
+
+.fi
+produces #t iff obj is an environment object and #f otherwise.  The
+call,
+.nf
+
+    	(global-environment obj)
+
+.fi
+produces #t iff
+.I obj
+is the environment object representing the top-level
+.I global
+environment and #f otherwise.  Environment objects are used by
+.I eval.  The call,
+.nf
+
+    	(eval obj environment)
+
+.fi
+explicitly evaluates the 
+given object in the given environment.  For example,
+.nf
+
+    	(define env1 (current-environment)) ; => env1
+	(define env2 nil) ; => env2
+	(define x 0) ; => x
+	(define form '(+ x 1)) ; => form
+
+	(let ((x 10))
+	   (set! env2 (current-environment))
+	      nil) ; => nil
+
+	(define env3 (let ((x 15)) (current-environment))) ; => env3
+
+	; Now, here's the rub
+
+	(eval form env1) ; => 1
+	(eval form env2) ; => 11
+	(eval form env3) ; => 16
+.fi
+The second argument to
+.I eval
+is optional, in which case it defaults to the current environment.
+For example,
+.nf
+
+    	(define x 0) ; => x
+	(define form '(+ x 1)) ; => form
+
+	(eval form) ; => 1
+
+	(let ((x 10))
+	   (eval form)) ; => 11
+
+.nf
+UMB Scheme implements a macro definition defining the
+macro form
+.I make-environment,
+such that
+.nf
+
+    	(make-environment
+	    (define <name1> <expr1>)
+	        ...
+	    (define <namen> <exprn>))
+
+.fi
+defines a new environment, composed of the current environment
+augmented by a new nested frame comprised of the given definitions.
+Of course,
+.nf
+
+    	(make-environment)
+
+.fi
+without any definitions has the same effect as 
+.nf
+
+    	(current-environment)
+
+.fi
+.SH DEBUGGING
+UMB Scheme has a simple debugger.  Throughout a session one is
+in one of two modes: 
+.I "top-level mode"
+or
+.I "debugging mode."
+In general, one works in top-level mode.  If the debugger has been turned on,
+an error raised during an evaluation (or an explicit call to break) causes a
+.I break
+which puts the user into debugging mode. The user can place explicit calls
+to break or error in his code:
+.nf
+	
+	(break obj ...)	; Print the objects and break the evaluation.
+	(error obj ...)	; Print the objects and raise an error.
+
+.fi
+In debugging mode, certain primitives apply for finding the cause of the offense.  
+Notice that syntax errors cause a 
+.I "reset",
+returning the user to top-level mode.  When the debugger is turned off, all
+errors simply cause a reset to top-level mode.
+.nf
+
+	(debug)	; turn on the debugger
+	(debug-off)	; turn off the debugger.
+
+.fi
+NB: When the debugger is turned on, UMB Scheme is no longer properly
+tail-recursive as required by the language definition.  For this reason,
+the debugger is turned 
+.I "off"
+by default.  One can insure the debugger is always turned on by putting a 
+call to debug in the Scheme Init file (e.g. .scheme).
+.PP
+Any scheme expression may be evaluated in debugging mode.  It is evaluated
+in the environment that existed when the break occurred in the top level
+computation; this makes it easy to find the bindings for local variables.
+In addition, the following primitives apply.
+.nf
+
+	(reset)	; Return to the top-level read-eval-print loop.
+	Control-D	; Typing Control-D causes a (reset).
+
+	(show-env)	; Show the bindings of all local environments.
+	(show-env k)	; Show-env for only the k most recent frames.
+	(show-globals)	; Show bindings for all user-defined globals.
+	(show-proc-env proc)	; Show a procedure's environment.
+	(how symbol)	; Show the expression causing symbol's binding.
+
+	(where)		; Show an enumerated backtrace of the 
+			; computation being debugged.
+	(where k)	; Show the most recent k steps of the backtrace.
+
+	(go obj)	; Resume the computation being debugged,
+			; substituting the value of obj for the most recent
+			; step (as indicated by a call to where).
+	(go k obj)	; Likewise, but obj is substituted for the k-th step
+			; as enumerated in the backtrace by (where).
+
+.fi
+Tracing a procedure involves interrupting evaluation when either the procedure
+is about to be applied or the procedure is about to return with a value.
+Upon such an interruption, the call or the returned value is printed, and
+the user is put in debugging mode.
+.nf
+
+	(trace proc ...)	; Trace named procedures.
+	(trace)	; Trace all procedures.
+	(untrace proc ...)	; Cancel tracing for named procedures.
+	(untrace)	; Cancel tracing for all procedures.
+
+	Control-D	; Resume the computation interrupted in the trace.
+
+.fi
+Stepping through a computation involves interrupting evaluation at every k-th
+expression, for a given k.  The expression in question is printed and the
+user is put in debugging mode.
+.nf
+
+	(step k)	; Interrupt evaluation at every k-th expression.
+	(step 0)	; Inhibit stepping altogether.
+
+	Control-D	; Resume the evaluation broken in the stepping.
+
+.fi
+Notice that, when stepping or tracing is in effect, any one of a number of
+events (the application of a procedure or the k-th expression being reached)
+will interrupt evaluation.  Since typing
+Control-D resumes the interrupted computation, one can step through such a
+computation by repeatedly typing Control-D. 
+.PP
+Finally, errors or explicit calls to break arising while in debugging mode
+simply leave the user in debugging mode.  Unlike some other implementations,
+UMB Scheme does not support nested debugging sessions.  (Keep it simple.)
+.fi
+.SH FILES
+prelude.scheme
+.br
+SLIB-for-umb-scheme.init
+.br
+/usr/local/lib/slib/*
+
+.SH "SEE ALSO"
+Release Notes
+.SH COPYING
+Copyright (C) 1988, 1990 William R Campbell
+.br
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+.br
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+.br
+.SH AUTHOR
+William Campbell, University of Massachusetts at Boston,
+with help from Karl Berry,Barbara Dixey, 
+Ira Gerstein, Mary Glaser, Kathy Hargreaves, Bill McCabe, Long Nguyen, 
+Susan Quina,
+Jeyashree Sivasubram, Bela Sohoni and Thang Quoc Tran.
+.SH BUGS
+.PP
+No doubt, there are bugs.  Please report them to bill@cs.umb.edu.

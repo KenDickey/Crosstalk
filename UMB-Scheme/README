@@ -1,0 +1,62 @@
+Distribution Files for UMB Scheme $Revision: 3.2a $
+
+README			This list of files.
+scheme.texinfo		UMB Scheme Release Notes (supplied as hardcopy).
+Makefile		For compiling UMB Scheme.
+prelude.scheme		The Scheme prelude -- primitives loaded at startup.
+scheme.1		UMB Scheme manual page (in man(1) format).
+
+
+Source files:
+
+portable.h		Portability considerations.
+
+steering.c		UMB Scheme steering -- including main()
+steering.h
+
+debug.c              	Debugger steering and debug primitives.
+debug.h
+
+architecture.c		Registers, stacks, heap, name handling.
+architecture.h
+
+object.c		Scheme objects.
+object.h
+
+io.c			Read, display, print, file handling.
+io.h
+
+compiler.c		Compiler: Expression -> Graph.
+compiler.h
+
+eval.c			Eval().
+eval.h
+
+primitive.c		Primitives implemented in C (other than numbers).
+primitive.h
+
+number.c		Number primitives.
+number.h	
+
+bignum.c		Bignum (integers of arb magnitude) support.
+bignum.h
+
+complex.c		Complex number support.
+complex.h
+
+fixnum.c		Fixnum (smaller integers) support.
+fixnum.h
+
+real.c			Real number (C double) support.
+real.h
+
+rational.c		NB: rationals not yet implemented (skeletons).
+rational.h
+
+SLIB-for-umb-scheme.init
+slib/			A copy of the Portable Scheme Library (see copyrights)
+
+See the UMB Scheme Release Notes (scheme.texinfo) for installation instructions.
+
+
+
